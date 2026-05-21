@@ -14,6 +14,10 @@ landing/downloads/
 # Claude session files
 .claude/
 
+# Test user credentials (never push passwords!)
+USERS.md
+CREDENTIALS.md
+
 # macOS
 .DS_Store
 **/.DS_Store

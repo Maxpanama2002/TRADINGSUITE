@@ -2785,6 +2785,12 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-divider::before,.ag-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .ag-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5;}
 .ag-loading{display:none;text-align:center;color:var(--text3);font-size:13px;padding:12px 0;}
+.ag-toggle-row{text-align:center;font-size:12.5px;color:var(--text3);margin-top:10px;padding:4px 0;}
+.ag-toggle-row .ag-link{color:var(--accent);font-weight:700;cursor:pointer;margin-left:4px;text-decoration:none;}
+.ag-toggle-row .ag-link:hover{text-decoration:underline;}
+.ag-hint{font-size:11px;color:var(--text3);text-align:center;margin:6px 0 8px;line-height:1.45;}
+.ag-success-icon{display:flex;justify-content:center;margin:8px 0 14px;}
+.ag-success-email{font-size:13px;font-weight:700;color:var(--accent);background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:8px 12px;margin:8px 0 14px;word-break:break-all;}
 .ag-btn.guest{background:transparent;color:var(--text3);border:1px dashed var(--border2);margin-top:4px;font-weight:500;font-size:13px;}
 .ag-btn.guest:hover{color:var(--text);border-color:var(--text3);background:var(--border);}
 .ag-guest-sep{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--text3);font-size:11px;}
@@ -20798,22 +20804,59 @@ window.replayOnboarding = function(){
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="36" height="36" style="border-radius:8px;flex-shrink:0;"><defs><linearGradient id="ag-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs><rect width="1024" height="1024" rx="220" ry="220" fill="url(#ag-bg)"/><g fill="white"><rect x="248" y="612" width="128" height="216" rx="24"/><rect x="448" y="412" width="128" height="416" rx="24"/><rect x="648" y="212" width="128" height="616" rx="24"/></g><path d="M 312 540 L 512 340 L 712 140" stroke="white" stroke-opacity="0.45" stroke-width="32" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="white"><circle cx="312" cy="540" r="22"/><circle cx="512" cy="340" r="22"/><circle cx="712" cy="140" r="22"/></g></svg>
       <span class="ag-logo-name">Trading Suite</span>
     </div>
-    <div class="ag-loading" id="ag-loading" data-ru="Проверяем сессию…" data-en="Checking session…">Проверяем сессию…</div>
-    <div id="ag-form">
-      <div class="ag-title" id="ag-title" data-ru="Войди в аккаунт" data-en="Sign in to your account">Войди в аккаунт</div>
+
+    <!-- ── Sign-in mode ──────────────────────────────────────────────── -->
+    <div id="ag-mode-signin">
+      <div class="ag-title" data-ru="Войди в аккаунт" data-en="Sign in to your account">Войди в аккаунт</div>
       <div class="ag-sub" data-ru="Для работы с приложением необходима авторизация" data-en="Authorization is required to use the app">Для работы с приложением необходима авторизация</div>
       <div class="ag-field">
         <input type="email" id="ag-email" class="ag-input" placeholder="email" autocomplete="email">
         <input type="password" id="ag-pass" class="ag-input" data-ph-ru="пароль" data-ph-en="password" placeholder="пароль" autocomplete="current-password">
       </div>
       <div id="ag-err" class="ag-err"></div>
-      <div id="ag-ok" class="ag-ok"></div>
       <button class="ag-btn primary" id="ag-signin-btn" onclick="_gateSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
-      <div class="ag-divider" data-ru="или" data-en="or">или</div>
-      <button class="ag-btn secondary" id="ag-signup-btn" onclick="_gateSignUp()" data-ru="Зарегистрироваться" data-en="Register">Зарегистрироваться</button>
+      <div class="ag-toggle-row">
+        <span data-ru="Нет аккаунта?" data-en="No account yet?">Нет аккаунта?</span>
+        <a class="ag-link" onclick="_agSwitchMode('register')" data-ru="Зарегистрироваться" data-en="Create one">Зарегистрироваться</a>
+      </div>
       <div class="ag-guest-sep" data-ru="или" data-en="or">или</div>
       <button class="ag-btn guest" onclick="_gateGuest()" data-ru="👁 Войти как гость (просмотр)" data-en="👁 Continue as guest (view only)">👁 Войти как гость (просмотр)</button>
     </div>
+
+    <!-- ── Register mode ────────────────────────────────────────────── -->
+    <div id="ag-mode-register" style="display:none;">
+      <div class="ag-title" data-ru="Создание аккаунта" data-en="Create an account">Создание аккаунта</div>
+      <div class="ag-sub" data-ru="Заполни форму — пришлём письмо с подтверждением" data-en="Fill in the form — we'll send a confirmation email">Заполни форму — пришлём письмо с подтверждением</div>
+      <div class="ag-field">
+        <input type="email" id="ag-reg-email" class="ag-input" placeholder="email" autocomplete="email">
+        <input type="password" id="ag-reg-pass" class="ag-input" data-ph-ru="пароль (минимум 8 символов)" data-ph-en="password (min 8 characters)" placeholder="пароль (минимум 8 символов)" autocomplete="new-password">
+        <input type="password" id="ag-reg-pass2" class="ag-input" data-ph-ru="повтори пароль" data-ph-en="confirm password" placeholder="повтори пароль" autocomplete="new-password">
+      </div>
+      <div class="ag-hint" data-ru="🔐 Пароль будет зашифрован. Мы не сможем его восстановить." data-en="🔐 Password is encrypted. We cannot recover it.">🔐 Пароль будет зашифрован. Мы не сможем его восстановить.</div>
+      <div id="ag-reg-err" class="ag-err"></div>
+      <button class="ag-btn primary" id="ag-register-btn" onclick="_gateRegister()" data-ru="Зарегистрироваться" data-en="Register">Зарегистрироваться</button>
+      <div class="ag-toggle-row">
+        <span data-ru="Уже есть аккаунт?" data-en="Already have an account?">Уже есть аккаунт?</span>
+        <a class="ag-link" onclick="_agSwitchMode('signin')" data-ru="Войти" data-en="Sign in">Войти</a>
+      </div>
+    </div>
+
+    <!-- ── Success mode (after register) ────────────────────────────── -->
+    <div id="ag-mode-success" style="display:none;text-align:center;">
+      <div class="ag-success-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="url(#ag-success-grad)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <defs><linearGradient id="ag-success-grad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <div class="ag-title" data-ru="📨 Письмо отправлено!" data-en="📨 Email sent!">📨 Письмо отправлено!</div>
+      <div class="ag-sub" data-ru="Проверь почту, перейди по ссылке для подтверждения email, после чего возвращайся и войди в аккаунт." data-en="Check your inbox, click the confirmation link, then come back and sign in.">Проверь почту, перейди по ссылке для подтверждения email, после чего возвращайся и войди в аккаунт.</div>
+      <div class="ag-success-email" id="ag-success-email"></div>
+      <button class="ag-btn primary" onclick="_agSwitchMode('signin')" data-ru="Вернуться к входу" data-en="Back to sign in">Вернуться к входу</button>
+      <div class="ag-hint" data-ru="Не получили письмо? Проверь папку «Спам» или подожди 1–2 минуты." data-en="Didn't get the email? Check the spam folder or wait 1–2 minutes.">Не получили письмо? Проверь папку «Спам» или подожди 1–2 минуты.</div>
+    </div>
+
     <div class="ag-footer" data-ru="Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту" data-en="Data is encrypted and tied to your account">Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту</div>
   </div>
 </div>
@@ -20833,19 +20876,41 @@ function _agTranslate(){
   }catch(e){}
 }
 
+function _agSwitchMode(mode){
+  // mode: 'signin' | 'register' | 'success'
+  var modes = ['signin','register','success'];
+  modes.forEach(function(m){
+    var el = document.getElementById('ag-mode-'+m);
+    if(el) el.style.display = (m===mode) ? '' : 'none';
+  });
+  // Clear errors
+  var e1=document.getElementById('ag-err');     if(e1){e1.style.display='none';e1.textContent='';}
+  var e2=document.getElementById('ag-reg-err'); if(e2){e2.style.display='none';e2.textContent='';}
+  // Focus first input
+  setTimeout(function(){
+    var f = mode==='signin' ? document.getElementById('ag-email')
+          : mode==='register' ? document.getElementById('ag-reg-email')
+          : null;
+    if(f) f.focus();
+  }, 80);
+  _agTranslate();
+}
+
 function _authGateShow(){
   var g = document.getElementById('auth-gate');
   if(!g) return;
-  // clear inputs & messages
-  var e=document.getElementById('ag-email'); if(e) e.value='';
-  var p=document.getElementById('ag-pass');  if(p) p.value='';
-  var err=document.getElementById('ag-err'); if(err){err.style.display='none';err.textContent='';}
-  var ok=document.getElementById('ag-ok');   if(ok){ok.style.display='none';ok.textContent='';}
-  var btn1=document.getElementById('ag-signin-btn'); if(btn1) btn1.disabled=false;
-  var btn2=document.getElementById('ag-signup-btn'); if(btn2) btn2.disabled=false;
+  // Reset to signin mode
+  _agSwitchMode('signin');
+  // Clear all inputs
+  ['ag-email','ag-pass','ag-reg-email','ag-reg-pass','ag-reg-pass2'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  // Re-enable buttons
+  ['ag-signin-btn','ag-register-btn'].forEach(function(id){
+    var b=document.getElementById(id); if(b) b.disabled=false;
+  });
   g.style.display='flex';
   _agTranslate();
-  // focus email after paint
   setTimeout(function(){ var ei=document.getElementById('ag-email'); if(ei) ei.focus(); },100);
 }
 
@@ -20893,38 +20958,60 @@ async function _gateSignIn(){
   try{ _cloudAutoDownloadOnLogin(); }catch(e){}
 }
 
-async function _gateSignUp(){
-  var em = (document.getElementById('ag-email')||{}).value||'';
-  var pw = (document.getElementById('ag-pass')||{}).value||'';
-  var err= document.getElementById('ag-err');
-  var ok = document.getElementById('ag-ok');
-  _agClear(err,ok);
-  if(!em||!pw){ _agShowErr(err,_t('Заполни email и пароль','Fill in email and password')); return; }
-  if(pw.length<8){ _agShowErr(err,_t('Пароль минимум 8 символов','Password must be at least 8 characters')); return; }
-  var btn = document.getElementById('ag-signup-btn');
+async function _gateRegister(){
+  var em  = (document.getElementById('ag-reg-email')||{}).value||'';
+  var pw  = (document.getElementById('ag-reg-pass')||{}).value||'';
+  var pw2 = (document.getElementById('ag-reg-pass2')||{}).value||'';
+  var err = document.getElementById('ag-reg-err');
+  if(err){err.style.display='none';err.textContent='';}
+
+  // Validations with clear messages
+  if(!em){ _agShowErr(err, _t('Введи email','Enter email')); return; }
+  if(em.indexOf('@')===-1 || em.indexOf('.')===-1){
+    _agShowErr(err, _t('Email выглядит некорректно','Email looks invalid')); return;
+  }
+  if(!pw){ _agShowErr(err, _t('Придумай пароль','Choose a password')); return; }
+  if(pw.length<8){ _agShowErr(err, _t('Пароль минимум 8 символов','Password must be at least 8 characters')); return; }
+  if(pw !== pw2){ _agShowErr(err, _t('Пароли не совпадают','Passwords don\'t match')); return; }
+
+  var btn = document.getElementById('ag-register-btn');
   if(btn){btn.disabled=true; btn.textContent=_t('Регистрируем…','Registering…');}
   var r = await CloudSync.auth.signUp(em.trim(), pw);
   if(btn){btn.disabled=false; btn.textContent=_t('Зарегистрироваться','Register');}
+
   if(!r.ok){
-    var msg2 = r.error||'';
-    var lc2  = msg2.toLowerCase();
-    if(lc2.indexOf('already')!==-1||lc2.indexOf('registered')!==-1){
-      msg2 = _t('Этот email уже зарегистрирован. Войди.','This email is already registered. Sign in.');
-    } else if(lc2.indexOf('rate')!==-1||lc2.indexOf('limit')!==-1){
-      msg2 = _t('Слишком много попыток. Подожди минуту.','Too many attempts. Wait a minute.');
-    } else if(!msg2){ msg2 = _t('Ошибка регистрации','Registration error'); }
-    _agShowErr(err, msg2);
+    var msg = r.error||'';
+    var lc  = msg.toLowerCase();
+    if(lc.indexOf('already')!==-1||lc.indexOf('registered')!==-1||lc.indexOf('user already')!==-1){
+      msg = _t('Этот email уже зарегистрирован. Войди в аккаунт.','This email is already registered. Sign in instead.');
+    } else if(lc.indexOf('rate')!==-1||lc.indexOf('limit')!==-1){
+      msg = _t('Слишком много попыток. Подожди минуту.','Too many attempts. Wait a minute.');
+    } else if(lc.indexOf('weak')!==-1||lc.indexOf('password')!==-1){
+      msg = _t('Пароль слишком простой. Добавь цифры/буквы.','Password too weak. Add numbers/letters.');
+    } else if(!msg){ msg = _t('Ошибка регистрации. Попробуй позже.','Registration error. Try again later.'); }
+    _agShowErr(err, msg);
     return;
   }
+
+  // Success — switch to success view, show email used
+  var seEmail = document.getElementById('ag-success-email');
+  if(seEmail) seEmail.textContent = em.trim();
+
   if(r.needsConfirmation){
-    _agShowOk(ok,_t('✅ Письмо отправлено! Проверь почту и подтверди email.','✅ Email sent! Check your inbox and confirm.'));
+    // Email confirmation required — show confirmation screen
+    _agSwitchMode('success');
+    try{ showToast2(_t('📨 Письмо подтверждения отправлено','📨 Confirmation email sent')); }catch(e){}
   } else {
+    // Auto-confirmed (rare) — sign in immediately
     _authGateHide();
-    try{ _guestModeClear(); }catch(e){} // exit guest mode on registration
+    try{ _guestModeClear(); }catch(e){}
     try{ _cloudRefreshUI(); }catch(e){}
     try{ showToast2(_t('Аккаунт создан','Account created')+' ✓'); }catch(e){}
   }
 }
+
+// Keep old name for any legacy callers
+window._gateSignUp = _gateRegister;
 
 // ── Guest mode ────────────────────────────────────────────────────────────
 window._guestMode = false;
@@ -20994,6 +21081,18 @@ document.addEventListener('DOMContentLoaded', function(){
       _authGateCheck();
     }
   }, 50);
+  // Enter-key submits the active form
+  function _agEnterHandler(formMode, submitFn){
+    return function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); submitFn(); } };
+  }
+  ['ag-email','ag-pass'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('keydown', _agEnterHandler('signin', _gateSignIn));
+  });
+  ['ag-reg-email','ag-reg-pass','ag-reg-pass2'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('keydown', _agEnterHandler('register', _gateRegister));
+  });
 });
 
 // Also re-translate gate when language changes (applyLang calls this if gate is visible)
