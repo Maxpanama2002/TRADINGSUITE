@@ -2763,31 +2763,31 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 #lang-dd-wrap{display:none!important;}
 
 /* ══ AUTH GATE ════════════════════════════════════════════════════════════ */
-#auth-gate{position:fixed;inset:0;z-index:99999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;padding:16px;}
-.ag-box{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.45);}
-.ag-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
-.ag-logo img{width:36px;height:36px;}
-.ag-logo-name{font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
-.ag-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:6px;}
-.ag-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:26px;line-height:1.55;}
-.ag-field{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+#auth-gate{position:fixed;inset:0;z-index:99999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;padding:12px;overflow-y:auto;}
+.ag-box{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:28px 30px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.45);max-height:calc(100vh - 24px);overflow-y:auto;}
+.ag-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;}
+.ag-logo img{width:32px;height:32px;}
+.ag-logo-name{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
+.ag-title{font-size:20px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;}
+.ag-sub{font-size:12px;color:var(--text3);text-align:center;margin-bottom:18px;line-height:1.5;}
+.ag-field{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
 .ag-input{width:100%;padding:11px 14px;background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .15s;}
 .ag-input:focus{border-color:var(--accent);}
 .ag-err{font-size:12px;color:#ef4444;text-align:center;margin:4px 0;display:none;min-height:16px;}
 .ag-ok{font-size:12px;color:#22c55e;text-align:center;margin:4px 0;display:none;}
-.ag-btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;}
+.ag-btn{width:100%;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:5px;}
 .ag-btn.primary{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;}
 .ag-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.4);}
 .ag-btn.primary:active{transform:translateY(0);}
 .ag-btn.secondary{background:var(--card-bg);color:var(--text2);border:1px solid var(--border);}
 .ag-btn.secondary:hover{background:var(--border);color:var(--text);}
-.ag-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text3);font-size:12px;}
+.ag-divider{display:flex;align-items:center;gap:10px;margin:10px 0 6px;color:var(--text3);font-size:12px;}
 .ag-divider::before,.ag-divider::after{content:'';flex:1;height:1px;background:var(--border);}
-.ag-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.5;}
+.ag-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5;}
 .ag-loading{display:none;text-align:center;color:var(--text3);font-size:13px;padding:12px 0;}
 .ag-btn.guest{background:transparent;color:var(--text3);border:1px dashed var(--border2);margin-top:4px;font-weight:500;font-size:13px;}
 .ag-btn.guest:hover{color:var(--text);border-color:var(--text3);background:var(--border);}
-.ag-guest-sep{display:flex;align-items:center;gap:8px;margin:14px 0 10px;color:var(--text3);font-size:11px;}
+.ag-guest-sep{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--text3);font-size:11px;}
 .ag-guest-sep::before,.ag-guest-sep::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* ── Guest mode lock badge in sidebar ─────────────────────────── */
@@ -20859,18 +20859,17 @@ function _authGateCheck(){
   else { _authGateShow(); }
 }
 
+function _agShowErr(err, msg){ if(err){err.style.cssText='display:block;font-size:12px;color:#ef4444;text-align:center;margin:4px 0;';err.textContent=msg;} }
+function _agShowOk(ok, msg){  if(ok){ok.style.cssText='display:block;font-size:12px;color:#22c55e;text-align:center;margin:4px 0;'; ok.textContent=msg;} }
+function _agClear(err,ok){ if(err){err.style.display='none';err.textContent='';} if(ok){ok.style.display='none';ok.textContent='';} }
+
 async function _gateSignIn(){
   var em = (document.getElementById('ag-email')||{}).value||'';
   var pw = (document.getElementById('ag-pass')||{}).value||'';
   var err= document.getElementById('ag-err');
   var ok = document.getElementById('ag-ok');
-  if(err){err.style.display='none';err.textContent='';}
-  if(ok){ok.style.display='none';ok.textContent='';}
-  var l  = typeof getLang==='function'?getLang():'ru';
-  if(!em||!pw){
-    if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}
-    return;
-  }
+  _agClear(err,ok);
+  if(!em||!pw){ _agShowErr(err,_t('Заполни email и пароль','Fill in email and password')); return; }
   var btn = document.getElementById('ag-signin-btn');
   if(btn){btn.disabled=true; btn.textContent=_t('Входим…','Signing in…');}
   var r = await CloudSync.auth.signIn(em.trim(), pw);
@@ -20883,7 +20882,7 @@ async function _gateSignIn(){
     } else if(lc.indexOf('not confirmed')!==-1||lc.indexOf('email not confirmed')!==-1){
       msg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
     } else if(!msg){ msg = _t('Ошибка входа','Sign-in error'); }
-    if(err){err.style.display='';err.textContent=msg;}
+    _agShowErr(err, msg);
     return;
   }
   _authGateHide();
@@ -20899,16 +20898,9 @@ async function _gateSignUp(){
   var pw = (document.getElementById('ag-pass')||{}).value||'';
   var err= document.getElementById('ag-err');
   var ok = document.getElementById('ag-ok');
-  if(err){err.style.display='none';err.textContent='';}
-  if(ok){ok.style.display='none';ok.textContent='';}
-  if(!em||!pw){
-    if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}
-    return;
-  }
-  if(pw.length<8){
-    if(err){err.style.display='';err.textContent=_t('Пароль минимум 8 символов','Password must be at least 8 characters');}
-    return;
-  }
+  _agClear(err,ok);
+  if(!em||!pw){ _agShowErr(err,_t('Заполни email и пароль','Fill in email and password')); return; }
+  if(pw.length<8){ _agShowErr(err,_t('Пароль минимум 8 символов','Password must be at least 8 characters')); return; }
   var btn = document.getElementById('ag-signup-btn');
   if(btn){btn.disabled=true; btn.textContent=_t('Регистрируем…','Registering…');}
   var r = await CloudSync.auth.signUp(em.trim(), pw);
@@ -20918,12 +20910,14 @@ async function _gateSignUp(){
     var lc2  = msg2.toLowerCase();
     if(lc2.indexOf('already')!==-1||lc2.indexOf('registered')!==-1){
       msg2 = _t('Этот email уже зарегистрирован. Войди.','This email is already registered. Sign in.');
+    } else if(lc2.indexOf('rate')!==-1||lc2.indexOf('limit')!==-1){
+      msg2 = _t('Слишком много попыток. Подожди минуту.','Too many attempts. Wait a minute.');
     } else if(!msg2){ msg2 = _t('Ошибка регистрации','Registration error'); }
-    if(err){err.style.display='';err.textContent=msg2;}
+    _agShowErr(err, msg2);
     return;
   }
   if(r.needsConfirmation){
-    if(ok){ok.style.display='';ok.textContent=_t('Письмо отправлено! Подтверди email и войди.','Email sent! Confirm it then sign in.');}
+    _agShowOk(ok,_t('✅ Письмо отправлено! Проверь почту и подтверди email.','✅ Email sent! Check your inbox and confirm.'));
   } else {
     _authGateHide();
     try{ _guestModeClear(); }catch(e){} // exit guest mode on registration
