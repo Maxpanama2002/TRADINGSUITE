@@ -2952,7 +2952,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span id="tb-profile-status" style="display:none;width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;"></span>
           </button>
-          <div id="tb-profile-menu" style="display:none;position:fixed;z-index:9100;background:var(--card2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:6px;min-width:200px;opacity:0;transform:translateY(-6px);transition:opacity .15s,transform .15s;">
+          <div id="tb-profile-menu" style="display:none;position:fixed;z-index:9100;background:var(--card-bg2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.32);padding:6px;min-width:210px;opacity:0;transform:translateY(-6px);transition:opacity .15s,transform .15s;backdrop-filter:none;">
             <div id="tb-profile-email" style="padding:8px 12px 6px;font-size:11px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
             <div onclick="navigateTo('profile');_tbProfileClose()" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:background .12s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''" data-ru="👤 Личный кабинет" data-en="👤 Personal Cabinet">👤 Личный кабинет</div>
             <div id="tb-profile-signout" onclick="_tbSignOut()" style="display:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#ef4444;transition:background .12s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background=''" data-ru="← Выйти" data-en="← Sign out">← Выйти</div>
@@ -5600,6 +5600,7 @@ async function _pcDoSignIn(){
   _cloudRefreshUI();
   try{ renderPersonalCabinet(); }catch(e){}
   try{ showToast2(_t('Добро пожаловать','Welcome')+' '+em); }catch(e){}
+  _cloudAutoDownloadOnLogin();
 }
 async function _pcDoSignUp(){
   var em=(document.getElementById('pc-auth-email')||{}).value||'';
@@ -16611,6 +16612,7 @@ async function _cloudSignIn(){
   if(!r.ok){ if(err){err.style.display='';err.textContent=_t('Ошибка: ','Error: ')+r.error;} return; }
   _cloudRefreshUI();
   try{ showToast2(_t('Добро пожаловать','Welcome')+', '+em); }catch(e){}
+  _cloudAutoDownloadOnLogin();
 }
 async function _cloudSignUp(){
   var em = (document.getElementById('cloud-email')||{}).value||'';
@@ -16712,7 +16714,50 @@ function _cloudIsSyncable(key){
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// END CLOUD SYNC stubs
+// AUTO-SYNC: patch localStorage.setItem to mirror writes to Supabase
+// ════════════════════════════════════════════════════════════════════════════
+(function _cloudPatchStorage(){
+  var _orig = localStorage.setItem.bind(localStorage);
+  var _pending = {};
+  var _DELAY = 1500; // ms debounce per key
+
+  localStorage.setItem = function(key, value){
+    _orig(key, value);
+    // Only sync if user is logged in and key is syncable
+    if(!CloudSync._user || !CloudSync._ready) return;
+    if(!_cloudIsSyncable(key)) return;
+    if(_pending[key]) clearTimeout(_pending[key]);
+    _pending[key] = setTimeout(function(){
+      delete _pending[key];
+      var parsed = null;
+      try{ parsed = JSON.parse(value); }catch(e){ parsed = value; }
+      CloudSync.data.upload(key, parsed).catch(function(){});
+    }, _DELAY);
+  };
+})();
+
+// Auto-download all user data from cloud on sign-in
+async function _cloudAutoDownloadOnLogin(){
+  var r = await CloudSync.data.list();
+  if(!r.ok || !r.data || !r.data.length) return;
+  var count = 0;
+  r.data.forEach(function(row){
+    if(!row.key || row.data === null || row.data === undefined) return;
+    try{
+      var val = typeof row.data === 'string' ? row.data : JSON.stringify(row.data);
+      localStorage.setItem.__original__ ? localStorage.setItem.__original__(row.key, val)
+        : Object.getPrototypeOf(localStorage).setItem.call(localStorage, row.key, val);
+      count++;
+    }catch(e){}
+  });
+  // Reload the UI with fresh data
+  try{ renderDashboard(); }catch(e){}
+  try{ renderNewDashboard(); }catch(e){}
+  if(count) try{ showToast2(_t('Данные загружены из облака ('+count+' объектов)','Data loaded from cloud ('+count+' items)')); }catch(e){}
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// END CLOUD SYNC
 // ════════════════════════════════════════════════════════════════════════════
 
 // ── STATISTICS PAGE ──
