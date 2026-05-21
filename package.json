@@ -1,0 +1,67 @@
+{
+  "name": "trading-suite",
+  "version": "2.1.167",
+  "description": "Trading Suite — десктоп-приложение",
+  "main": "main.js",
+  "author": "maksymgorskyi",
+  "scripts": {
+    "start": "electron .",
+    "clean": "node scripts/clean-old-builds.js",
+    "build:landing": "node scripts/build-landing.js",
+    "predist": "node scripts/clean-old-builds.js",
+    "dist": "electron-builder --mac",
+    "predist:dmg": "node scripts/clean-old-builds.js",
+    "dist:dmg": "electron-builder --mac dmg",
+    "predist:zip": "node scripts/clean-old-builds.js",
+    "dist:zip": "electron-builder --mac zip",
+    "predist:win": "node scripts/clean-old-builds.js",
+    "dist:win": "electron-builder --win zip --x64",
+    "predist:win:portable": "node scripts/clean-old-builds.js",
+    "dist:win:portable": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "png-to-ico": "^3.0.1"
+  },
+  "build": {
+    "appId": "com.maksymgorskyi.tradingsuite",
+    "productName": "Trading Suite",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "package.json"
+    ],
+    "electronDist": "node_modules/electron/dist",
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Trading-Suite-${version}-${arch}.${ext}",
+      "signAndEditExecutable": false
+    }
+  }
+}

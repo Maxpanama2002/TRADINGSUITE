@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер идей</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafbfc;
+            --bg-secondary: #f0f2f5;
+            --bg-card: #ffffff;
+            --accent-gold: #f57c00;
+            --accent-green: #43a047;
+            --accent-blue: #1e88e5;
+            --accent-red: #e53935;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5f6368;
+            --border: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(245, 124, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(67, 160, 71, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #ef6c00 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(245, 124, 0, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 124, 0, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-gold);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        select, input[type="text"] {
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.95rem;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1);
+        }
+
+        .ideas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .idea-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .idea-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-green));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .idea-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .idea-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .idea-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            min-width: 0;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .idea-actions {
+            display: flex;
+            gap: 0.35rem;
+            flex-shrink: 0;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--bg-main, rgba(0,0,0,0.04));
+            border: 1px solid var(--border, rgba(0,0,0,0.08));
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1rem;
+            line-height: 1;
+            transition: all 0.18s ease;
+        }
+
+        .icon-btn:hover {
+            color: var(--accent-gold);
+            transform: scale(1.1);
+        }
+
+        .idea-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .idea-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .tag, .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .tag::before, .status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .tag-контент::before { background: #1e88e5; }
+        .tag-автоматизация::before { background: #43a047; }
+        .tag-консалтинг::before { background: #f57c00; }
+        .tag-продукт::before { background: #8e24aa; }
+        .tag-сервис::before { background: #e53935; }
+
+        .status-идея::before { background: #1e88e5; }
+        .status-в-процессе::before { background: #f57c00; }
+        .status-реализована::before { background: #43a047; }
+        .status-отклонена::before { background: #9e9e9e; }
+        .status-отклонена { color: var(--text-secondary); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 251, 252, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--accent-red);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+        }
+
+        textarea {
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Courier Prime', monospace;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1.5rem;
+            opacity: 0.3;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .ideas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💡 Трекер идей</h1>
+            <p class="subtitle">Идеи заработка и проекты</p>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalIdeas">0</div>
+                <div class="stat-label">Всего идей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="inProgress">0</div>
+                <div class="stat-label">В процессе</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="implemented">0</div>
+                <div class="stat-label">Реализовано</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">+ Добавить идею</button>
+            <div class="filters">
+                <select id="filterStatus" onchange="filterIdeas()">
+                    <option value="">Все статусы</option>
+                    <option value="идея">Идея</option>
+                    <option value="в процессе">В процессе</option>
+                    <option value="реализована">Реализована</option>
+                    <option value="отклонена">Отклонена</option>
+                </select>
+                <select id="filterCategory" onchange="filterIdeas()">
+                    <option value="">Все категории</option>
+                    <option value="контент">Контент</option>
+                    <option value="автоматизация">Автоматизация</option>
+                    <option value="консалтинг">Консалтинг</option>
+                    <option value="продукт">Продукт</option>
+                    <option value="сервис">Сервис</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Поиск..." oninput="filterIdeas()">
+            </div>
+            <button class="btn btn-secondary" onclick="exportData()">📥 Экспорт</button>
+        </div>
+
+        <div class="ideas-grid" id="ideasGrid"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Добавить идею</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <form id="ideaForm" onsubmit="saveIdea(event)">
+                <div class="form-group">
+                    <label for="ideaName">Название идеи *</label>
+                    <input type="text" id="ideaName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ideaDescription">Описание</label>
+                    <textarea id="ideaDescription" rows="4"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ideaCategory">Категория *</label>
+                        <select id="ideaCategory" required>
+                            <option value="">Выберите...</option>
+                            <option value="контент">Контент</option>
+                            <option value="автоматизация">Автоматизация</option>
+                            <option value="консалтинг">Консалтинг</option>
+                            <option value="продукт">Продукт</option>
+                            <option value="сервис">Сервис</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ideaComplexity">Сложность</label>
+                        <select id="ideaComplexity">
+                            <option value="низкая">Низкая</option>
+                            <option value="средняя" selected>Средняя</option>
+                            <option value="высокая">Высокая</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ideaPotential">Потенциальный доход</label>
+                        <input type="text" id="ideaPotential" placeholder="Например: $500-1000/мес">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ideaStatus">Статус *</label>
+                        <select id="ideaStatus" required>
+                            <option value="идея" selected>Идея</option>
+                            <option value="в процессе">В процессе</option>
+                            <option value="реализована">Реализована</option>
+                            <option value="отклонена">Отклонена</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ideaNotes">Заметки</label>
+                    <textarea id="ideaNotes" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Сохранить
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let ideas = [];
+        let editingId = null;
+
+        // Загрузка данных из localStorage
+        function loadIdeas() {
+            const saved = localStorage.getItem('aiIdeas');
+            if (saved) {
+                ideas = JSON.parse(saved);
+            }
+            renderIdeas();
+            updateStats();
+        }
+
+        // Сохранение в localStorage
+        function saveToStorage() {
+            localStorage.setItem('aiIdeas', JSON.stringify(ideas));
+        }
+
+        // Открыть модальное окно
+        function openModal(id = null) {
+            editingId = id;
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('ideaForm');
+
+            if (id) {
+                const idea = ideas.find(i => i.id === id);
+                modalTitle.textContent = 'Редактировать идею';
+                document.getElementById('ideaName').value = idea.name;
+                document.getElementById('ideaDescription').value = idea.description;
+                document.getElementById('ideaCategory').value = idea.category;
+                document.getElementById('ideaComplexity').value = idea.complexity;
+                document.getElementById('ideaPotential').value = idea.potential;
+                document.getElementById('ideaStatus').value = idea.status;
+                document.getElementById('ideaNotes').value = idea.notes;
+            } else {
+                modalTitle.textContent = 'Добавить идею';
+                form.reset();
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Закрыть модальное окно
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        // Сохранить идею
+        function saveIdea(event) {
+            event.preventDefault();
+
+            const idea = {
+                id: editingId || Date.now(),
+                name: document.getElementById('ideaName').value,
+                description: document.getElementById('ideaDescription').value,
+                category: document.getElementById('ideaCategory').value,
+                complexity: document.getElementById('ideaComplexity').value,
+                potential: document.getElementById('ideaPotential').value,
+                status: document.getElementById('ideaStatus').value,
+                notes: document.getElementById('ideaNotes').value,
+                dateAdded: editingId ? ideas.find(i => i.id === editingId).dateAdded : new Date().toISOString()
+            };
+
+            if (editingId) {
+                const index = ideas.findIndex(i => i.id === editingId);
+                ideas[index] = idea;
+            } else {
+                ideas.unshift(idea);
+            }
+
+            saveToStorage();
+            renderIdeas();
+            updateStats();
+            closeModal();
+        }
+
+        // Удалить идею
+        function deleteIdea(id) {
+            if (confirm('Вы уверены, что хотите удалить эту идею?')) {
+                ideas = ideas.filter(i => i.id !== id);
+                saveToStorage();
+                renderIdeas();
+                updateStats();
+            }
+        }
+
+        // Отрендерить идеи
+        function renderIdeas() {
+            const grid = document.getElementById('ideasGrid');
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = ideas.filter(idea => {
+                const matchStatus = !filterStatus || idea.status === filterStatus;
+                const matchCategory = !filterCategory || idea.category === filterCategory;
+                const matchSearch = !searchText || 
+                    idea.name.toLowerCase().includes(searchText) ||
+                    idea.description.toLowerCase().includes(searchText);
+                return matchStatus && matchCategory && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                        </svg>
+                        <h3>Нет идей</h3>
+                        <p>Добавьте первую идею, чтобы начать</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(idea => `
+                <div class="idea-card">
+                    <div class="idea-header">
+                        <h3 class="idea-title">${idea.name}</h3>
+                        <div class="idea-actions">
+                            <button class="icon-btn" onclick="openModal(${idea.id})" title="Редактировать">✏️</button>
+                            <button class="icon-btn" onclick="deleteIdea(${idea.id})" title="Удалить">🗑️</button>
+                        </div>
+                    </div>
+
+                    ${idea.description ? `<p class="idea-description">${idea.description}</p>` : ''}
+
+                    <div class="idea-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Категория</div>
+                            <div class="meta-value">
+                                <span class="tag tag-${idea.category}">${idea.category}</span>
+                            </div>
+                        </div>
+
+                        <div class="meta-item">
+                            <div class="meta-label">Статус</div>
+                            <div class="meta-value">
+                                <span class="status status-${idea.status}">${idea.status}</span>
+                            </div>
+                        </div>
+
+                        <div class="meta-item">
+                            <div class="meta-label">Сложность</div>
+                            <div class="meta-value">${idea.complexity}</div>
+                        </div>
+
+                        ${idea.potential ? `
+                            <div class="meta-item">
+                                <div class="meta-label">Потенциал</div>
+                                <div class="meta-value">${idea.potential}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${idea.notes ? `
+                        <div class="meta-item" style="margin-top: 1rem;">
+                            <div class="meta-label">Заметки</div>
+                            <div class="meta-value" style="color: var(--text-secondary); font-size: 0.85rem;">
+                                ${idea.notes}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Обновить статистику
+        function updateStats() {
+            document.getElementById('totalIdeas').textContent = ideas.length;
+            document.getElementById('inProgress').textContent = ideas.filter(i => i.status === 'в процессе').length;
+            document.getElementById('implemented').textContent = ideas.filter(i => i.status === 'реализована').length;
+        }
+
+        // Фильтровать идеи
+        function filterIdeas() {
+            renderIdeas();
+        }
+
+        // Экспорт данных
+        function exportData() {
+            const dataStr = JSON.stringify(ideas, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ai-ideas-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Закрытие модального окна по клику вне его
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Инициализация
+        loadIdeas();
+    </script>
+</body>
+</html>

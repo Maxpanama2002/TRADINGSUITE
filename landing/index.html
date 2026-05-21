@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Suite — приложение для криптотрейдеров</title>
+<meta name="description" content="Журнал сделок, Paper Trading, AI-ассистент, Funding & OI с 3 бирж, психо-журнал, watchlist с алертами. Десктоп-приложение для macOS.">
+<meta property="og:title" content="Trading Suite">
+<meta property="og:description" content="Журнал · Paper Trading · AI · Funding+OI · Психо-журнал · Watchlist">
+<meta property="og:image" content="./icon.png">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="apple-touch-icon" href="./icon.png">
+<link rel="stylesheet" href="./assets/site.css?v=2.1.167">
+<script src="./assets/site.js?v=2.1.167"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="./index.html" class="brand"><img src="./favicon.svg" alt="">Trading Suite</a>
+    <div class="nav-links">
+      <a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a>
+      <a href="./docs.html" data-ru="Документация" data-en="Docs">Документация</a>
+      <a href="./changelog.html">Changelog</a>
+      <a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" aria-label="Switch language" type="button">RU</button>
+      <button class="theme-toggle" aria-label="Сменить тему" type="button"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+      <a href="./download.html" class="nav-cta" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+  </div>
+</nav>
+
+<section id="top" class="hero">
+  <div class="badge">
+    <span class="badge-dot"></span>
+    <span data-ru="Версия 2.1.167 · macOS · Windows · Web" data-en="Version 2.1.167 · macOS · Windows · Web">Версия 2.1.167 · macOS · Windows · Web</span>
+  </div>
+  <h1 data-ru="Твой трейдинг в одном приложении" data-en="Your trading — all in one app">Твой трейдинг в одном приложении</h1>
+  <p class="hero-sub" data-ru="&lt;b&gt;Журнал сделок&lt;/b&gt;, &lt;b&gt;Paper Trading&lt;/b&gt;, &lt;b&gt;AI-ассистент&lt;/b&gt;, &lt;b&gt;Funding &amp; OI&lt;/b&gt; с трёх бирж, психо-журнал, watchlist с алертами. Десктоп для macOS / Windows + веб-версия — данные локально." data-en="&lt;b&gt;Trade Journal&lt;/b&gt;, &lt;b&gt;Paper Trading&lt;/b&gt;, &lt;b&gt;AI assistant&lt;/b&gt;, &lt;b&gt;Funding &amp; OI&lt;/b&gt; from 3 exchanges, psychology journal, watchlist with price alerts. Desktop for macOS / Windows + web version — data stays local.">
+    <b>Журнал сделок</b>, <b>Paper Trading</b>, <b>AI-ассистент</b>, <b>Funding &amp; OI</b> с трёх бирж,
+    психо-журнал, watchlist с алертами. Десктоп для macOS / Windows + веб-версия — данные локально.
+  </p>
+  <div class="hero-cta">
+    <a href="#get" class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span data-ru="Скачать" data-en="Download">Скачать</span>
+    </a>
+    <a href="./app/" class="btn-secondary" style="background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(236,72,153,0.14));border-color:rgba(124,58,237,0.35);color:var(--accent2,#a855f7);" data-ru="🌐 Попробовать в браузере" data-en="🌐 Try in browser">🌐 Попробовать в браузере</a>
+    <a href="./features.html" class="btn-secondary" data-ru="Возможности" data-en="Features">Возможности</a>
+  </div>
+  <div class="btn-meta">
+    <span data-ru="&lt;b&gt;macOS · Windows · Web&lt;/b&gt; · бесплатно · без регистрации" data-en="&lt;b&gt;macOS · Windows · Web&lt;/b&gt; · free · no registration"><b>macOS · Windows · Web</b> · бесплатно · без регистрации</span>
+  </div>
+
+  <!-- Два скриншота всегда видны, кликабельны, лайтбокс при клике -->
+  <div class="hero-shots-dual">
+    <div class="hero-shot">
+      <a href="./screenshots/dashboard-dark.png" onclick="return _shotOpen(this)" aria-label="Dark theme screenshot">
+        <img src="./screenshots/dashboard-dark.png" alt="Trading Suite — dark theme"
+             onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='./screenshots/dashboard-dark.jpg';}else{this.classList.add('failed');}">
+      </a>
+      <div class="hero-shot-fallback" data-ru="Положи &lt;code&gt;dashboard-dark.png&lt;/code&gt;&lt;br&gt;в &lt;code&gt;landing/screenshots/&lt;/code&gt;" data-en="Place &lt;code&gt;dashboard-dark.png&lt;/code&gt;&lt;br&gt;in &lt;code&gt;landing/screenshots/&lt;/code&gt;">
+        Положи <code>dashboard-dark.png</code><br>в <code>landing/screenshots/</code>
+      </div>
+    </div>
+    <div class="hero-shot">
+      <a href="./screenshots/dashboard-light.png" onclick="return _shotOpen(this)" aria-label="Light theme screenshot">
+        <img src="./screenshots/dashboard-light.png" alt="Trading Suite — light theme"
+             onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src='./screenshots/dashboard-light.jpg';}else{this.classList.add('failed');}">
+      </a>
+      <div class="hero-shot-fallback" data-ru="Положи &lt;code&gt;dashboard-light.png&lt;/code&gt;&lt;br&gt;в &lt;code&gt;landing/screenshots/&lt;/code&gt;" data-en="Place &lt;code&gt;dashboard-light.png&lt;/code&gt;&lt;br&gt;in &lt;code&gt;landing/screenshots/&lt;/code&gt;">
+        Положи <code>dashboard-light.png</code><br>в <code>landing/screenshots/</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Download cards -->
+<section id="get" class="tight" style="padding-top:20px;">
+  <div class="section-inner">
+    <div class="section-eyebrow" style="text-align:center;" data-ru="Загрузка" data-en="Download">Загрузка</div>
+    <h2 class="section-title" style="text-align:center;" data-ru="Выбери свою версию" data-en="Choose your version">Выбери свою версию</h2>
+    <p class="section-sub" style="text-align:center;max-width:560px;margin:0 auto 36px;" data-ru="Бесплатно. Без регистрации. Все данные локально на твоём устройстве." data-en="Free. No registration. All data stays local on your device.">Бесплатно. Без регистрации. Все данные локально на твоём устройстве.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1100px;margin:0 auto;">
+
+      <div class="dl-card">
+        <div class="dl-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#fff"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.10001 22C7.79001 22.05 6.80001 20.68 5.96001 19.47C4.25001 17 2.94001 12.45 4.70001 9.39C5.57001 7.87 7.13001 6.91 8.82001 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5M13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z"/></svg>
+        </div>
+        <div class="dl-title">macOS Apple Silicon</div>
+        <div class="dl-version">2.1.167 · DMG · 92 МБ</div>
+        <a href="./downloads/Trading-Suite-2.1.167-arm64.dmg" download class="btn-primary" style="position:relative;z-index:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-ru="Скачать DMG" data-en="Download DMG">Скачать DMG</span>
+        </a>
+        <div class="dl-meta-row">
+          <span><b>macOS 10.12+</b></span>
+          <span><b>arm64</b></span>
+        </div>
+      </div>
+
+      <div class="dl-card">
+        <div class="dl-icon" style="background:linear-gradient(135deg,#0078d4,#00bcf2);">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#fff"><path d="M3,12V6.75L9,5.43V11.91L3,12M20,3V11.75L10,11.9V5.21L20,3M3,13L9,13.09V19.9L3,18.75V13M20,13.25V22L10,20.09V13.1L20,13.25Z"/></svg>
+        </div>
+        <div class="dl-title">Windows x64</div>
+        <div class="dl-version">2.1.167 · ZIP · 102 МБ</div>
+        <a href="./downloads/Trading-Suite-2.1.167-x64.zip" download class="btn-primary" style="position:relative;z-index:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-ru="Скачать ZIP" data-en="Download ZIP">Скачать ZIP</span>
+        </a>
+        <div class="dl-meta-row">
+          <span><b>Windows 10+</b></span>
+          <span><b>x64</b></span>
+        </div>
+      </div>
+
+      <div class="dl-card" style="border:1px solid rgba(124,58,237,0.35);">
+        <div class="dl-icon" style="background:linear-gradient(135deg,#7c3aed,#ec4899);">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="2" fill="none"/><path d="M2 12 L22 12 M12 2 C 7 7, 7 17, 12 22 M12 2 C 17 7, 17 17, 12 22" stroke="#fff" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="dl-title" data-ru="Веб-версия" data-en="Web version">Веб-версия</div>
+        <div class="dl-version" data-ru="Прямо в браузере · без установки" data-en="Right in your browser · no install">Прямо в браузере · без установки</div>
+        <a href="./app/" class="btn-primary" style="position:relative;z-index:1;background:linear-gradient(135deg,#7c3aed,#ec4899);" data-ru="🌐 Открыть" data-en="🌐 Open">
+          🌐 Открыть
+        </a>
+        <div class="dl-meta-row">
+          <span><b>Chrome / Safari / Firefox</b></span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.45;" data-ru="90% функций работают. Forex/stocks (Yahoo) и iCloud sync — только в десктопной версии." data-en="90% of features work. Forex/stocks (Yahoo) and iCloud sync — desktop only.">
+          90% функций работают. Forex/stocks (Yahoo) и iCloud sync — только в десктопной версии.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="section-inner">
+    <div class="section-eyebrow" data-ru="Возможности" data-en="Features">Возможности</div>
+    <h2 class="section-title" data-ru="Всё что нужно трейдеру" data-en="Everything a trader needs">Всё что нужно трейдеру</h2>
+    <p class="section-sub" data-ru="12+ модулей в одном приложении — без переключения между сайтами и таблицами." data-en="12+ modules in one app — no switching between sites and spreadsheets.">12+ модулей в одном приложении — без переключения между сайтами и таблицами.</p>
+
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📓</div>
+        <div class="feature-title" data-ru="Журнал сделок" data-en="Trade Journal">Журнал сделок</div>
+        <div class="feature-desc" data-ru="Лог с эмоциями, соблюдением плана, R:R, аналитика по периодам. AI-разбор любой сделки одной кнопкой." data-en="Log with emotions, plan compliance, R:R, period analytics. AI review of any trade in one click.">Лог с эмоциями, соблюдением плана, R:R, аналитика по периодам. AI-разбор любой сделки одной кнопкой.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎮</div>
+        <div class="feature-title" data-ru="Paper Trading" data-en="Paper Trading">Paper Trading</div>
+        <div class="feature-desc" data-ru="Виртуальный $10K с live-ценами Binance Futures. Multiple TPs с частичным закрытием, SL, цена ликвидации." data-en="Virtual $10K with live Binance Futures prices. Multiple TPs with partial close, SL, liquidation price.">Виртуальный $10K с live-ценами Binance Futures. Multiple TPs с частичным закрытием, SL, цена ликвидации.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title" data-ru="AI-ассистент" data-en="AI Assistant">AI-ассистент</div>
+        <div class="feature-desc" data-ru="Claude Sonnet с доступом к твоим данным. Анализ паттернов, риск-менеджмент, tilt-detection." data-en="Claude Sonnet with access to your data. Pattern analysis, risk management, tilt-detection.">Claude Sonnet с доступом к твоим данным. Анализ паттернов, риск-менеджмент, tilt-detection.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <div class="feature-title" data-ru="Funding + OI" data-en="Funding + OI">Funding + OI</div>
+        <div class="feature-desc" data-ru="Агрегация с Binance, Bybit, OKX. Сигналы перегрева, L/S ratio, drill-down. 8ч / 24ч / 7д / 30д." data-en="Aggregated from Binance, Bybit, OKX. Overheat signals, L/S ratio, drill-down. 8h / 24h / 7d / 30d.">Агрегация с Binance, Bybit, OKX. Сигналы перегрева, L/S ratio, drill-down. 8ч / 24ч / 7д / 30д.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👁</div>
+        <div class="feature-title" data-ru="Watchlist + алерты" data-en="Watchlist + Alerts">Watchlist + алерты</div>
+        <div class="feature-desc" data-ru="Live-цены, ценовые алерты с 4 каналами уведомлений: native push, toast, звук, dock bounce." data-en="Live prices, price alerts with 4 notification channels: native push, toast, sound, dock bounce.">Live-цены, ценовые алерты с 4 каналами уведомлений: native push, toast, звук, dock bounce.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡</div>
+        <div class="feature-title" data-ru="Cooling-off + Pre-check" data-en="Cooling-off + Pre-check">Cooling-off + Pre-check</div>
+        <div class="feature-desc" data-ru="3 убытка подряд → пауза 24ч с warning. 5 обязательных пунктов перед сохранением сделки." data-en="3 losses in a row → 24h pause with warning. 5 mandatory checks before saving a trade.">3 убытка подряд → пауза 24ч с warning. 5 обязательных пунктов перед сохранением сделки.</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:36px">
+      <a href="./features.html" class="btn-secondary" data-ru="Все возможности подробно →" data-en="All features in detail →">Все возможности подробно →</a>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <div class="section-inner">
+    <div class="section-eyebrow" data-ru="Как работает" data-en="How it works">Как работает</div>
+    <h2 class="section-title" data-ru="Локально. Безопасно. Под твой контроль." data-en="Local. Secure. Under your control.">Локально. Безопасно. Под твой контроль.</h2>
+    <p class="section-sub" data-ru="Данные хранятся в твоём localStorage. Никакого сервера — только если ты сам подключишь iCloud или Supabase." data-en="Data is stored in your localStorage. No server — unless you connect iCloud or Supabase yourself.">Данные хранятся в твоём localStorage. Никакого сервера — только если ты сам подключишь iCloud или Supabase.</p>
+
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-title" data-ru="Скачай и установи" data-en="Download &amp; install">Скачай и установи</div>
+        <div class="how-desc" data-ru="macOS: DMG → перетащи в Applications. Windows: ZIP → распакуй. Или открой веб-версию — без установки." data-en="macOS: DMG → drag to Applications. Windows: ZIP → unzip. Or open the web version — no install needed.">macOS: DMG → перетащи в Applications. Windows: ZIP → распакуй. Или открой веб-версию — без установки.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-title" data-ru="Веди трейдинг" data-en="Trade">Веди трейдинг</div>
+        <div class="how-desc" data-ru="Записывай сделки, тестируй стратегии в Paper Trading, следи за рынком." data-en="Log trades, test strategies in Paper Trading, monitor the market.">Записывай сделки, тестируй стратегии в Paper Trading, следи за рынком.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-title" data-ru="Анализируй с AI" data-en="Analyze with AI">Анализируй с AI</div>
+        <div class="how-desc" data-ru="Один клик — AI разберёт сделку, найдёт паттерны, подскажет улучшения." data-en="One click — AI breaks down the trade, finds patterns, suggests improvements.">Один клик — AI разберёт сделку, найдёт паттерны, подскажет улучшения.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner">
+    <div class="section-eyebrow" data-ru="Под капотом" data-en="Under the hood">Под капотом</div>
+    <h2 class="section-title" data-ru="Никаких подписок, никакого облака по умолчанию" data-en="No subscriptions, no cloud by default">Никаких подписок, никакого облака по умолчанию</h2>
+    <p class="section-sub" data-ru="Electron-приложение полностью офлайн. Внешние API — публичные и бесплатные." data-en="Electron app works fully offline. External APIs are public and free.">Electron-приложение полностью офлайн. Внешние API — публичные и бесплатные.</p>
+    <div class="tech-row">
+      <div class="tech-chip"><b>Electron 31</b></div>
+      <div class="tech-chip"><b>Anthropic Claude</b> · <span data-ru="AI-ассистент" data-en="AI assistant">AI-ассистент</span></div>
+      <div class="tech-chip"><b>Binance · Bybit · OKX</b> · funding/OI</div>
+      <div class="tech-chip"><b>CoinGecko</b> · BTC treasuries</div>
+      <div class="tech-chip"><b>RSS</b> · CoinDesk / Cointelegraph</div>
+      <div class="tech-chip"><b>iCloud Drive</b> · <span data-ru="опциональный sync" data-en="optional sync">опциональный sync</span></div>
+      <div class="tech-chip"><b>AES-256-GCM</b> · <span data-ru="шифрование бэкапов" data-en="backup encryption">шифрование бэкапов</span></div>
+      <div class="tech-chip"><b>Supabase</b> · cross-device sync</div>
+    </div>
+  </div>
+</section>
+
+<section id="download" class="how">
+  <div class="section-inner narrow" style="text-align:center">
+    <div class="section-eyebrow" data-ru="Готов начать?" data-en="Ready to start?">Готов начать?</div>
+    <h2 class="section-title" data-ru="Скачай и попробуй прямо сейчас" data-en="Download and try it right now">Скачай и попробуй прямо сейчас</h2>
+    <p class="section-sub" data-ru="Бесплатно. Без регистрации. Данные только у тебя." data-en="Free. No registration. Data stays with you.">Бесплатно. Без регистрации. Данные только у тебя.</p>
+    <a href="./download.html" class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Trading Suite 2.1.167
+    </a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-cols">
+      <div class="footer-brand-col">
+        <div class="footer-brand-line"><img src="./favicon.svg" alt="">Trading Suite</div>
+        <div data-ru="Десктоп-приложение для криптотрейдеров. Журнал, paper trading, AI-аналитика — всё локально на твоём Mac." data-en="Desktop app for crypto traders. Journal, paper trading, AI analytics — all local on your device.">Десктоп-приложение для криптотрейдеров. Журнал, paper trading, AI-аналитика — всё локально на твоём Mac.</div>
+      </div>
+      <div class="footer-col"><h4 data-ru="Продукт" data-en="Product">Продукт</h4><ul>
+        <li><a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a></li>
+        <li><a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a></li>
+        <li><a href="./changelog.html">Changelog</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Документы" data-en="Documents">Документы</h4><ul>
+        <li><a href="./docs.html" data-ru="Документация" data-en="Docs">Документация</a></li>
+        <li><a href="./legal/privacy.html">Privacy</a></li>
+        <li><a href="./legal/terms.html">Terms</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Контакты" data-en="Contacts">Контакты</h4><ul>
+        <li><span style="color:var(--text3)" data-ru="Скоро" data-en="Coming soon">Скоро</span></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom"><div>© 2026 Trading Suite</div><div>v2.1.167</div></div>
+  </div>
+</footer>
+
+<!-- ── Screenshot lightbox ── -->
+<div id="shot-lb" onclick="document.getElementById('shot-lb').classList.remove('open')">
+  <img id="shot-lb-img" alt="Trading Suite screenshot">
+  <button id="shot-lb-close" onclick="document.getElementById('shot-lb').classList.remove('open')" aria-label="Close">×</button>
+</div>
+<script>
+function _shotOpen(el){
+  var img=el.querySelector('img');
+  var src=img?img.src:el.href;
+  document.getElementById('shot-lb-img').src=src;
+  var lb=document.getElementById('shot-lb');
+  lb.style.display='flex';
+  requestAnimationFrame(function(){lb.classList.add('open');});
+  return false;
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') document.getElementById('shot-lb').classList.remove('open');
+});
+document.getElementById('shot-lb').addEventListener('transitionend',function(){
+  if(!this.classList.contains('open')) this.style.display='none';
+});
+</script>
+</body>
+</html>

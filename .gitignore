@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Electron build output
+dist/
+
+# Large download binaries — в GitHub Releases, не в репо
+landing/downloads/
+
+# Папки с историей сессий и старыми билдами
+История*/
+Исторія*/
+
+# Claude session files
+.claude/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

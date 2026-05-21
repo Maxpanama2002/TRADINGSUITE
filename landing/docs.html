@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Документация — Trading Suite</title>
+<meta name="description" content="Документация Trading Suite: как пользоваться, как подключить iCloud и Supabase, как работают алерты и AI.">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="stylesheet" href="./assets/site.css?v=2.1.167">
+<script src="./assets/site.js?v=2.1.167"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="./index.html" class="brand"><img src="./favicon.svg" alt="">Trading Suite</a>
+    <div class="nav-links">
+      <a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a>
+      <a href="./docs.html" class="active" data-ru="Документация" data-en="Docs">Документация</a>
+      <a href="./changelog.html">Changelog</a>
+      <a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" aria-label="Switch language" type="button">RU</button>
+      <button class="theme-toggle" aria-label="Сменить тему" type="button"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+      <a href="./download.html" class="nav-cta" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <h1 data-ru="Документация" data-en="Documentation">Документация</h1>
+  <p class="hero-sub" data-ru="Как пользоваться. Как настраивать. Что куда уходит." data-en="How to use. How to configure. Where everything goes.">Как пользоваться. Как настраивать. Что куда уходит.</p>
+</section>
+
+<section class="tight">
+  <div class="section-inner narrow doc-content">
+
+    <div class="doc-toc">
+      <div class="doc-toc-title" data-ru="Содержание" data-en="Contents">Содержание</div>
+      <ul>
+        <li><a href="#start" data-ru="1. Первый запуск" data-en="1. First launch">1. Первый запуск</a></li>
+        <li><a href="#trade" data-ru="2. Записать первую сделку" data-en="2. Log your first trade">2. Записать первую сделку</a></li>
+        <li><a href="#paper" data-ru="3. Paper Trading" data-en="3. Paper Trading">3. Paper Trading</a></li>
+        <li><a href="#ai" data-ru="4. AI-ассистент" data-en="4. AI Assistant">4. AI-ассистент</a></li>
+        <li><a href="#funding" data-ru="5. Funding + OI" data-en="5. Funding + OI">5. Funding + OI</a></li>
+        <li><a href="#alerts" data-ru="6. Алерты Watchlist" data-en="6. Watchlist Alerts">6. Алерты Watchlist</a></li>
+        <li><a href="#icloud" data-ru="7. iCloud sync" data-en="7. iCloud sync">7. iCloud sync</a></li>
+        <li><a href="#supabase" data-ru="8. Supabase (cross-device sync)" data-en="8. Supabase (cross-device sync)">8. Supabase (cross-device sync)</a></li>
+        <li><a href="#backup" data-ru="9. Бэкап и восстановление" data-en="9. Backup &amp; restore">9. Бэкап и восстановление</a></li>
+        <li><a href="#safety" data-ru="10. Cooling-off и pre-check" data-en="10. Cooling-off &amp; pre-check">10. Cooling-off и pre-check</a></li>
+      </ul>
+    </div>
+
+    <h2 id="start" data-ru="1. Первый запуск" data-en="1. First launch">1. Первый запуск</h2>
+    <p data-ru="После установки и запуска ты попадёшь на главный экран — Обзор." data-en="After installation and launch you land on the main screen — Overview.">После установки и запуска ты попадёшь на главный экран — Обзор.</p>
+    <p data-ru="Что увидишь:" data-en="What you'll see:">Что увидишь:</p>
+    <ul>
+      <li data-ru="&lt;b&gt;Сайдбар слева&lt;/b&gt; — разделы: Обзор, Портфель, Торговля, Анализ, Планирование, Дополнительно" data-en="&lt;b&gt;Left sidebar&lt;/b&gt; — sections: Overview, Portfolio, Trading, Analysis, Planning, More"><b>Сайдбар слева</b> — разделы: Обзор, Портфель, Торговля, Анализ, Планирование, Дополнительно</li>
+      <li data-ru="&lt;b&gt;Главный экран (Обзор)&lt;/b&gt; — настраиваемая сетка из 16 виджетов" data-en="&lt;b&gt;Main screen (Overview)&lt;/b&gt; — customizable grid of 16 widgets"><b>Главный экран (Обзор)</b> — настраиваемая сетка из 16 виджетов</li>
+      <li data-ru="&lt;b&gt;Профиль внизу слева&lt;/b&gt; — клик ведёт в Личный кабинет" data-en="&lt;b&gt;Profile bottom-left&lt;/b&gt; — click leads to Personal Cabinet"><b>Профиль внизу слева</b> — клик ведёт в Личный кабинет</li>
+      <li data-ru="&lt;b&gt;Topbar&lt;/b&gt; — заголовок страницы + кнопка «+ Сделка»" data-en="&lt;b&gt;Topbar&lt;/b&gt; — page title + «+ Trade» button"><b>Topbar</b> — заголовок страницы + кнопка «+ Сделка»</li>
+    </ul>
+    <blockquote data-ru="Совет: первым делом зайди в Личный кабинет → Профиль и установи свой торговый стиль (scalper / daytrader / swing / positional / investor). Это влияет на советы AI." data-en="Tip: first go to Personal Cabinet → Profile and set your trading style (scalper / daytrader / swing / positional / investor). This affects AI advice.">Совет: первым делом зайди в Личный кабинет → Профиль и установи свой торговый стиль (scalper / daytrader / swing / positional / investor). Это влияет на советы AI.</blockquote>
+
+    <h2 id="trade" data-ru="2. Записать первую сделку" data-en="2. Log your first trade">2. Записать первую сделку</h2>
+    <p data-ru="Клик «+ Сделка» в topbar или «+ Новая сделка» в Журнале. Откроется страница записи." data-en="Click «+ Trade» in the topbar or «+ New trade» in the Journal. The entry page will open.">Клик «+ Сделка» в topbar или «+ Новая сделка» в Журнале. Откроется страница записи.</p>
+    <p data-ru="Заполни:" data-en="Fill in:">Заполни:</p>
+    <ol>
+      <li data-ru="&lt;b&gt;Дата и время&lt;/b&gt; — авто-сейчас, можно менять" data-en="&lt;b&gt;Date and time&lt;/b&gt; — auto-now, editable"><b>Дата и время</b> — авто-сейчас, можно менять</li>
+      <li data-ru="&lt;b&gt;Инструмент&lt;/b&gt; — например BTC/USDT" data-en="&lt;b&gt;Instrument&lt;/b&gt; — e.g. BTC/USDT"><b>Инструмент</b> — например <code>BTC/USDT</code></li>
+      <li data-ru="&lt;b&gt;Направление&lt;/b&gt; — Long или Short" data-en="&lt;b&gt;Direction&lt;/b&gt; — Long or Short"><b>Направление</b> — Long или Short</li>
+      <li data-ru="&lt;b&gt;Плечо&lt;/b&gt; (default 1), Margin (Isolated/Cross), MMR — для расчёта ликвидации" data-en="&lt;b&gt;Leverage&lt;/b&gt; (default 1), Margin (Isolated/Cross), MMR — for liquidation calculation"><b>Плечо</b> (default 1), <b>Margin</b> (Isolated/Cross), <b>MMR</b> — для расчёта ликвидации</li>
+      <li data-ru="&lt;b&gt;Размер&lt;/b&gt; в qty или USDT · Цена входа · Стоп-лосс" data-en="&lt;b&gt;Size&lt;/b&gt; in qty or USDT · Entry price · Stop-loss"><b>Размер</b> в qty или USDT (синхронизированы) · <b>Цена входа</b> · <b>Стоп-лосс</b></li>
+      <li data-ru="&lt;b&gt;Тейк-профиты&lt;/b&gt; — кликни «+ TP» для добавления, можно до 5 с %" data-en="&lt;b&gt;Take-profits&lt;/b&gt; — click «+ TP» to add, up to 5 with %"><b>Тейк-профиты</b> — кликни «+ TP» для добавления, можно до 5 штук с %</li>
+      <li data-ru="&lt;b&gt;Эмоция перед входом&lt;/b&gt; и Соблюдение плана" data-en="&lt;b&gt;Pre-entry emotion&lt;/b&gt; and plan compliance"><b>Эмоция перед входом</b> и <b>Соблюдение плана</b></li>
+    </ol>
+    <p data-ru="Под каждым SL и TP отображается inline P&amp;L — увидишь сразу убыток/прибыль и ROI от маржи." data-en="Under each SL and TP you'll see inline P&amp;L — instant loss/profit and ROI on margin.">Под каждым SL и TP отображается inline P&L — увидишь сразу убыток/прибыль и ROI от маржи. Внизу — сводка позиции с ценой ликвидации.</p>
+
+    <h2 id="paper" data-ru="3. Paper Trading" data-en="3. Paper Trading">3. Paper Trading</h2>
+    <p data-ru="Сайдбар → Торговля → Paper Trading. У тебя $10,000 виртуальных." data-en="Sidebar → Trading → Paper Trading. You start with $10,000 virtual.">Сайдбар → Торговля → Paper Trading. У тебя $10,000 виртуальных.</p>
+    <p data-ru="Клик «+ Открыть позицию». Модалка работает как Futures-калькулятор:" data-en="Click «+ Open position». The modal works like a Futures calculator:">Клик «+ Открыть позицию». Модалка работает как Futures-калькулятор:</p>
+    <ul>
+      <li data-ru="Long / Short toggle (зелёный/красный)" data-en="Long / Short toggle (green/red)">Long / Short toggle (зелёный/красный)</li>
+      <li data-ru="Isolated / Cross margin" data-en="Isolated / Cross margin">Isolated / Cross margin</li>
+      <li data-ru="Символ + Плечо + Цена входа + Размер (qty или USDT)" data-en="Symbol + Leverage + Entry price + Size (qty or USDT)">Символ + Плечо + Цена входа + Размер (qty или USDT)</li>
+      <li data-ru="Stop-Loss с inline P&amp;L" data-en="Stop-Loss with inline P&amp;L">Stop-Loss с inline P&L</li>
+      <li data-ru="Multiple Take-Profits с распределением % (auto-balance)" data-en="Multiple Take-Profits with % distribution (auto-balance)">Multiple Take-Profits с распределением % (auto-balance)</li>
+    </ul>
+    <p data-ru="При пересечении SL / TP / Liquidation позиция закрывается автоматически с правильной exit-ценой." data-en="On SL / TP / Liquidation cross the position closes automatically at the correct exit price.">При пересечении SL / TP / Liquidation позиция закрывается автоматически с правильной exit-ценой.</p>
+
+    <h2 id="ai" data-ru="4. AI-ассистент" data-en="4. AI Assistant">4. AI-ассистент</h2>
+    <p data-ru="Сайдбар → AI-ассистент. Перед первым запросом — выбери контекст." data-en="Sidebar → AI assistant. Before the first query — select context.">Сайдбар → AI-ассистент. Перед первым запросом — выбери <b>контекст</b>:</p>
+    <ol>
+      <li data-ru="Клик «Контекст» в шапке чата" data-en="Click «Context» in the chat header">Клик «Контекст» в шапке чата</li>
+      <li data-ru="Отметь разделы которые AI увидит: журнал, дневник, портфель, watchlist, психо, funding+OI, стратегия, цели, идеи, статистика" data-en="Check the sections AI will see: journal, diary, portfolio, watchlist, psych, funding+OI, strategy, goals, ideas, statistics">Отметь разделы которые AI увидит: журнал, дневник, портфель, watchlist, психо, funding+OI, стратегия, цели, идеи, статистика и т.д.</li>
+      <li data-ru="Закрой панель и спрашивай" data-en="Close the panel and ask">Закрой панель</li>
+      <li data-ru="Пресеты меняют тон ответов: Наставник / Коуч / Аналитик / Психолог / Свой" data-en="Presets change the tone: Mentor / Coach / Analyst / Psychologist / Custom">Спрашивай</li>
+    </ol>
+    <p data-ru="Пресеты «Наставник / Коуч / Аналитик / Психолог / Свой» меняют тон ответов." data-en="Presets «Mentor / Coach / Analyst / Psychologist / Custom» change the response tone.">Пресеты <b>«Наставник / Коуч / Аналитик / Психолог / Свой»</b> меняют тон ответов.</p>
+    <blockquote data-ru="Master-выключатель в Личном кабинете полностью отрубает контекст — ни один из твоих разделов не пойдёт в AI." data-en="The master switch in Personal Cabinet cuts off all context — none of your data goes to AI.">Master-выключатель в Личном кабинете полностью отрубает контекст — ни один из твоих разделов не пойдёт в AI. Используй когда хочешь спросить что-то «вообще».</blockquote>
+
+    <h2 id="funding" data-ru="5. Funding + OI" data-en="5. Funding + OI">5. Funding + OI</h2>
+    <p data-ru="Сайдбар → Анализ → Funding+OI. Топ-30 USDT-perp пар с агрегацией по 3 биржам." data-en="Sidebar → Analysis → Funding+OI. Top-30 USDT-perp pairs aggregated from 3 exchanges.">Сайдбар → Анализ → Funding+OI. Топ-30 USDT-perp пар с агрегацией по 3 биржам.</p>
+    <p data-ru="Что в таблице: цена, OI (total), Δ OI 24ч, funding с цветовой градацией, L/S ratio, сигнал, объём 24ч." data-en="What's in the table: price, OI (total), Δ OI 24h, funding with color gradient, L/S ratio, signal, 24h volume.">Что в таблице:</p>
+    <ul>
+      <li data-ru="&lt;b&gt;Цена&lt;/b&gt; + 24ч изменение" data-en="&lt;b&gt;Price&lt;/b&gt; + 24h change"><b>Цена</b> + 24ч изменение</li>
+      <li data-ru="&lt;b&gt;OI&lt;/b&gt; total (Binance + Bybit + OKX)" data-en="&lt;b&gt;OI&lt;/b&gt; total (Binance + Bybit + OKX)"><b>OI</b> total (Binance + Bybit + OKX)</li>
+      <li data-ru="&lt;b&gt;Funding&lt;/b&gt; с цветовой градацией CoinGlass-style" data-en="&lt;b&gt;Funding&lt;/b&gt; with CoinGlass-style color gradient"><b>Funding</b> с цветовой градацией CoinGlass-style</li>
+      <li data-ru="&lt;b&gt;L/S ratio&lt;/b&gt; — % лонг/шорт аккаунтов" data-en="&lt;b&gt;L/S ratio&lt;/b&gt; — % long/short accounts"><b>L/S ratio</b> — % лонг/шорт аккаунтов с двухцветной полоской</li>
+      <li data-ru="&lt;b&gt;Сигнал&lt;/b&gt; — алгоритм классифицирует ситуацию (overheat, squeeze, anomaly...)" data-en="&lt;b&gt;Signal&lt;/b&gt; — algorithm classifies the situation (overheat, squeeze, anomaly...)"><b>Сигнал</b> — алгоритм классифицирует ситуацию (overheat, squeeze, anomaly...)</li>
+    </ul>
+    <p data-ru="Клик по строке — drill-down с разбивкой OI/funding/volume по каждой бирже. Кнопки 8Ч / 24Ч / 7Д / 30Д меняют тайминг." data-en="Click a row — drill-down with OI/funding/volume breakdown per exchange. Buttons 8H / 24H / 7D / 30D change the time frame.">Клик по строке — <b>drill-down</b> с разбивкой OI/funding/volume по каждой бирже отдельно.</p>
+
+    <h2 id="alerts" data-ru="6. Алерты Watchlist" data-en="6. Watchlist Alerts">6. Алерты Watchlist</h2>
+    <p data-ru="Сайдбар → Анализ → Watchlist. Добавь монеты, введи цену алерта и нажми Enter." data-en="Sidebar → Analysis → Watchlist. Add coins, enter alert price and press Enter.">Сайдбар → Анализ → Watchlist. Добавь монеты через input «+ символ».</p>
+    <p data-ru="При пересечении алерта срабатывают:" data-en="On alert cross the following fire:">При <b>пересечении</b> алерта (не «выше» а именно cross):</p>
+    <ul>
+      <li data-ru="Native push-уведомление" data-en="Native push notification">Native macOS push (если permission)</li>
+      <li data-ru="In-app toast — большая плашка по центру экрана" data-en="In-app toast — large card in the center of the screen">In-app toast — большая плашка по центру экрана</li>
+      <li data-ru="Звук — двойной beep" data-en="Sound — double beep">Звук — двойной beep</li>
+      <li data-ru="Dock bounce — иконка прыгает" data-en="Dock bounce — icon bounces">Dock bounce — иконка прыгает</li>
+    </ul>
+    <p data-ru="Алерты работают в фоне даже если ты на другой странице." data-en="Alerts fire in the background even if you're on another page.">Алерты работают в фоне даже если ты на другой странице.</p>
+
+    <h2 id="icloud" data-ru="7. iCloud sync" data-en="7. iCloud sync">7. iCloud sync</h2>
+    <p data-ru="Личный кабинет → Быстрые настройки → ☁️ Бэкап и iCloud." data-en="Personal Cabinet → Quick settings → ☁️ Backup and iCloud.">Личный кабинет → Быстрые настройки → ☁️ Бэкап и iCloud.</p>
+    <ul>
+      <li data-ru="&lt;b&gt;☁️↑ Сохранить в iCloud&lt;/b&gt; — пушит данные в iCloud Drive (папка Trading Suite/sync.json)" data-en="&lt;b&gt;☁️↑ Save to iCloud&lt;/b&gt; — pushes data to iCloud Drive (Trading Suite/sync.json folder)"><b>☁️↑ Сохранить в iCloud</b> — пушит все данные в iCloud Drive</li>
+      <li data-ru="&lt;b&gt;☁️↓ Загрузить из iCloud&lt;/b&gt; — забирает с iCloud, заменяет локальные" data-en="&lt;b&gt;☁️↓ Load from iCloud&lt;/b&gt; — fetches from iCloud, replaces local data"><b>☁️↓ Загрузить из iCloud</b> — забирает с iCloud, заменяет локальные</li>
+      <li data-ru="&lt;b&gt;Авто-синхронизация&lt;/b&gt; — сохраняет каждые 60 секунд" data-en="&lt;b&gt;Auto-sync&lt;/b&gt; — saves every 60 seconds"><b>Авто-синхронизация</b> — сохраняет каждые 60 секунд</li>
+    </ul>
+    <p data-ru="Шифрование AES-256-GCM с PBKDF2 (200K итераций). Ключ ты задаёшь сам — без пароля файл не открывается." data-en="AES-256-GCM encryption with PBKDF2 (200K iterations). You set the key — without the password the file cannot be opened.">Шифрование AES-256-GCM с PBKDF2 (200K итераций). Ключ ты задаёшь сам — пароль хранится в keychain. Без пароля файл расшифровать нельзя.</p>
+
+    <h2 id="supabase" data-ru="8. Supabase (cross-device sync)" data-en="8. Supabase (cross-device sync)">8. Supabase (cross-device sync)</h2>
+    <p data-ru="Альтернатива iCloud — работает между Mac, Windows, web-версией. Краткая инструкция:" data-en="Alternative to iCloud — works between Mac, Windows, and the web version. Quick setup:">Альтернатива iCloud — работает между Mac, Windows, web-версией. Краткая версия:</p>
+    <ol>
+      <li data-ru="Создай проект на supabase.com (free tier)" data-en="Create a project at supabase.com (free tier)">Создай проект на <a href="https://supabase.com" rel="noopener" target="_blank">supabase.com</a> (free tier)</li>
+      <li data-ru="SQL Editor → запусти db/supabase-schema.sql" data-en="SQL Editor → run db/supabase-schema.sql">SQL Editor → запусти содержимое <code>db/supabase-schema.sql</code></li>
+      <li data-ru="Project Settings → API → скопируй URL и anon key" data-en="Project Settings → API → copy URL and anon key">Project Settings → API → скопируй URL и anon key</li>
+      <li data-ru="В Trading Suite: Личный кабинет → Быстрые настройки → 🌥 Облако → вставь URL + key → Подключить" data-en="In Trading Suite: Personal Cabinet → Quick settings → 🌥 Cloud → paste URL + key → Connect">В Trading Suite: Личный кабинет → Быстрые настройки → 🌥 Облако</li>
+      <li data-ru="Email + пароль → Регистрация → Войти" data-en="Email + password → Register → Sign in">Вставь URL + anon key → Подключить</li>
+      <li data-ru="На главном устройстве: ☁️↑ Загрузить всё в облако. На втором: ☁️↓ Скачать из облака." data-en="On primary device: ☁️↑ Upload all to cloud. On secondary: ☁️↓ Download from cloud.">На главном устройстве: <b>☁️↑ Загрузить всё в облако</b></li>
+    </ol>
+
+    <h2 id="backup" data-ru="9. Бэкап и восстановление" data-en="9. Backup &amp; restore">9. Бэкап и восстановление</h2>
+    <p data-ru="Кроме iCloud и Supabase, есть локальный экспорт:" data-en="Apart from iCloud and Supabase, there is local export:">Кроме iCloud и Supabase, есть локальный экспорт:</p>
+    <ul>
+      <li data-ru="&lt;b&gt;↓ Резервная копия&lt;/b&gt; — сохраняет зашифрованный JSON-файл" data-en="&lt;b&gt;↓ Backup&lt;/b&gt; — saves an encrypted JSON file"><b>↓ Резервная копия</b> — сохраняет зашифрованный JSON-файл</li>
+      <li data-ru="&lt;b&gt;↑ Восстановить&lt;/b&gt; — выбираешь файл, восстанавливает данные" data-en="&lt;b&gt;↑ Restore&lt;/b&gt; — choose a file, restores your data"><b>↑ Восстановить</b> — выбираешь файл, восстанавливает данные</li>
+    </ul>
+    <p data-ru="Файл бэкапа шифруется AES-256-GCM. Не теряй пароль — без него файл не открывается." data-en="Backup file is encrypted with AES-256-GCM. Don't lose the password — without it the file cannot be opened.">Файл бэкапа шифруется AES-256-GCM. Не теряй пароль — без него файл не открывается.</p>
+
+    <h2 id="safety" data-ru="10. Cooling-off и pre-check" data-en="10. Cooling-off &amp; pre-check">10. Cooling-off и pre-check</h2>
+    <p data-ru="Включаются в Личном кабинете → Правила самоконтроля." data-en="Enabled in Personal Cabinet → Self-control rules.">Включаются в Личном кабинете → Правила самоконтроля.</p>
+    <p><b data-ru="Cooling-off / Tilt-detection:" data-en="Cooling-off / Tilt-detection:">Cooling-off / Tilt-detection:</b></p>
+    <ul>
+      <li data-ru="3 убытка подряд + менее 24ч → попытка открыть новую сделку → модалка-предупреждение" data-en="3 losses in a row + less than 24h → attempt to open new trade → warning modal">3 убытка подряд + менее 24ч с последнего → попытка открыть новую сделку → модалка-предупреждение</li>
+      <li data-ru="Юзер может подтвердить «понимаю» (override на сутки) или взять паузу" data-en="User can confirm «I understand» (24h override) or take a break">Юзер может «понимаю, всё равно» (override на сутки) или взять паузу</li>
+    </ul>
+    <p><b data-ru="Pre-trade checklist:" data-en="Pre-trade checklist:">Pre-trade checklist:</b></p>
+    <ul>
+      <li data-ru="5 обязательных пунктов: Stop-Loss установлен, размер ≤2%, согласовано с планом, не на эмоциях, R:R ≥2:1" data-en="5 mandatory points: Stop-Loss set, size ≤2%, aligned with plan, not emotional, R:R ≥2:1">5 обязательных пунктов: Stop-Loss установлен, размер ≤2%, согласовано с планом, не на эмоциях, R:R ≥2:1</li>
+      <li data-ru="Кнопка «Сохранить» disabled пока не все отмечены. Сбрасывается после каждого сохранения." data-en="Save button disabled until all are checked. Resets after each save.">Кнопка «Сохранить» disabled пока не все отмечены</li>
+    </ul>
+    <p><b data-ru="Tilt Detector (AI):" data-en="Tilt Detector (AI):">Tilt Detector (AI):</b></p>
+    <ul>
+      <li data-ru="В Личном кабинете — кнопка «Проверить» в секции «🧠 AI-проверка состояния»" data-en="In Personal Cabinet — «Check» button in the «🧠 AI state check» section">В Личном кабинете — кнопка «Проверить» в секции «🧠 AI-проверка состояния»</li>
+      <li data-ru="AI читает последние 5 записей дневника. Возвращает: статус (спокоен/повышено/тильт), сигналы, рекомендацию." data-en="AI reads the last 5 diary entries. Returns: status (calm/elevated/tilt), signals, recommendation.">AI читает последние 5 записей дневника</li>
+    </ul>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-cols">
+      <div class="footer-brand-col">
+        <div class="footer-brand-line"><img src="./favicon.svg" alt="">Trading Suite</div>
+        <div data-ru="Десктоп-приложение для криптотрейдеров." data-en="Desktop app for crypto traders.">Десктоп-приложение для криптотрейдеров.</div>
+      </div>
+      <div class="footer-col"><h4 data-ru="Продукт" data-en="Product">Продукт</h4><ul>
+        <li><a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a></li>
+        <li><a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a></li>
+        <li><a href="./changelog.html">Changelog</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Документы" data-en="Documents">Документы</h4><ul>
+        <li><a href="./docs.html" data-ru="Документация" data-en="Docs">Документация</a></li>
+        <li><a href="./legal/privacy.html">Privacy</a></li>
+        <li><a href="./legal/terms.html">Terms</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Контакты" data-en="Contacts">Контакты</h4><ul>
+        <li><span style="color:var(--text3)" data-ru="Скоро" data-en="Coming soon">Скоро</span></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom"><div>© 2026 Trading Suite</div><div>v2.1.167</div></div>
+  </div>
+</footer>
+
+</body>
+</html>

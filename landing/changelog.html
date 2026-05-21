@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — Trading Suite</title>
+<meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="stylesheet" href="./assets/site.css?v=2.1.167">
+<script src="./assets/site.js?v=2.1.167"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="./index.html" class="brand"><img src="./favicon.svg" alt="">Trading Suite</a>
+    <div class="nav-links">
+      <a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a>
+      <a href="./docs.html" data-ru="Документация" data-en="Docs">Документация</a>
+      <a href="./changelog.html" class="active">Changelog</a>
+      <a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" aria-label="Switch language" type="button">RU</button>
+      <button class="theme-toggle" aria-label="Сменить тему" type="button"><span class="icon-moon">🌙</span><span class="icon-sun">☀️</span></button>
+      <a href="./download.html" class="nav-cta" data-ru="Скачать" data-en="Download">Скачать</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <h1>Changelog</h1>
+  <p class="hero-sub" data-ru="История версий — что добавлено, что поправлено." data-en="Version history — what was added, what was fixed.">История версий — что добавлено, что поправлено.</p>
+</section>
+
+<section class="tight">
+  <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Pre-launch polish — большой блок улучшений.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>🎓 Onboarding-туториал</b> — 7-шаговый тур при первом запуске с переключателем RU/EN, deep-link на каждую фичу. После клика на кнопку «Открыть …» вместо закрытия показывается плавающая пилюля «Продолжить туториал →»; resume сохраняется между запусками. Кнопка перезапуска в Профиле → Бэкап.</li>
+          <li><b>Темная тема — контраст</b> — <code>--text3</code> поднят с <code>#55556a</code> (3.5:1, ниже WCAG AA) до <code>#8484a8</code> (~6:1). Таймштампы, placeholders, «No entries» — комфортно читаются.</li>
+          <li><b>Дневник: вкладка «Все записи»</b> + исправление даты, которая выглядела «скукоженной». «+ Новая запись» и клик по записи автоматически переключают на форму.</li>
+          <li><b>EN-перевод</b> — fixes для «В архиве no trades», «Take profit — необяз.», «Введи параметры», виджеты «Эконом. календарь / Крипто новости» теперь перерисовываются при смене языка.</li>
+          <li><b>Страница «Стратегия»</b> — fix sticky <code>.st-editing</code> класса (после Сохранить × и + кнопки оставались видимыми). Защита от потери русских текстов при сохранении в EN-режиме через <code>__origText</code> и auto-heal при загрузке.</li>
+          <li><b>Persistence audit</b> — починены: лічильник «Макс. сделок» в Торговом плане, теги инструментов/запрещённых, цель/заметки (autosave). Goal-chart auto-init теперь сразу пишет в <code>gc_v1</code>, delete-неделя сохраняет полный стейт. Fix AI ctx key mismatch (<code>psy_v1</code> → <code>psycho_v1</code>).</li>
+          <li><b>Дата в Ежедневнике</b> — теперь по центру и во всю ширину ячейки.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Крупный блок улучшений.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Spot / Futures</b> — переключатель рынка в Paper Trading, «Новой сделке» и фильтр по рынку в журнале и аналитике.</li>
+          <li><b>Long / Short — цветные кнопки</b> — градиентные зелёный/красный/фиолетовый по образцу Paper Trading.</li>
+          <li><b>Скрыт бренд AI</b> — в дропдауне модели «Claude» заменён на «Стандарт / Премиум / Быстрый».</li>
+          <li><b>Виджеты</b> — исправлена асимметрия иконок и сетки дашборда (все ряды repeat(3,1fr)).</li>
+          <li><b>Страница «Стратегия»</b> — crash-fix при сохранении: безопасный клон contenteditable через <code>_stExtractText()</code>, null-guard в <code>stSetTab</code> и <code>stStartEdit</code>.</li>
+          <li><b>Лендинг</b> — 7-страничный статический сайт: главная, возможности, документация, changelog, скачать, privacy, terms. Тёмная/светлая тема, скриншоты.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>CloudSync поверх Supabase REST API.</b> Полная реализация auth (signIn/signUp/signOut) и data (upload/download/list/remove) через нативный fetch — без external SDK. Авто-refresh access_token, авто-восстановление сессии. UI «🌥 Облако» в Личном кабинете: подключение проекта, регистрация, Sync Up / Sync Down.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Расширение «Новая сделка»</b> до уровня Paper Trading. Добавлены: Плечо · Margin mode (Isolated/Cross) · MMR. Размер qty + Размер USDT (синхронизация двунаправленная). Inline P&L под SL и под каждым TP с ROI. Сводка позиции внизу: Notional, Маржа, Цена ликвидации, R:R взвешенный, Risk, Profit. Warnings при SL за ликвидацией и при превышении допустимого риска. Backward-compat для старых записей в tj_v3.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Размер в USDT</b> в модалке Paper Trading. Два связанных поля qty ↔ USDT. При изменении entry — пересчитывается то поле, которое не редактировали последним.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Удаление сделок из истории</b> Paper Trading. Кнопка × в каждой строке (баланс не меняется). Массовая очистка через кнопку «🗑 История». Stable ID для legacy записей.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Inline P&L</b> в Paper Trading модалках open/edit. Под SL — убыток если SL (или locked profit), под каждым TP — профит и ROI. Fix: % колонка не наезжает на × кнопку. Детальный toast после save с актуальными SL и TPs.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-20</span>
+        <span class="cl-tag fix">fix</span>
+        <span class="cl-tag sec">security</span>
+      </div>
+      <div class="cl-body">
+        <b>End-of-day audit + EN polish.</b> Закрыты 18 RU-строк в Paper Trading динамическом контенте (модалки, toast'ы, alert'ы, KPI subs). Data-quality fix: _ppClosePosition теперь пишет p.tps вместо устаревшего p.tp. Security: 0 plaintext keys, CSP cleanup (убран unused mempool.space).
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>AI ctx Funding+OI: pre-fetch + fallback.</b> При включении derivatives в контексте AI снапшот авто-обновляется если старше 5 мин. Если данных нет — AI получает инструкцию подождать или открыть раздел.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>AI context expansion + EN polish.</b> Добавлены Funding+OI и Statistics в AI ctx, упорядочено по сайдбару. EN-переводы Paper Trading + Futures Calc + Strategy defaults (~70 строк LANG_STRINGS).
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>BTC Treasuries widget</b> через CoinGecko public_treasury/bitcoin. Показывает топ-5 публичных холдеров BTC (Strategy/MSTR, XXI, etc.). Auto-refresh раз в час.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 / 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Crypto News widget</b> через rss2json (CoinDesk + Cointelegraph RSS). Кэш 15 мин. Виджет добавлен в picker модалку дашборда.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Paper Trading 2.0.</b> Перенос в сайдбаре под Журнал. Кнопка ↻ Обновить. Futures-Calc-style модалка открытия: Long/Short, Isolated/Cross, MMR, цена ликвидации, multiple TPs. Edit SL/TP после открытия. Структура позиции расширена (initialSize + tps массив с hit-флагом).
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>4-канальные алерты Watchlist.</b> Native push + in-app toast + beep + dock bounce. Cooling-off mode (3 убытка → пауза 24ч). Tilt Detector (AI читает дневник). Pre-trade checklist (5 пунктов перед сохранением).
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Futures Calc — реальный калькулятор.</b> Добавлены Margin mode, Notional, MMR, цена ликвидации. Warning при SL за ликвидацией.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag sec">security</span>
+      </div>
+      <div class="cl-body">
+        <b>Аудит безопасности + cloud-sync prep.</b> Найдена и устранена утечка plaintext Anthropic key в fallback fetch. CSP расширен для Supabase и Stripe. Создана SQL-схема. Подготовлены CloudSync stubs.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Funding + OI Dashboard.</b> Агрегация с Binance, Bybit, OKX. Drill-down по биржам. Анализ сигналов (8 сценариев). CoinGlass-style цветовая палитра. L/S ratio в %. Тайминги 8ч/24ч/7д/30д. 85+ иконок монет с трёхуровневым fallback.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Личный кабинет.</b> Профиль (аватар, имя, био, стиль трейдинга), Trader Mirror, Цели (long/year/month), Activity Heatmap 365 дней, 6 правил самоконтроля, 18 ачивок, Extended AI (5 пресетов, выбор модели, шаблоны вопросов).
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167 — 2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag sec">security</span>
+      </div>
+      <div class="cl-body">
+        <b>Security hardening.</b> Anthropic key обфусцирован XOR. AES-256-GCM шифрование iCloud и export. Prompt injection защита через теги &lt;user_data&gt;. Master opt-out AI. SRI для Chart.js (sha384). DevTools скрыт из меню.
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.1.167</span>
+        <span class="cl-date">2026-05-19</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Кастомные виджеты на дашборде.</b> 16 виджетов на выбор: journal, stats, myday, goalchart, weekplan, ideas, diary, watchlist, psycho, strategy, futures, options, riskmanager, paper, news, derivatives, treasury.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-cols">
+      <div class="footer-brand-col">
+        <div class="footer-brand-line"><img src="./favicon.svg" alt="">Trading Suite</div>
+        <div data-ru="Десктоп-приложение для криптотрейдеров." data-en="Desktop app for crypto traders.">Десктоп-приложение для криптотрейдеров.</div>
+      </div>
+      <div class="footer-col"><h4 data-ru="Продукт" data-en="Product">Продукт</h4><ul>
+        <li><a href="./features.html" data-ru="Возможности" data-en="Features">Возможности</a></li>
+        <li><a href="./download.html" data-ru="Скачать" data-en="Download">Скачать</a></li>
+        <li><a href="./changelog.html">Changelog</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Документы" data-en="Documents">Документы</h4><ul>
+        <li><a href="./docs.html" data-ru="Документация" data-en="Docs">Документация</a></li>
+        <li><a href="./legal/privacy.html">Privacy</a></li>
+        <li><a href="./legal/terms.html">Terms</a></li>
+      </ul></div>
+      <div class="footer-col"><h4 data-ru="Контакты" data-en="Contacts">Контакты</h4><ul>
+        <li><span style="color:var(--text3)" data-ru="Скоро" data-en="Coming soon">Скоро</span></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom"><div>© 2026 Trading Suite</div><div>v2.1.167</div></div>
+  </div>
+</footer>
+
+</body>
+</html>
