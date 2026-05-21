@@ -2803,6 +2803,65 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-guest-sep{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--text3);font-size:11px;}
 .ag-guest-sep::before,.ag-guest-sep::after{content:'';flex:1;height:1px;background:var(--border);}
 
+/* ══ ADMIN PANEL ═════════════════════════════════════════════════════════ */
+.adm-page{padding:24px 28px;max-width:1400px;margin:0 auto;}
+.adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap;}
+.adm-title{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px;display:flex;align-items:center;gap:8px;}
+.adm-title-badge{font-size:10px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;padding:3px 8px;border-radius:6px;letter-spacing:.05em;}
+.adm-actions{display:flex;gap:8px;align-items:center;}
+.adm-refresh{background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
+.adm-refresh:hover{background:var(--border);color:var(--text);}
+
+/* KPI cards row */
+.adm-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
+.adm-kpi{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:all .15s;}
+.adm-kpi:hover{border-color:var(--border2);transform:translateY(-1px);}
+.adm-kpi-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.adm-kpi-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1;}
+.adm-kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.adm-kpi-up{color:#22c55e;}
+.adm-kpi-pro{background:linear-gradient(135deg,rgba(124,58,237,0.10),rgba(236,72,153,0.06));border-color:rgba(124,58,237,0.25);}
+.adm-kpi-pro .adm-kpi-val{background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* Tabs */
+.adm-tabs{display:flex;gap:4px;background:var(--card-bg);padding:4px;border-radius:11px;margin-bottom:14px;width:fit-content;}
+.adm-tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;transition:all .15s;}
+.adm-tab.active{background:var(--card2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+/* Users table */
+.adm-toolbar{display:flex;gap:10px;margin-bottom:12px;align-items:center;flex-wrap:wrap;}
+.adm-search{flex:1;min-width:220px;background:var(--card-bg2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;font-size:13px;color:var(--text);outline:none;}
+.adm-search:focus{border-color:var(--accent);}
+.adm-filter{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:12px;color:var(--text2);font-weight:600;cursor:pointer;}
+.adm-filter.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+.adm-table-wrap{background:var(--card2);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.adm-table{width:100%;border-collapse:collapse;font-size:13px;}
+.adm-table thead th{text-align:left;padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);background:var(--card-bg);position:sticky;top:0;}
+.adm-table tbody td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.adm-table tbody tr:hover{background:var(--card-bg);}
+.adm-table tbody tr:last-child td{border-bottom:none;}
+.adm-email{font-weight:600;color:var(--text);font-size:13px;}
+.adm-uid{font-family:var(--mono),monospace;font-size:10px;color:var(--text3);margin-top:2px;}
+.adm-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.adm-badge-pro{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;}
+.adm-badge-free{background:var(--card-bg);color:var(--text3);border:1px solid var(--border);}
+.adm-badge-admin{background:rgba(236,72,153,0.15);color:#ec4899;border:1px solid rgba(236,72,153,0.3);}
+.adm-badge-unconfirmed{background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);}
+.adm-badge-active{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);}
+.adm-date{font-size:12px;color:var(--text3);white-space:nowrap;}
+.adm-row-btn{background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;margin-right:4px;}
+.adm-row-btn:hover{background:var(--border);color:var(--text);}
+.adm-row-btn.danger:hover{background:rgba(239,68,68,0.12);color:#ef4444;border-color:rgba(239,68,68,0.3);}
+.adm-row-btn.pro:hover{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-color:transparent;}
+
+.adm-empty{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
+.adm-loading{padding:40px;text-align:center;color:var(--text3);}
+.adm-loading::after{content:'';display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:adm-spin .8s linear infinite;margin-left:8px;vertical-align:middle;}
+@keyframes adm-spin{to{transform:rotate(360deg);}}
+
+.adm-section-title{font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;}
+
 /* ── Guest mode lock badge in sidebar ─────────────────────────── */
 .sb-lock-badge{
   margin-left:auto;flex-shrink:0;display:flex;align-items:center;
@@ -2978,6 +3037,20 @@ body{background:var(--bg) !important;color:var(--text) !important;}
         <a class="sb-item" data-page="ideas" onclick="navigateTo('ideas')">
           <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
           <span>Трекер идей</span>
+        </a>
+      </div>
+
+      <!-- ── ADMIN SECTION (visible only to admins via JS) ── -->
+      <div class="sb-section sb-admin-only" id="sb-section-admin" onclick="sbToggleSection('admin')" style="display:none;">
+        <span class="sb-section-dot" style="background:#ec4899"></span>АДМИН
+        <button class="sb-section-toggle" id="sb-sec-btn-admin" onclick="event.stopPropagation();sbToggleSection('admin')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+      <div class="sb-section-items sb-admin-only" id="sb-sec-admin" style="display:none;">
+        <a class="sb-item" data-page="admin" onclick="navigateTo('admin')">
+          <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1l3 6 6 .75-4.5 4.25L18 19l-6-3-6 3 1.5-7L3 7.75 9 7z"/></svg>
+          <span>Админ-панель</span>
         </a>
       </div>
     </nav>
@@ -4955,6 +5028,102 @@ body{background:var(--bg) !important;color:var(--text) !important;}
         </div>
       </div>
 
+      <!-- ══ ADMIN PANEL PAGE ══ -->
+      <div id="page-admin" class="page-view" style="display:none">
+        <div class="adm-page">
+          <div class="adm-header">
+            <div class="adm-title">
+              🛡 <span data-ru="Админ-панель" data-en="Admin panel">Админ-панель</span>
+              <span class="adm-title-badge">ADMIN</span>
+            </div>
+            <div class="adm-actions">
+              <button class="adm-refresh" onclick="admRefresh()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span data-ru="Обновить" data-en="Refresh">Обновить</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI cards -->
+          <div class="adm-kpi-grid">
+            <div class="adm-kpi">
+              <div class="adm-kpi-label" data-ru="Всего юзеров" data-en="Total users">Всего юзеров</div>
+              <div class="adm-kpi-val" id="adm-k-total">—</div>
+              <div class="adm-kpi-sub" id="adm-k-confirmed">—</div>
+            </div>
+            <div class="adm-kpi">
+              <div class="adm-kpi-label" data-ru="Новых сегодня" data-en="New today">Новых сегодня</div>
+              <div class="adm-kpi-val" id="adm-k-newtoday">—</div>
+              <div class="adm-kpi-sub" id="adm-k-newweek">—</div>
+            </div>
+            <div class="adm-kpi">
+              <div class="adm-kpi-label" data-ru="Активных 24ч" data-en="Active 24h">Активных 24ч</div>
+              <div class="adm-kpi-val" id="adm-k-active">—</div>
+              <div class="adm-kpi-sub" id="adm-k-activeweek">—</div>
+            </div>
+            <div class="adm-kpi adm-kpi-pro">
+              <div class="adm-kpi-label" data-ru="Pro подписок" data-en="Pro subscriptions">Pro подписок</div>
+              <div class="adm-kpi-val" id="adm-k-pro">—</div>
+              <div class="adm-kpi-sub" id="adm-k-free">—</div>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="adm-tabs">
+            <button class="adm-tab active" data-adm-tab="users" onclick="admSwitchTab('users')" data-ru="Пользователи" data-en="Users">Пользователи</button>
+            <button class="adm-tab" data-adm-tab="prices" onclick="admSwitchTab('prices')" data-ru="Цены (скоро)" data-en="Pricing (soon)">Цены (скоро)</button>
+            <button class="adm-tab" data-adm-tab="config" onclick="admSwitchTab('config')" data-ru="Настройки (скоро)" data-en="Config (soon)">Настройки (скоро)</button>
+          </div>
+
+          <!-- Users tab -->
+          <div id="adm-pane-users">
+            <div class="adm-toolbar">
+              <input type="text" class="adm-search" id="adm-user-search" data-ph-ru="Поиск по email или ID…" data-ph-en="Search by email or ID…" placeholder="Поиск по email или ID…" oninput="admRenderUsers()">
+              <button class="adm-filter" data-filter="all" onclick="admSetFilter('all')" id="adm-f-all" data-ru="Все" data-en="All">Все</button>
+              <button class="adm-filter" data-filter="pro" onclick="admSetFilter('pro')" id="adm-f-pro">Pro</button>
+              <button class="adm-filter" data-filter="free" onclick="admSetFilter('free')" id="adm-f-free">Free</button>
+              <button class="adm-filter" data-filter="admin" onclick="admSetFilter('admin')" id="adm-f-admin">Admin</button>
+              <button class="adm-filter" data-filter="unconfirmed" onclick="admSetFilter('unconfirmed')" id="adm-f-unconfirmed" data-ru="Не подтв." data-en="Unconfirmed">Не подтв.</button>
+            </div>
+            <div class="adm-table-wrap">
+              <table class="adm-table">
+                <thead>
+                  <tr>
+                    <th data-ru="Пользователь" data-en="User">Пользователь</th>
+                    <th data-ru="План" data-en="Plan">План</th>
+                    <th data-ru="Регистрация" data-en="Signed up">Регистрация</th>
+                    <th data-ru="Последний вход" data-en="Last sign-in">Последний вход</th>
+                    <th data-ru="Данные" data-en="Data">Данные</th>
+                    <th data-ru="Действия" data-en="Actions">Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-users-tbody">
+                  <tr><td colspan="6" class="adm-loading">Загрузка…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Prices tab (placeholder) -->
+          <div id="adm-pane-prices" style="display:none;">
+            <div class="adm-table-wrap" style="padding:32px;text-align:center;color:var(--text3);">
+              <div style="font-size:32px;margin-bottom:8px;">💰</div>
+              <div style="font-weight:700;color:var(--text2);font-size:14px;margin-bottom:4px;">Редактор цен Pro версии</div>
+              <div style="font-size:12px;">Будет добавлен в Фазе 3 после подключения Stripe</div>
+            </div>
+          </div>
+
+          <!-- Config tab (placeholder) -->
+          <div id="adm-pane-config" style="display:none;">
+            <div class="adm-table-wrap" style="padding:32px;text-align:center;color:var(--text3);">
+              <div style="font-size:32px;margin-bottom:8px;">⚙️</div>
+              <div style="font-weight:700;color:var(--text2);font-size:14px;margin-bottom:4px;">Настройки приложения</div>
+              <div style="font-size:12px;">Feature flags, режим обслуживания, лимиты — Фаза 4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ IDEA TRACKER PAGE ══ -->
       <div id="page-ideas" class="page-view" style="display:none">
         <div class="it-page-wrap">
@@ -5130,7 +5299,7 @@ function navigateTo(page, toolIdx){
   var viewer = document.getElementById('viewer');
   var tbTitle = document.getElementById('tb-page-title');
   function _hideAllPages(){
-    var ids=['page-dashboard','page-ai','page-portfolio','page-new-trade','page-diary','page-watchlist','page-psycho','page-stats','page-goalchart','page-weekplan','page-journal','page-riskmanager','page-options','page-myday','page-strategy','page-futures','page-ideas','page-profile','page-derivatives','page-paper'];
+    var ids=['page-dashboard','page-ai','page-portfolio','page-new-trade','page-diary','page-watchlist','page-psycho','page-stats','page-goalchart','page-weekplan','page-journal','page-riskmanager','page-options','page-myday','page-strategy','page-futures','page-ideas','page-profile','page-derivatives','page-paper','page-admin'];
     ids.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     if(viewer){viewer.style.display='none';viewer.classList.remove('open');}
   }
@@ -5276,6 +5445,17 @@ function navigateTo(page, toolIdx){
     if(itPg) itPg.style.display='';
     _setTbTitle(_t('Планирование','Planning'),_t('Трекер идей','Ideas Tracker'));
     try{ renderIdeas(); }catch(e){}
+  } else if(page==='admin'){
+    // Admin guard — non-admins can't enter
+    if(!window._isAdmin){
+      try{ showToast2(_t('Доступ только для администратора','Admin access only')); }catch(e){}
+      return;
+    }
+    _hideAllPages();
+    var adPg=document.getElementById('page-admin');
+    if(adPg) adPg.style.display='';
+    _setTbTitle(_t('Управление','Management'),_t('Админ-панель','Admin Panel'));
+    try{ admInit(); }catch(e){ console.error('admInit',e); }
   } else if(page==='riskmanager'){
     _hideAllPages();
     var rmPg=document.getElementById('page-riskmanager');
@@ -5558,6 +5738,7 @@ async function _tbSignOut(){
   await CloudSync.auth.signOut();
   _tbProfileClose();
   _cloudRefreshUI();
+  try{ window._isAdmin = false; _setAdminUI(false); }catch(e){}
   try{ showToast2(_t('Вы вышли из аккаунта','Signed out')); }catch(e){}
   try{ _authGateCheck(); }catch(e){}
 }
@@ -16644,6 +16825,12 @@ var CloudSync = {
   var SUPABASE_URL  = 'https://plovqkgjqsflrcipjpyc.supabase.co';
   var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsb3Zxa2dqcXNmbHJjaXBqcHljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjk2MzIsImV4cCI6MjA5NDk0NTYzMn0.g2lIqhxIYRZ2f1PtVAzka58-QWArIAGwshrCe09KZXU';
   CloudSync._init(SUPABASE_URL, SUPABASE_ANON);
+  // After session restore, check if logged-in user is admin (enables sidebar item)
+  setTimeout(function(){
+    if(CloudSync._user && typeof _checkAdminRole === 'function'){
+      _checkAdminRole();
+    }
+  }, 300);
 })();
 
 // ── UI handlers для панели «🌥 Облако» в ЛК (v2.1.133) ──
@@ -16879,7 +17066,221 @@ async function _cloudAutoDownloadOnLogin(){
   try{ renderDashboard(); }catch(e){}
   try{ renderNewDashboard(); }catch(e){}
   if(count) try{ showToast2(_t('Данные загружены из облака ('+count+' объектов)','Data loaded from cloud ('+count+' items)')); }catch(e){}
+  // After data loads, check if user is admin to enable admin sidebar
+  try{ _checkAdminRole(); }catch(e){}
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL — role detection + users list + stats
+// ════════════════════════════════════════════════════════════════════════════
+window._isAdmin = false;
+window._admUsers = [];      // cached list
+window._admFilter = 'all';  // active filter
+
+async function _checkAdminRole(){
+  if(!CloudSync._user || !CloudSync._ready){ _setAdminUI(false); return; }
+  // Query profiles for current user's role
+  var r = await CloudSync._req('/rest/v1/profiles?id=eq.' + encodeURIComponent(CloudSync._user.id) + '&select=role', { method:'GET' });
+  var role = 'user';
+  if(r.ok && Array.isArray(r.data) && r.data.length){
+    role = r.data[0].role || 'user';
+  }
+  window._isAdmin = (role === 'admin');
+  _setAdminUI(window._isAdmin);
+}
+
+function _setAdminUI(isAdmin){
+  document.querySelectorAll('.sb-admin-only').forEach(function(el){
+    el.style.display = isAdmin ? '' : 'none';
+  });
+}
+
+// ── Admin page init ────────────────────────────────────────────────────
+function admInit(){
+  if(!window._isAdmin) return;
+  admLoadStats();
+  admLoadUsers();
+}
+
+async function admRefresh(){
+  await Promise.all([admLoadStats(), admLoadUsers()]);
+  try{ showToast2(_t('Обновлено','Refreshed')); }catch(e){}
+}
+
+// ── Load KPI stats ─────────────────────────────────────────────────────
+async function admLoadStats(){
+  var r = await CloudSync._req('/rest/v1/rpc/admin_stats', { method:'POST', body:{} });
+  if(!r.ok){
+    console.error('admin_stats failed:', r.error);
+    return;
+  }
+  var s = r.data || {};
+  function _set(id, val){ var el=document.getElementById(id); if(el) el.textContent = (val==null?'—':val); }
+  _set('adm-k-total', s.total_users);
+  _set('adm-k-confirmed', (s.confirmed_users||0) + ' ' + _t('подтверждено','confirmed'));
+  _set('adm-k-newtoday', s.new_today);
+  _set('adm-k-newweek', (s.new_week||0) + ' ' + _t('за 7 дней','past 7 days'));
+  _set('adm-k-active', s.active_today);
+  _set('adm-k-activeweek', (s.active_week||0) + ' ' + _t('за 7 дней','past 7 days'));
+  _set('adm-k-pro', s.pro_users);
+  _set('adm-k-free', (s.free_users||0) + ' ' + _t('бесплатных','on free'));
+}
+
+// ── Load users list ────────────────────────────────────────────────────
+async function admLoadUsers(){
+  var tbody = document.getElementById('adm-users-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="adm-loading">' + _t('Загрузка…','Loading…') + '</td></tr>';
+  var r = await CloudSync._req('/rest/v1/rpc/admin_list_users', { method:'POST', body:{} });
+  if(!r.ok){
+    if(tbody) tbody.innerHTML = '<tr><td colspan="6" class="adm-empty">⚠ ' + (r.error||'Failed to load') + '</td></tr>';
+    return;
+  }
+  window._admUsers = Array.isArray(r.data) ? r.data : [];
+  admRenderUsers();
+}
+
+// ── Render users (with search + filter applied) ────────────────────────
+function admRenderUsers(){
+  var tbody = document.getElementById('adm-users-tbody');
+  if(!tbody) return;
+  var q = (document.getElementById('adm-user-search')||{}).value || '';
+  q = q.toLowerCase().trim();
+  var filter = window._admFilter || 'all';
+
+  var rows = (window._admUsers||[]).filter(function(u){
+    if(q){
+      var hay = ((u.email||'') + ' ' + (u.user_id||'') + ' ' + (u.display_name||'')).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    if(filter==='pro'         && u.plan !== 'pro') return false;
+    if(filter==='free'        && u.plan === 'pro') return false;
+    if(filter==='admin'       && u.role !== 'admin') return false;
+    if(filter==='unconfirmed' && u.email_confirmed_at) return false;
+    return true;
+  });
+
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="6" class="adm-empty">' + _t('Никого не нашлось','No users found') + '</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(function(u){
+    var planBadge = u.plan==='pro'
+      ? '<span class="adm-badge adm-badge-pro">PRO</span>'
+      : '<span class="adm-badge adm-badge-free">FREE</span>';
+    var roleBadge = u.role==='admin' ? ' <span class="adm-badge adm-badge-admin">ADMIN</span>' : '';
+    var confirmBadge = !u.email_confirmed_at ? ' <span class="adm-badge adm-badge-unconfirmed">✉</span>' : '';
+    var actionBtns = '';
+    if(u.plan !== 'pro'){
+      actionBtns += '<button class="adm-row-btn pro" onclick="admGrantPro(\'' + u.user_id + '\')" title="' + _t('Дать Pro','Grant Pro') + '">+Pro</button>';
+    } else {
+      actionBtns += '<button class="adm-row-btn danger" onclick="admRevokePro(\'' + u.user_id + '\')" title="' + _t('Снять Pro','Revoke Pro') + '">−Pro</button>';
+    }
+    if(u.role !== 'admin'){
+      actionBtns += '<button class="adm-row-btn" onclick="admGrantAdmin(\'' + u.user_id + '\')" title="' + _t('Сделать админом','Make admin') + '">+Admin</button>';
+    }
+    return '<tr>'
+      + '<td><div class="adm-email">' + _admEsc(u.email||'—') + roleBadge + confirmBadge + '</div>'
+      +   (u.display_name ? '<div class="adm-uid">' + _admEsc(u.display_name) + '</div>' : '')
+      +   '<div class="adm-uid">' + (u.user_id||'').slice(0,8) + '…</div></td>'
+      + '<td>' + planBadge + '</td>'
+      + '<td class="adm-date">' + _admFmtDate(u.signup_at) + '</td>'
+      + '<td class="adm-date">' + (u.last_sign_in ? _admFmtDate(u.last_sign_in) : '<span style="color:var(--text3)">—</span>') + '</td>'
+      + '<td><span style="color:var(--text2);font-weight:600;">' + (u.data_rows||0) + '</span> <span style="color:var(--text3);font-size:11px;">' + _t('записей','rows') + '</span></td>'
+      + '<td>' + actionBtns + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function admSetFilter(name){
+  window._admFilter = name;
+  document.querySelectorAll('.adm-filter').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-filter') === name);
+  });
+  admRenderUsers();
+}
+
+function admSwitchTab(name){
+  document.querySelectorAll('.adm-tab').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-adm-tab') === name);
+  });
+  ['users','prices','config'].forEach(function(t){
+    var el = document.getElementById('adm-pane-' + t);
+    if(el) el.style.display = (t === name) ? '' : 'none';
+  });
+}
+
+// ── Admin actions ──────────────────────────────────────────────────────
+async function admGrantPro(userId){
+  if(!confirm(_t('Выдать Pro подписку этому пользователю?','Grant Pro subscription to this user?'))) return;
+  // Try update first; if 0 rows, insert
+  var r = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(userId), {
+    method:'PATCH', body:{ plan:'pro', status:'active' },
+    headers:{ 'Prefer':'return=representation' }
+  });
+  if(r.ok && (!r.data || !r.data.length)){
+    r = await CloudSync._req('/rest/v1/subscriptions', {
+      method:'POST', body:{ user_id: userId, plan:'pro', status:'active' }
+    });
+  }
+  if(r.ok){
+    try{ showToast2('✓ Pro выдан'); }catch(e){}
+    admLoadUsers(); admLoadStats();
+  } else {
+    alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+async function admRevokePro(userId){
+  if(!confirm(_t('Снять Pro подписку?','Revoke Pro subscription?'))) return;
+  var r = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(userId), {
+    method:'PATCH', body:{ plan:'free', status:'canceled' }
+  });
+  if(r.ok){
+    try{ showToast2('✓ Pro снят'); }catch(e){}
+    admLoadUsers(); admLoadStats();
+  } else {
+    alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+async function admGrantAdmin(userId){
+  if(!confirm(_t('Сделать этого пользователя администратором?','Make this user an administrator?'))) return;
+  var r = await CloudSync._req('/rest/v1/profiles?id=eq.' + encodeURIComponent(userId), {
+    method:'PATCH', body:{ role:'admin' }
+  });
+  if(r.ok){
+    try{ showToast2('✓ Назначен админом'); }catch(e){}
+    admLoadUsers(); admLoadStats();
+  } else {
+    alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────
+function _admEsc(s){
+  return String(s||'').replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function _admFmtDate(iso){
+  if(!iso) return '—';
+  var d = new Date(iso);
+  if(isNaN(d.getTime())) return '—';
+  var now = Date.now();
+  var diff = (now - d.getTime()) / 1000;
+  if(diff < 60) return _t('только что','just now');
+  if(diff < 3600) return Math.floor(diff/60) + _t(' мин','m');
+  if(diff < 86400) return Math.floor(diff/3600) + _t(' ч','h');
+  if(diff < 86400*7) return Math.floor(diff/86400) + _t(' дн','d');
+  // Long ago — show actual date
+  return d.toLocaleDateString();
+}
+
+// Re-check admin role on session restore (page refresh while logged in)
+setTimeout(function(){
+  if(CloudSync._user) _checkAdminRole();
+}, 800);
 
 // ════════════════════════════════════════════════════════════════════════════
 // END CLOUD SYNC
@@ -20991,6 +21392,7 @@ async function _gateSignIn(){
   try{ renderPersonalCabinet(); }catch(e){}
   try{ showToast2(_t('Добро пожаловать','Welcome')+' 👋'); }catch(e){}
   try{ _cloudAutoDownloadOnLogin(); }catch(e){}
+  try{ _checkAdminRole(); }catch(e){}
 }
 
 async function _gateRegister(){
