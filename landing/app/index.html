@@ -2785,6 +2785,42 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-divider::before,.ag-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .ag-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.5;}
 .ag-loading{display:none;text-align:center;color:var(--text3);font-size:13px;padding:12px 0;}
+.ag-btn.guest{background:transparent;color:var(--text3);border:1px dashed var(--border2);margin-top:4px;font-weight:500;font-size:13px;}
+.ag-btn.guest:hover{color:var(--text);border-color:var(--text3);background:var(--border);}
+.ag-guest-sep{display:flex;align-items:center;gap:8px;margin:14px 0 10px;color:var(--text3);font-size:11px;}
+.ag-guest-sep::before,.ag-guest-sep::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── Guest mode lock badge in sidebar ─────────────────────────── */
+.sb-lock-badge{
+  margin-left:auto;flex-shrink:0;display:flex;align-items:center;
+  color:var(--text3);opacity:0.5;cursor:help;padding:1px;border-radius:4px;
+  position:relative;transition:opacity .15s;
+}
+.sb-item:hover .sb-lock-badge{opacity:1;color:var(--accent);}
+/* CSS tooltip */
+.sb-lock-badge::after{
+  content:attr(data-tip);
+  position:fixed;z-index:99998;
+  background:var(--card2);border:1px solid var(--border2);border-radius:9px;
+  padding:7px 12px;font-size:11px;font-weight:500;color:var(--text2);
+  line-height:1.45;max-width:200px;white-space:normal;text-align:left;
+  box-shadow:0 6px 20px rgba(0,0,0,.22);
+  pointer-events:none;opacity:0;transition:opacity .15s;
+  /* position is set via JS on hover */
+  top:0;left:0;transform:translate(var(--tip-x,0px),var(--tip-y,0px));
+}
+.sb-lock-badge:hover::after{opacity:1;}
+
+/* ── Guest banner inside sidebar ──────────────────────────────── */
+.sb-guest-bar{
+  margin:6px 8px 0;padding:8px 10px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(236,72,153,0.08));
+  border:1px solid rgba(124,58,237,0.18);
+  font-size:11px;color:var(--text3);line-height:1.45;display:none;
+}
+.sb-guest-bar strong{display:block;color:var(--text2);font-size:11.5px;margin-bottom:3px;}
+.sb-guest-bar a{color:var(--accent);cursor:pointer;font-weight:700;text-decoration:none;}
+.sb-guest-bar a:hover{text-decoration:underline;}
 </style>
 <style id="theme-style">
 :root{--bg:#f0efe9;--text:#1a1a18;--sub:#6b6b67;--muted:#9a9a96;--card-bg:#fff;--border:rgba(0,0,0,.17);--topbar:#1a1a18;--input-bg:#fff;--shadow:rgba(0,0,0,.08);}
@@ -2932,6 +2968,12 @@ body{background:var(--bg) !important;color:var(--text) !important;}
         </a>
       </div>
     </nav>
+
+    <!-- Guest mode banner (shown only in guest mode) -->
+    <div class="sb-guest-bar" id="sb-guest-bar">
+      <strong data-ru="👤 Режим гостя" data-en="👤 Guest mode">👤 Режим гостя</strong>
+      <span data-ru="Данные не сохраняются. " data-en="Changes won't be saved. ">Данные не сохраняются. </span><a onclick="_authGateShow()" data-ru="Войти →" data-en="Sign in →">Войти →</a>
+    </div>
 
     <div class="sb-profile" id="sb-profile" onclick="navigateTo('profile')" title="Открыть личный кабинет">
       <div class="sb-avatar" id="sb-avatar">?</div>
@@ -5095,12 +5137,16 @@ function navigateTo(page, toolIdx){
     _setTbTitle(null,_t('Обзор','Overview'));
     try{ renderNewDashboard(); renderDashboard().then(function(){try{renderNewDashboard();}catch(e){}}).catch(function(){}); }catch(e){}
   } else if(page==='profile'){
+    // Guests and unauthenticated users cannot enter personal cabinet
+    if(window._guestMode || !CloudSync._user){
+      try{ _authGateShow(); }catch(e){}
+      return;
+    }
     _hideAllPages();
     var pcPg=document.getElementById('page-profile');
     if(pcPg) pcPg.style.display='';
     _setTbTitle(null,_t('Личный кабинет','Personal Cabinet'));
     try{ renderPersonalCabinet(); }catch(e){}
-    // Auth gate ensures user is logged in before reaching this point.
   } else if(page==='ai'){
     _hideAllPages();
     if(aiPg) aiPg.style.display='';
@@ -5622,6 +5668,7 @@ async function _pcDoSignIn(){
     return;
   }
   _pcCloseAuth();
+  try{ _guestModeClear(); }catch(e){}
   _cloudRefreshUI();
   try{ renderPersonalCabinet(); }catch(e){}
   try{ showToast2(_t('Добро пожаловать','Welcome')+' '+em); }catch(e){}
@@ -19914,8 +19961,8 @@ function restoreAll(inp) {
 
   window.aiSend2 = function(){
     if(!CloudSync._user){
-      try{ showToast2(_t('Войди в аккаунт чтобы использовать AI','Sign in to use AI')); }catch(e){}
-      try{ _authGateCheck(); }catch(e){}
+      try{ showToast2(_t('🔒 Зарегистрируйтесь чтобы использовать AI','🔒 Register to use AI')); }catch(e){}
+      try{ _authGateShow(); }catch(e){}
       return;
     }
     var inp = document.getElementById('ai-input2');
@@ -20764,6 +20811,8 @@ window.replayOnboarding = function(){
       <button class="ag-btn primary" id="ag-signin-btn" onclick="_gateSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
       <div class="ag-divider" data-ru="или" data-en="or">или</div>
       <button class="ag-btn secondary" id="ag-signup-btn" onclick="_gateSignUp()" data-ru="Зарегистрироваться" data-en="Register">Зарегистрироваться</button>
+      <div class="ag-guest-sep" data-ru="или" data-en="or">или</div>
+      <button class="ag-btn guest" onclick="_gateGuest()" data-ru="👁 Войти как гость (просмотр)" data-en="👁 Continue as guest (view only)">👁 Войти как гость (просмотр)</button>
     </div>
     <div class="ag-footer" data-ru="Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту" data-en="Data is encrypted and tied to your account">Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту</div>
   </div>
@@ -20838,6 +20887,7 @@ async function _gateSignIn(){
     return;
   }
   _authGateHide();
+  try{ _guestModeClear(); }catch(e){} // exit guest mode on real login
   try{ _cloudRefreshUI(); }catch(e){}
   try{ renderPersonalCabinet(); }catch(e){}
   try{ showToast2(_t('Добро пожаловать','Welcome')+' 👋'); }catch(e){}
@@ -20876,16 +20926,82 @@ async function _gateSignUp(){
     if(ok){ok.style.display='';ok.textContent=_t('Письмо отправлено! Подтверди email и войди.','Email sent! Confirm it then sign in.');}
   } else {
     _authGateHide();
+    try{ _guestModeClear(); }catch(e){} // exit guest mode on registration
     try{ _cloudRefreshUI(); }catch(e){}
     try{ showToast2(_t('Аккаунт создан','Account created')+' ✓'); }catch(e){}
   }
 }
 
+// ── Guest mode ────────────────────────────────────────────────────────────
+window._guestMode = false;
+
+function _gateGuest(){
+  window._guestMode = true;
+  try{ sessionStorage.setItem('guestMode','1'); }catch(e){}
+  _authGateHide();
+  setTimeout(_guestModeActivate, 80); // after gate hides
+}
+
+function _guestModeActivate(){
+  var l = typeof getLang==='function'?getLang():'ru';
+  var tipText = l==='en'
+    ? 'Register to access and save features'
+    : 'Зарегистрируйтесь чтобы пользоваться функциями';
+
+  // Add lock badges to all interactive sidebar items
+  document.querySelectorAll('#sb-nav .sb-item:not(.sb-item-disabled)').forEach(function(item){
+    if(item.querySelector('.sb-lock-badge')) return;
+    var badge = document.createElement('span');
+    badge.className = 'sb-lock-badge';
+    badge.setAttribute('data-tip', tipText);
+    badge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+    // Set tooltip position on hover via CSS custom props (::after reads them)
+    badge.addEventListener('mouseenter', function(){
+      var r = badge.getBoundingClientRect();
+      badge.style.setProperty('--tip-x', Math.max(4, r.right - 210) + 'px');
+      badge.style.setProperty('--tip-y', (r.bottom + 6) + 'px');
+    });
+    item.appendChild(badge);
+  });
+
+  // Show guest banner in sidebar
+  var bar = document.getElementById('sb-guest-bar');
+  if(bar){
+    bar.style.display = 'block';
+    // Translate banner
+    bar.querySelectorAll('[data-ru]').forEach(function(el){
+      var txt = l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.innerHTML=txt;
+    });
+  }
+}
+
+function _guestModeClear(){
+  window._guestMode = false;
+  try{ sessionStorage.removeItem('guestMode'); }catch(e){}
+  // Remove lock badges
+  document.querySelectorAll('.sb-lock-badge').forEach(function(b){ b.remove(); });
+  var bar = document.getElementById('sb-guest-bar');
+  if(bar) bar.style.display='none';
+}
+
 // Wire: check gate after DOM ready
 document.addEventListener('DOMContentLoaded', function(){
+  // Restore guest mode from sessionStorage
+  try{
+    if(sessionStorage.getItem('guestMode')==='1') window._guestMode = true;
+  }catch(e){}
   // small delay to let CloudSync._init finish restoring session
-  setTimeout(function(){ _authGateCheck(); }, 50);
+  setTimeout(function(){
+    if(window._guestMode){
+      _authGateHide();
+      _guestModeActivate();
+    } else {
+      _authGateCheck();
+    }
+  }, 50);
 });
+
 // Also re-translate gate when language changes (applyLang calls this if gate is visible)
 (function(){
   var _origApplyLang = window.applyLang;
@@ -20894,6 +21010,21 @@ document.addEventListener('DOMContentLoaded', function(){
       _origApplyLang(l);
       var g = document.getElementById('auth-gate');
       if(g && g.style.display!=='none') _agTranslate();
+      // Update guest lock badges tip text
+      if(window._guestMode){
+        var tipText = l==='en'
+          ? 'Register to access and save features'
+          : 'Зарегистрируйтесь чтобы пользоваться функциями';
+        document.querySelectorAll('.sb-lock-badge').forEach(function(b){
+          b.setAttribute('data-tip', tipText);
+        });
+        // Update guest bar
+        var bar = document.getElementById('sb-guest-bar');
+        if(bar) bar.querySelectorAll('[data-ru]').forEach(function(el){
+          var txt = l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+          if(txt!==undefined) el.innerHTML=txt;
+        });
+      }
     };
   }
 })();
