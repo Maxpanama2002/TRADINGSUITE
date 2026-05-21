@@ -5587,13 +5587,23 @@ async function _pcDoSignIn(){
   var em=(document.getElementById('pc-auth-email')||{}).value||'';
   var pw=(document.getElementById('pc-auth-password')||{}).value||'';
   var err=document.getElementById('pc-auth-err');
-  if(!em||!pw){ if(err){err.style.display='';err.textContent='Заполни email и пароль';}return; }
+  if(!em||!pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}return; }
   var btn=document.querySelector('#pc-auth-modal .sub-plan-cta.primary');
-  if(btn) btn.textContent='Входим…';
+  if(btn) btn.textContent=_t('Входим…','Signing in…');
   var r=await CloudSync.auth.signIn(em.trim(),pw);
-  if(btn) btn.textContent='Войти';
+  if(btn) btn.setAttribute('data-ru','Войти');
+  if(btn) btn.textContent=_t('Войти','Sign in');
   if(!r.ok){
-    if(err){err.style.display='';err.textContent=r.error||'Ошибка входа';}
+    var _errMsg = r.error||'';
+    var _lc = _errMsg.toLowerCase();
+    if(_lc.indexOf('invalid')!==-1||_lc.indexOf('credentials')!==-1||_lc.indexOf('wrong')!==-1||_lc.indexOf('password')!==-1){
+      _errMsg = _t('Неверный email или пароль','Wrong email or password');
+    } else if(_lc.indexOf('not confirmed')!==-1||_lc.indexOf('email not confirmed')!==-1){
+      _errMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+    } else if(!_errMsg){
+      _errMsg = _t('Ошибка входа','Sign-in error');
+    }
+    if(err){err.style.display='';err.textContent=_errMsg;}
     return;
   }
   _pcCloseAuth();
@@ -5606,18 +5616,27 @@ async function _pcDoSignUp(){
   var em=(document.getElementById('pc-auth-email')||{}).value||'';
   var pw=(document.getElementById('pc-auth-password')||{}).value||'';
   var err=document.getElementById('pc-auth-err');
-  if(!em||!pw){ if(err){err.style.display='';err.textContent='Заполни email и пароль';}return; }
-  if(pw.length<8){ if(err){err.style.display='';err.textContent='Пароль минимум 8 символов';}return; }
+  if(!em||!pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}return; }
+  if(pw.length<8){ if(err){err.style.display='';err.textContent=_t('Пароль минимум 8 символов','Password must be at least 8 characters');}return; }
   var btn=document.querySelector('#pc-auth-modal .sub-plan-cta:not(.primary)');
-  if(btn) btn.textContent='Регистрируем…';
+  if(btn) btn.textContent=_t('Регистрируем…','Registering…');
   var r=await CloudSync.auth.signUp(em.trim(),pw);
-  if(btn) btn.textContent='Регистрация';
+  if(btn) btn.textContent=_t('Регистрация','Register');
   if(!r.ok){
-    if(err){err.style.display='';err.textContent=r.error||'Ошибка регистрации';}
+    var _errMsg2 = r.error||'';
+    var _lc2 = _errMsg2.toLowerCase();
+    if(_lc2.indexOf('already')!==-1||_lc2.indexOf('registered')!==-1||_lc2.indexOf('exists')!==-1){
+      _errMsg2 = _t('Этот email уже зарегистрирован. Войди.','This email is already registered. Sign in.');
+    } else if(_lc2.indexOf('password')!==-1||_lc2.indexOf('weak')!==-1){
+      _errMsg2 = _t('Пароль слишком простой. Минимум 8 символов.','Password is too weak. Min 8 characters.');
+    } else if(!_errMsg2){
+      _errMsg2 = _t('Ошибка регистрации','Registration error');
+    }
+    if(err){err.style.display='';err.textContent=_errMsg2;}
     return;
   }
   if(r.needsConfirmation){
-    if(err){err.style.display='';err.style.color='#22c55e';err.textContent='На почту отправлено письмо подтверждения. Проверь и войди снова.';}
+    if(err){err.style.display='';err.style.color='#22c55e';err.textContent=_t('На почту отправлено письмо подтверждения. Проверь и войди снова.','Confirmation email sent. Check your inbox and sign in.');}
     return;
   }
   _pcCloseAuth();
@@ -16606,10 +16625,22 @@ async function _cloudSignIn(){
   var em = (document.getElementById('cloud-email')||{}).value||'';
   var pw = (document.getElementById('cloud-pass')||{}).value||'';
   var err = document.getElementById('cloud-auth-err');
-  if(!em || !pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill email and password');} return; }
+  if(!em || !pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');} return; }
   if(err){ err.style.display='none'; }
   var r = await CloudSync.auth.signIn(em.trim(), pw);
-  if(!r.ok){ if(err){err.style.display='';err.textContent=_t('Ошибка: ','Error: ')+r.error;} return; }
+  if(!r.ok){
+    var _csErrMsg = r.error||'';
+    var _csLc = _csErrMsg.toLowerCase();
+    if(_csLc.indexOf('invalid')!==-1||_csLc.indexOf('credentials')!==-1||_csLc.indexOf('wrong')!==-1||_csLc.indexOf('password')!==-1){
+      _csErrMsg = _t('Неверный email или пароль','Wrong email or password');
+    } else if(_csLc.indexOf('not confirmed')!==-1||_csLc.indexOf('email not confirmed')!==-1){
+      _csErrMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+    } else if(!_csErrMsg){
+      _csErrMsg = _t('Ошибка входа','Sign-in error');
+    }
+    if(err){err.style.display='';err.textContent=_csErrMsg;}
+    return;
+  }
   _cloudRefreshUI();
   try{ showToast2(_t('Добро пожаловать','Welcome')+', '+em); }catch(e){}
   _cloudAutoDownloadOnLogin();
@@ -20690,87 +20721,6 @@ window.replayOnboarding = function(){
   _onbHideResumePill();
   _onbShow(0);
 };
-</script>
-
-
-<script id="__webdemo_banner__">
-(function(){
-  // Only show on web (browser without Electron preload)
-  if (typeof window.electronAPI !== 'undefined' || typeof window.iCloud !== 'undefined') return;
-
-  function isEn(){ try { return (localStorage.getItem('app_lang') || 'ru') === 'en'; } catch(_) { return false; } }
-
-  // ── "← На сайт" tab — always visible at top-center ─────────────────────
-  function mountBackBtn(){
-    if (document.getElementById('__back_to_site__')) return;
-    var en = isEn();
-    var btn = document.createElement('a');
-    btn.id = '__back_to_site__';
-    btn.href = '../';
-    btn.title = en ? 'Back to landing page' : 'Вернуться на сайт';
-    btn.textContent = en ? '← Site' : '← На сайт';
-    btn.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:50%',
-      'transform:translateX(-50%)',
-      'z-index:200001',
-      'background:rgba(12,12,18,0.80)',
-      'backdrop-filter:blur(10px)',
-      '-webkit-backdrop-filter:blur(10px)',
-      'color:#c4b5fd',
-      'text-decoration:none',
-      'padding:4px 18px 6px',
-      'border-radius:0 0 12px 12px',
-      'font-size:12px',
-      'font-weight:600',
-      'font-family:Inter,system-ui,sans-serif',
-      'border:1px solid rgba(124,58,237,0.35)',
-      'border-top:none',
-      'white-space:nowrap',
-      'letter-spacing:.03em',
-      'transition:background .15s,color .15s',
-    ].join(';');
-    btn.addEventListener('mouseover', function(){ btn.style.background='rgba(124,58,237,0.30)'; btn.style.color='#fff'; });
-    btn.addEventListener('mouseout',  function(){ btn.style.background='rgba(12,12,18,0.80)';   btn.style.color='#c4b5fd'; });
-    document.body.appendChild(btn);
-  }
-
-  // ── Web-demo info chip — bottom-right, dismissable ───────────────────────
-  function dismiss(){
-    try { sessionStorage.setItem('webdemo_banner_dismissed', '1'); } catch(_){}
-    var b = document.getElementById('__webdemo_banner_el__');
-    if (b) b.remove();
-  }
-  function mountChip(){
-    if (document.getElementById('__webdemo_banner_el__')) return;
-    try { if (sessionStorage.getItem('webdemo_banner_dismissed') === '1') return; } catch(_){}
-    var en = isEn();
-    var bar = document.createElement('div');
-    bar.id = '__webdemo_banner_el__';
-    bar.style.cssText = 'position:fixed;bottom:18px;right:18px;z-index:100000;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;padding:11px 14px 11px 16px;font-family:Inter,system-ui,sans-serif;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:12px;box-shadow:0 12px 32px rgba(0,0,0,0.35);border-radius:14px;max-width:380px;line-height:1.4;';
-    bar.innerHTML =
-      '<span style="flex:1;min-width:0;">'
-      + (en
-          ? '🌐 <b>Web demo</b> — 90% works in browser. Install desktop for full (iCloud, push, forex).'
-          : '🌐 <b>Веб-демо</b> — 90% работает в браузере. Для полного функционала (iCloud, push, forex) скачай десктоп.')
-      + '</span>'
-      + '<a href="/landing/download.html" style="background:rgba(255,255,255,0.24);color:#fff;text-decoration:none;padding:6px 12px;border-radius:9px;font-weight:600;font-size:12px;white-space:nowrap;flex-shrink:0;">'
-      + (en ? '↓ Get' : '↓ Скачать')
-      + '</a>'
-      + '<button style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;padding:0 2px 0 4px;opacity:0.85;flex-shrink:0;" title="' + (en ? 'Dismiss' : 'Скрыть') + '">×</button>';
-    bar.querySelector('button').addEventListener('click', dismiss);
-    document.body.appendChild(bar);
-  }
-
-  function mount(){
-    mountBackBtn();
-    mountChip();
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  } else { mount(); }
-})();
 </script>
 
 </body>

@@ -5587,13 +5587,23 @@ async function _pcDoSignIn(){
   var em=(document.getElementById('pc-auth-email')||{}).value||'';
   var pw=(document.getElementById('pc-auth-password')||{}).value||'';
   var err=document.getElementById('pc-auth-err');
-  if(!em||!pw){ if(err){err.style.display='';err.textContent='Заполни email и пароль';}return; }
+  if(!em||!pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}return; }
   var btn=document.querySelector('#pc-auth-modal .sub-plan-cta.primary');
-  if(btn) btn.textContent='Входим…';
+  if(btn) btn.textContent=_t('Входим…','Signing in…');
   var r=await CloudSync.auth.signIn(em.trim(),pw);
-  if(btn) btn.textContent='Войти';
+  if(btn) btn.setAttribute('data-ru','Войти');
+  if(btn) btn.textContent=_t('Войти','Sign in');
   if(!r.ok){
-    if(err){err.style.display='';err.textContent=r.error||'Ошибка входа';}
+    var _errMsg = r.error||'';
+    var _lc = _errMsg.toLowerCase();
+    if(_lc.indexOf('invalid')!==-1||_lc.indexOf('credentials')!==-1||_lc.indexOf('wrong')!==-1||_lc.indexOf('password')!==-1){
+      _errMsg = _t('Неверный email или пароль','Wrong email or password');
+    } else if(_lc.indexOf('not confirmed')!==-1||_lc.indexOf('email not confirmed')!==-1){
+      _errMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+    } else if(!_errMsg){
+      _errMsg = _t('Ошибка входа','Sign-in error');
+    }
+    if(err){err.style.display='';err.textContent=_errMsg;}
     return;
   }
   _pcCloseAuth();
@@ -5606,18 +5616,27 @@ async function _pcDoSignUp(){
   var em=(document.getElementById('pc-auth-email')||{}).value||'';
   var pw=(document.getElementById('pc-auth-password')||{}).value||'';
   var err=document.getElementById('pc-auth-err');
-  if(!em||!pw){ if(err){err.style.display='';err.textContent='Заполни email и пароль';}return; }
-  if(pw.length<8){ if(err){err.style.display='';err.textContent='Пароль минимум 8 символов';}return; }
+  if(!em||!pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}return; }
+  if(pw.length<8){ if(err){err.style.display='';err.textContent=_t('Пароль минимум 8 символов','Password must be at least 8 characters');}return; }
   var btn=document.querySelector('#pc-auth-modal .sub-plan-cta:not(.primary)');
-  if(btn) btn.textContent='Регистрируем…';
+  if(btn) btn.textContent=_t('Регистрируем…','Registering…');
   var r=await CloudSync.auth.signUp(em.trim(),pw);
-  if(btn) btn.textContent='Регистрация';
+  if(btn) btn.textContent=_t('Регистрация','Register');
   if(!r.ok){
-    if(err){err.style.display='';err.textContent=r.error||'Ошибка регистрации';}
+    var _errMsg2 = r.error||'';
+    var _lc2 = _errMsg2.toLowerCase();
+    if(_lc2.indexOf('already')!==-1||_lc2.indexOf('registered')!==-1||_lc2.indexOf('exists')!==-1){
+      _errMsg2 = _t('Этот email уже зарегистрирован. Войди.','This email is already registered. Sign in.');
+    } else if(_lc2.indexOf('password')!==-1||_lc2.indexOf('weak')!==-1){
+      _errMsg2 = _t('Пароль слишком простой. Минимум 8 символов.','Password is too weak. Min 8 characters.');
+    } else if(!_errMsg2){
+      _errMsg2 = _t('Ошибка регистрации','Registration error');
+    }
+    if(err){err.style.display='';err.textContent=_errMsg2;}
     return;
   }
   if(r.needsConfirmation){
-    if(err){err.style.display='';err.style.color='#22c55e';err.textContent='На почту отправлено письмо подтверждения. Проверь и войди снова.';}
+    if(err){err.style.display='';err.style.color='#22c55e';err.textContent=_t('На почту отправлено письмо подтверждения. Проверь и войди снова.','Confirmation email sent. Check your inbox and sign in.');}
     return;
   }
   _pcCloseAuth();
@@ -16606,10 +16625,22 @@ async function _cloudSignIn(){
   var em = (document.getElementById('cloud-email')||{}).value||'';
   var pw = (document.getElementById('cloud-pass')||{}).value||'';
   var err = document.getElementById('cloud-auth-err');
-  if(!em || !pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill email and password');} return; }
+  if(!em || !pw){ if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');} return; }
   if(err){ err.style.display='none'; }
   var r = await CloudSync.auth.signIn(em.trim(), pw);
-  if(!r.ok){ if(err){err.style.display='';err.textContent=_t('Ошибка: ','Error: ')+r.error;} return; }
+  if(!r.ok){
+    var _csErrMsg = r.error||'';
+    var _csLc = _csErrMsg.toLowerCase();
+    if(_csLc.indexOf('invalid')!==-1||_csLc.indexOf('credentials')!==-1||_csLc.indexOf('wrong')!==-1||_csLc.indexOf('password')!==-1){
+      _csErrMsg = _t('Неверный email или пароль','Wrong email or password');
+    } else if(_csLc.indexOf('not confirmed')!==-1||_csLc.indexOf('email not confirmed')!==-1){
+      _csErrMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+    } else if(!_csErrMsg){
+      _csErrMsg = _t('Ошибка входа','Sign-in error');
+    }
+    if(err){err.style.display='';err.textContent=_csErrMsg;}
+    return;
+  }
   _cloudRefreshUI();
   try{ showToast2(_t('Добро пожаловать','Welcome')+', '+em); }catch(e){}
   _cloudAutoDownloadOnLogin();
