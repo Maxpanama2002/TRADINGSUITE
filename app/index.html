@@ -827,6 +827,17 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 }
 .ai-ctx-chip.ai-ctx-add{cursor:pointer;color:var(--accent2);border-color:rgba(168,85,247,0.3);}
 .ai-ctx-chip.ai-ctx-add:hover{background:rgba(124,58,237,0.1);}
+/* Free-tier AI usage counter */
+.ai-usage-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;margin-bottom:8px;background:linear-gradient(135deg,rgba(124,58,237,0.10),rgba(236,72,153,0.06));border:1px solid rgba(124,58,237,0.22);border-radius:10px;font-size:12px;color:var(--text2);}
+.ai-usage-banner.depleted{background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(245,158,11,0.08));border-color:rgba(239,68,68,0.30);}
+.ai-usage-left{display:flex;align-items:center;gap:8px;}
+.ai-usage-icon{font-size:14px;flex-shrink:0;}
+.ai-usage-text{line-height:1.4;}
+.ai-usage-text b{color:var(--text);font-weight:700;}
+.ai-usage-text .ai-usage-num{background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;}
+.ai-usage-upgrade{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s;letter-spacing:.03em;}
+.ai-usage-upgrade:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,58,237,0.35);}
+
 .ai-pg-input-row{
   display:flex;align-items:center;gap:10px;
   background:var(--card-bg2);border:1px solid var(--border);
@@ -3775,6 +3786,8 @@ body{background:var(--bg) !important;color:var(--text) !important;}
               <div id="ai-list-body" class="ai-list-body"></div>
             </div>
             <div class="ai-pg-foot">
+              <!-- Free tier usage counter (hidden for Pro / when limit = 0) -->
+              <div id="ai-usage-banner" class="ai-usage-banner" style="display:none;"></div>
               <div id="ai-foot-preview" class="ai-foot-preview"></div>
               <div class="ai-pg-context-chips" id="ai-ctx-chips"></div>
               <div class="ai-pg-input-row">
@@ -5505,6 +5518,8 @@ function navigateTo(page, toolIdx){
     _setTbTitle(null,_t('AI-ассистент','AI Assistant'));
     try{ _renderAIPgList(); }catch(e){}
     try{ _aiRenderCtxChips(); }catch(e){}
+    // Refresh tier cache then update free-tier usage banner
+    try{ if(window._loadFeatureTiers) _loadFeatureTiers().then(function(){ if(window._aiUpdateUsageBanner) _aiUpdateUsageBanner(); }); }catch(e){}
     // Disclaimer modal disabled per user request (owner of single-user app already knows where data goes).
     // Privacy controls (master opt-out + per-source toggles) are still available via the "+ Контекст" button.
     try{
@@ -17489,6 +17504,50 @@ window._isAdmin = false;
 window._admUsers = [];      // cached list
 window._admFilter = 'all';  // active filter
 
+// Обновить плашку в AI-чате с информацией о лимите бесплатных сообщений.
+// Логика:
+//  - Юзер не залогинен → скрыть
+//  - Юзер Pro → скрыть (безлимит)
+//  - Лимит = 0 → скрыть (безлимит для всех)
+//  - Иначе → показать "🆓 Осталось N из M бесплатных сообщений сегодня"
+window._aiUpdateUsageBanner = async function(){
+  var banner = document.getElementById('ai-usage-banner');
+  if(!banner) return;
+  if(!CloudSync || !CloudSync._user){ banner.style.display='none'; return; }
+  if(typeof _isPro === 'function' && _isPro()){ banner.style.display='none'; return; }
+  var limit = parseInt((window._featureTiers && window._featureTiers['ai_free_daily_limit']) || 0, 10);
+  if(!limit || limit <= 0){ banner.style.display='none'; return; }
+
+  // Получить использование за сегодня
+  var used = 0;
+  try{ used = await _aiUsageTodayCount(); }catch(e){}
+  var left = Math.max(0, limit - used);
+  var depleted = (left <= 0);
+
+  banner.classList.toggle('depleted', depleted);
+  banner.style.display = 'flex';
+
+  var l = (typeof getLang==='function')?getLang():'ru';
+  var icon = depleted ? '⏱' : '💬';
+  var msg;
+  if(depleted){
+    msg = (l==='en')
+      ? '<b>Daily AI limit reached</b> (' + used + ' / ' + limit + ' today). Upgrade to Pro for unlimited.'
+      : '<b>Дневной лимит AI исчерпан</b> (' + used + ' / ' + limit + ' сегодня). Подпишись на Pro для безлимита.';
+  } else {
+    msg = (l==='en')
+      ? 'Free tier: <span class="ai-usage-num">' + left + '</span> of ' + limit + ' messages left today'
+      : 'Free тариф: осталось <span class="ai-usage-num">' + left + '</span> из ' + limit + ' сообщений сегодня';
+  }
+
+  banner.innerHTML =
+      '<div class="ai-usage-left">'
+    +   '<span class="ai-usage-icon">' + icon + '</span>'
+    +   '<span class="ai-usage-text">' + msg + '</span>'
+    + '</div>'
+    + '<button class="ai-usage-upgrade" onclick="navigateTo(\'profile\')">' + (l==='en'?'Upgrade →':'Получить Pro →') + '</button>';
+};
+
 // Подсчитать сколько раз текущий юзер отправил AI-сообщение сегодня.
 // Использует Supabase user_events (RLS пропускает только свои строки).
 window._aiUsageTodayCount = async function(){
@@ -21389,6 +21448,9 @@ function restoreAll(inp) {
     if(!txt && !_attachList.length) return;
     inp.value = '';
     _doSend(txt);
+    // Update the free-tier usage banner so the counter decrements visibly.
+    // Wait a moment so the user_events INSERT lands first.
+    setTimeout(function(){ try{ window._aiUpdateUsageBanner && _aiUpdateUsageBanner(); }catch(e){} }, 600);
   };
 
   function _doSend(txt){
