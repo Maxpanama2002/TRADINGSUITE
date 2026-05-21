@@ -22338,8 +22338,14 @@ async function _gateRegister(){
     // Explicit HTTP status checks first (most reliable)
     if(r.status === 429 || lc.indexOf('429')!==-1 || lc.indexOf('rate')!==-1 || lc.indexOf('limit')!==-1 || lc.indexOf('over_email')!==-1){
       msg = _t(
-        '⏰ Лимит писем для регистрации исчерпан (2/час). Попробуй через час или используй другой email.',
-        '⏰ Email signup limit reached (2/hour). Try in an hour or use a different email.'
+        '⏰ Лимит писем для регистрации исчерпан. Попробуй позже или используй другой email.',
+        '⏰ Email signup limit reached. Try later or use a different email.'
+      );
+    } else if(lc.indexOf('sending confirmation')!==-1 || lc.indexOf('email_send_failed')!==-1 || lc.indexOf('smtp')!==-1){
+      // Resend / SMTP can\'t deliver to this address (domain not verified)
+      msg = _t(
+        '📧 Не удалось отправить письмо на этот email. Возможно сервис рассылки ещё не настроен полностью. Попробуй другой email или свяжись с поддержкой.',
+        '📧 Could not send email to this address. The mail service may not be fully configured. Try a different email or contact support.'
       );
     } else if(lc.indexOf('already')!==-1||lc.indexOf('registered')!==-1||lc.indexOf('user already')!==-1){
       msg = _t('Этот email уже зарегистрирован. Войди в аккаунт.','This email is already registered. Sign in instead.');
