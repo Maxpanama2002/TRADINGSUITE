@@ -2877,9 +2877,11 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 
 .adm-section-title{font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;}
 
-/* Detail modal */
-.adm-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:99000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.adm-modal{background:var(--card2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:720px;max-height:88vh;box-shadow:0 24px 64px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden;}
+/* Detail modal — fully opaque so admin-panel content underneath doesn't bleed through */
+.adm-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:99000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.adm-modal{background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:16px;width:100%;max-width:720px;max-height:88vh;box-shadow:0 30px 80px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden;}
+[data-theme="dark"] .adm-modal{background:#1f2330;border-color:rgba(255,255,255,0.10);box-shadow:0 30px 80px rgba(0,0,0,.65), 0 8px 24px rgba(0,0,0,.45);}
+[data-theme="sepia"] .adm-modal{background:#fbf5e7;border-color:rgba(0,0,0,0.10);}
 .adm-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);}
 .adm-modal-title{font-size:16px;font-weight:800;color:var(--text);}
 .adm-modal-sub{font-family:var(--mono),monospace;font-size:10px;color:var(--text3);margin-top:2px;}
