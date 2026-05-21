@@ -18008,47 +18008,100 @@ function admCloseDetail(){
 // ── Activity tab ────────────────────────────────────────────────────────
 var _admChart = null;
 async function admLoadActivity(){
+  var ctx = document.getElementById('adm-signups-chart');
+  var wrap = ctx ? ctx.parentElement : null;
+
+  function _showChartMsg(text){
+    if(!wrap) return;
+    var msg = wrap.querySelector('.adm-chart-msg');
+    if(!msg){
+      msg = document.createElement('div');
+      msg.className = 'adm-chart-msg';
+      msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;font-weight:500;text-align:center;padding:20px;';
+      wrap.appendChild(msg);
+    }
+    msg.textContent = text;
+    msg.style.display = 'flex';
+  }
+  function _hideChartMsg(){
+    if(!wrap) return;
+    var msg = wrap.querySelector('.adm-chart-msg');
+    if(msg) msg.style.display='none';
+  }
+
+  _showChartMsg(_t('Загружаю график…','Loading chart…'));
+
+  // Check Chart.js is available
+  if(typeof Chart === 'undefined'){
+    _showChartMsg('⚠ Chart.js ' + _t('не загружен','not loaded'));
+    return;
+  }
+
   var r = await CloudSync._req('/rest/v1/rpc/admin_signups_by_day', {
     method:'POST', body:{ days_back: 30 }
   });
-  if(!r.ok) return;
+
+  if(!r.ok){
+    _showChartMsg('⚠ ' + (r.error || _t('Не удалось загрузить данные','Failed to load data')));
+    console.error('admin_signups_by_day failed:', r);
+    return;
+  }
+  if(!Array.isArray(r.data) || !r.data.length){
+    _showChartMsg(_t('Нет данных за последние 30 дней','No data for the last 30 days'));
+    return;
+  }
+
   var labels = r.data.map(function(d){
     var dt = new Date(d.day);
     return dt.getDate() + '/' + (dt.getMonth()+1);
   });
-  var data = r.data.map(function(d){ return d.count; });
+  var data = r.data.map(function(d){ return parseInt(d.count, 10) || 0; });
 
-  var ctx = document.getElementById('adm-signups-chart');
-  if(!ctx || typeof Chart === 'undefined') return;
+  // If all zeros — show informative message instead of empty chart
+  var hasAny = data.some(function(v){ return v > 0; });
+  if(!hasAny){
+    _showChartMsg('📭 ' + _t('Пока 0 регистраций за этот период. Зарегистрируй тестового юзера — данные появятся здесь.','No signups in this period yet. Register a test user to see data here.'));
+    if(_admChart){ _admChart.destroy(); _admChart=null; }
+    return;
+  }
+
+  _hideChartMsg();
+
+  if(!ctx) return;
   if(_admChart){ _admChart.destroy(); }
-  // detect theme color for axes
   var textColor = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#999';
   var borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'rgba(0,0,0,0.08)';
-  _admChart = new Chart(ctx.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: _t('Регистраций', 'Signups'),
-        data: data,
-        backgroundColor: 'rgba(124,58,237,0.7)',
-        borderColor: 'rgba(236,72,153,1)',
-        borderWidth: 0,
-        borderRadius: 6,
-        barThickness: 'flex',
-        maxBarThickness: 22
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins:{ legend:{ display:false }, tooltip:{ enabled:true } },
-      scales: {
-        x: { grid:{ display:false }, ticks:{ color:textColor, font:{size:10} } },
-        y: { beginAtZero:true, grid:{ color:borderColor }, ticks:{ color:textColor, font:{size:10}, precision:0 } }
+
+  try{
+    _admChart = new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: _t('Регистраций', 'Signups'),
+          data: data,
+          backgroundColor: 'rgba(124,58,237,0.7)',
+          borderColor: 'rgba(236,72,153,1)',
+          borderWidth: 0,
+          borderRadius: 6,
+          barThickness: 'flex',
+          maxBarThickness: 22
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins:{ legend:{ display:false }, tooltip:{ enabled:true } },
+        scales: {
+          x: { grid:{ display:false }, ticks:{ color:textColor, font:{size:10} } },
+          y: { beginAtZero:true, grid:{ color:borderColor }, ticks:{ color:textColor, font:{size:10}, precision:0 } }
+        }
       }
-    }
-  });
+    });
+  }catch(e){
+    _showChartMsg('⚠ ' + _t('Ошибка отрисовки графика: ','Chart render error: ') + (e.message||e));
+    console.error('Chart.js render error:', e);
+  }
 
   // Top-10 by data volume
   var top = (window._admUsers||[]).slice().sort(function(a,b){ return (b.data_rows||0) - (a.data_rows||0); }).slice(0,10);
