@@ -17792,35 +17792,50 @@ function admSwitchTab(name){
 
 // ── Admin actions ──────────────────────────────────────────────────────
 async function admGrantPro(userId){
-  if(!confirm(_t('Выдать Pro подписку этому пользователю?','Grant Pro subscription to this user?'))) return;
-  // Try update first; if 0 rows, insert
-  var r = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(userId), {
-    method:'PATCH', body:{ plan:'pro', status:'active' },
-    headers:{ 'Prefer':'return=representation' }
-  });
-  if(r.ok && (!r.data || !r.data.length)){
-    r = await CloudSync._req('/rest/v1/subscriptions', {
-      method:'POST', body:{ user_id: userId, plan:'pro', status:'active' }
-    });
+  // Ask for duration. Cancel → abort, OK → use prompt response.
+  // Empty / 0 / "forever" = no expiry. Otherwise = number of days.
+  var ans = prompt(_t(
+    'На сколько дней выдать Pro?\n\n• Пусто или 0 — навсегда\n• 7 — на неделю\n• 30 — на месяц\n• Любое число — на N дней',
+    'Grant Pro for how many days?\n\n• Empty or 0 — forever\n• 7 — one week\n• 30 — one month\n• Any number — N days'
+  ), '');
+  if(ans === null) return; // cancelled
+
+  var days = null;
+  ans = (ans || '').trim();
+  if(ans !== '' && ans !== '0'){
+    var n = parseInt(ans, 10);
+    if(isNaN(n) || n < 0){
+      alert(_t('Введи число дней или оставь пустым для безлимита','Enter number of days or leave empty for forever'));
+      return;
+    }
+    days = n;
   }
+
+  var r = await CloudSync._req('/rest/v1/rpc/admin_grant_pro', {
+    method:'POST',
+    body:{ target_user_id: userId, duration_days: days }
+  });
+
   if(r.ok){
-    try{ showToast2('✓ Pro выдан'); }catch(e){}
+    var until = days ? (_t(' до ',' until ') + new Date(Date.now() + days*86400000).toLocaleDateString()) : '';
+    try{ showToast2('⭐ ' + _t('Pro выдан','Pro granted') + until); }catch(e){}
     admLoadUsers(); admLoadStats();
   } else {
-    alert('Ошибка: ' + (r.error || 'unknown'));
+    alert(_t('Ошибка: ','Error: ') + (r.error || 'unknown'));
   }
 }
 
 async function admRevokePro(userId){
   if(!confirm(_t('Снять Pro подписку?','Revoke Pro subscription?'))) return;
-  var r = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(userId), {
-    method:'PATCH', body:{ plan:'free', status:'canceled' }
+  var r = await CloudSync._req('/rest/v1/rpc/admin_revoke_pro', {
+    method:'POST',
+    body:{ target_user_id: userId }
   });
   if(r.ok){
     try{ showToast2('✓ Pro снят'); }catch(e){}
     admLoadUsers(); admLoadStats();
   } else {
-    alert('Ошибка: ' + (r.error || 'unknown'));
+    alert(_t('Ошибка: ','Error: ') + (r.error || 'unknown'));
   }
 }
 
