@@ -5456,7 +5456,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.2.1';
+window._APP_VERSION = '2.2.2';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -17124,7 +17124,13 @@ var STORAGE_KEYS = {
     'gc_v1','dashboard_config_v1','sb_sections',
     'rm_settings','strategy_cfg_v1','strategy_errors_v1','strategy_rules_v1','rt_rules_v1',
     'ai_chats_v1','ai_ctx_v1','ai_custom_prompt_v1','ai_model_v1','ai_preset_v1',
-    'app_lang','app_theme','app_tz','dv_funding_period','tt_theme','tt_v2'
+    'app_lang','app_theme','app_tz','dv_funding_period','tt_theme','tt_v2',
+    // Missing keys that were NOT syncing (causing web/desktop data drift):
+    'paper_portfolio_v1',         // Paper Trading state
+    'ds_custom_widgets_v1',       // Dashboard custom widgets config
+    'pre_check_v1',               // Pre-trade checklist state
+    'cooling_off_v1',              // Cooling-off after losses (psycho-protect)
+    'pf_logos_v3'                 // Cached portfolio coin logos
   ],
   // Префиксы ключей с per-date суффиксом (myday_blocks_2026-05-19, etc.)
   syncablePrefixes: ['myday_blocks_','myday_goals_','myday_mgoals_','rm_daily_']
