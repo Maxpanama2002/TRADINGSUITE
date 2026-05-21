@@ -2864,6 +2864,44 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 
 .adm-section-title{font-size:14px;font-weight:700;color:var(--text);margin:24px 0 12px;}
 
+/* Detail modal */
+.adm-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:99000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.adm-modal{background:var(--card2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:720px;max-height:88vh;box-shadow:0 24px 64px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden;}
+.adm-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);}
+.adm-modal-title{font-size:16px;font-weight:800;color:var(--text);}
+.adm-modal-sub{font-family:var(--mono),monospace;font-size:10px;color:var(--text3);margin-top:2px;}
+.adm-modal-close{background:transparent;border:none;color:var(--text3);font-size:24px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;}
+.adm-modal-close:hover{background:var(--border);color:var(--text);}
+.adm-modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+.adm-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.adm-detail-item{background:var(--card-bg);border-radius:8px;padding:10px 12px;}
+.adm-detail-key{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.adm-detail-val{font-size:13px;color:var(--text);font-weight:600;word-break:break-word;}
+.adm-detail-action-row{display:flex;gap:8px;margin:14px 0 6px;flex-wrap:wrap;}
+.adm-detail-action-row button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.adm-detail-action-row button:hover{background:var(--border);}
+.adm-detail-action-row .danger{color:#ef4444;border-color:rgba(239,68,68,0.3);}
+.adm-detail-action-row .danger:hover{background:rgba(239,68,68,0.12);}
+.adm-detail-action-row .ok{color:#22c55e;border-color:rgba(34,197,94,0.3);}
+.adm-detail-action-row .ok:hover{background:rgba(34,197,94,0.12);}
+.adm-events-mini{margin-top:14px;}
+.adm-events-mini-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.adm-events-mini-row:last-child{border-bottom:none;}
+.adm-events-mini-event{color:var(--text);font-weight:600;font-family:var(--mono),monospace;font-size:11px;}
+.adm-events-mini-time{color:var(--text3);font-size:11px;}
+
+/* Config rows (feature flag toggles) */
+.adm-config-row{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);}
+.adm-config-row:last-child{border-bottom:none;}
+.adm-cfg-toggle{position:relative;width:38px;height:22px;border-radius:11px;background:var(--card-bg);border:1px solid var(--border);cursor:pointer;transition:all .15s;flex-shrink:0;}
+.adm-cfg-toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text3);transition:all .15s;}
+.adm-cfg-toggle.on{background:linear-gradient(135deg,#7c3aed,#ec4899);border-color:transparent;}
+.adm-cfg-toggle.on::after{left:18px;background:#fff;}
+
+/* Click-able user rows */
+.adm-table tbody tr.adm-row-clickable{cursor:pointer;}
+.adm-banned-tag{color:#ef4444;font-size:10px;font-weight:700;letter-spacing:.04em;margin-left:6px;}
+
 /* ── Guest mode lock badge in sidebar ─────────────────────────── */
 .sb-lock-badge{
   margin-left:auto;flex-shrink:0;display:flex;align-items:center;
@@ -3431,7 +3469,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
               </div>
             </div>
             <div class="sub-plans-grid">
-              <div class="sub-plan">
+              <div class="sub-plan" id="sub-plan-free">
                 <div class="sub-plan-title">🆓 Free</div>
                 <div class="sub-plan-price">$0<span class="sub-plan-price-cents">/мес</span></div>
                 <ul class="sub-plan-features">
@@ -3443,11 +3481,11 @@ body{background:var(--bg) !important;color:var(--text) !important;}
                   <li class="locked">Telegram-уведомления</li>
                   <li class="locked">Расширенный backtest</li>
                 </ul>
-                <button class="sub-plan-cta secondary" disabled>Текущий тариф</button>
+                <button class="sub-plan-cta secondary" id="sub-free-cta" disabled>Текущий тариф</button>
               </div>
-              <div class="sub-plan pro">
+              <div class="sub-plan pro" id="sub-plan-pro">
                 <div class="sub-plan-title">⭐ Pro <span class="sub-plan-badge popular">Популярный</span></div>
-                <div class="sub-plan-price">$9<span class="sub-plan-price-cents">.99/мес</span></div>
+                <div class="sub-plan-price"><span id="sub-pro-price">$9</span><span class="sub-plan-price-cents" id="sub-pro-cents">.99/мес</span></div>
                 <ul class="sub-plan-features">
                   <li>Всё из Free</li>
                   <li>Безлимит виджетов на дашборде</li>
@@ -3457,7 +3495,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
                   <li>Telegram-уведомления</li>
                   <li>Приоритетная поддержка</li>
                 </ul>
-                <button class="sub-plan-cta primary" onclick="_subUpgrade()">Активировать Pro</button>
+                <button class="sub-plan-cta primary" id="sub-pro-cta" onclick="_subUpgrade()">Активировать Pro</button>
               </div>
             </div>
           </div>
@@ -5073,8 +5111,10 @@ body{background:var(--bg) !important;color:var(--text) !important;}
           <!-- Tabs -->
           <div class="adm-tabs">
             <button class="adm-tab active" data-adm-tab="users" onclick="admSwitchTab('users')" data-ru="Пользователи" data-en="Users">Пользователи</button>
-            <button class="adm-tab" data-adm-tab="prices" onclick="admSwitchTab('prices')" data-ru="Цены (скоро)" data-en="Pricing (soon)">Цены (скоро)</button>
-            <button class="adm-tab" data-adm-tab="config" onclick="admSwitchTab('config')" data-ru="Настройки (скоро)" data-en="Config (soon)">Настройки (скоро)</button>
+            <button class="adm-tab" data-adm-tab="activity" onclick="admSwitchTab('activity')" data-ru="Активность" data-en="Activity">Активность</button>
+            <button class="adm-tab" data-adm-tab="events" onclick="admSwitchTab('events')" data-ru="События" data-en="Events">События</button>
+            <button class="adm-tab" data-adm-tab="prices" onclick="admSwitchTab('prices')" data-ru="Цены" data-en="Pricing">Цены</button>
+            <button class="adm-tab" data-adm-tab="config" onclick="admSwitchTab('config')" data-ru="Настройки" data-en="Config">Настройки</button>
           </div>
 
           <!-- Users tab -->
@@ -5106,21 +5146,99 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             </div>
           </div>
 
-          <!-- Prices tab (placeholder) -->
-          <div id="adm-pane-prices" style="display:none;">
-            <div class="adm-table-wrap" style="padding:32px;text-align:center;color:var(--text3);">
-              <div style="font-size:32px;margin-bottom:8px;">💰</div>
-              <div style="font-weight:700;color:var(--text2);font-size:14px;margin-bottom:4px;">Редактор цен Pro версии</div>
-              <div style="font-size:12px;">Будет добавлен в Фазе 3 после подключения Stripe</div>
+          <!-- Activity tab -->
+          <div id="adm-pane-activity" style="display:none;">
+            <div class="adm-section-title" data-ru="📈 Регистрации за 30 дней" data-en="📈 Signups, last 30 days">📈 Регистрации за 30 дней</div>
+            <div class="adm-table-wrap" style="padding:18px;">
+              <div style="position:relative;height:280px;"><canvas id="adm-signups-chart"></canvas></div>
+            </div>
+            <div class="adm-section-title" data-ru="🏆 Топ-10 по объёму данных" data-en="🏆 Top-10 by data volume">🏆 Топ-10 по объёму данных</div>
+            <div class="adm-table-wrap">
+              <table class="adm-table"><thead><tr>
+                <th data-ru="Пользователь" data-en="User">Пользователь</th>
+                <th data-ru="Записей" data-en="Rows">Записей</th>
+                <th data-ru="План" data-en="Plan">План</th>
+              </tr></thead><tbody id="adm-top-tbody"></tbody></table>
             </div>
           </div>
 
-          <!-- Config tab (placeholder) -->
+          <!-- Events tab -->
+          <div id="adm-pane-events" style="display:none;">
+            <div class="adm-section-title" data-ru="📜 Последние 100 событий" data-en="📜 Last 100 events">📜 Последние 100 событий</div>
+            <div class="adm-table-wrap">
+              <table class="adm-table"><thead><tr>
+                <th data-ru="Время" data-en="Time">Время</th>
+                <th data-ru="Пользователь" data-en="User">Пользователь</th>
+                <th data-ru="Событие" data-en="Event">Событие</th>
+                <th data-ru="Данные" data-en="Payload">Данные</th>
+              </tr></thead><tbody id="adm-events-tbody">
+                <tr><td colspan="4" class="adm-loading">Загрузка…</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+
+          <!-- Prices tab -->
+          <div id="adm-pane-prices" style="display:none;">
+            <div class="adm-section-title" data-ru="💰 Тарифы" data-en="💰 Pricing plans">💰 Тарифы</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+              <!-- Pro monthly card -->
+              <div class="adm-table-wrap" style="padding:18px;">
+                <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">PRO MONTHLY</div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:14px;">
+                  <span style="font-size:13px;color:var(--text3);" id="adm-cur-monthly">$</span>
+                  <input type="number" step="0.01" min="0" class="adm-search" id="adm-price-monthly" style="font-size:24px;font-weight:800;flex:0 1 120px;text-align:right;">
+                  <span style="font-size:13px;color:var(--text3);" data-ru="/мес" data-en="/mo">/мес</span>
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" data-ru="Stripe Price ID" data-en="Stripe Price ID">Stripe Price ID</div>
+                <input type="text" class="adm-search" id="adm-stripe-monthly" placeholder="price_1Abcd...">
+              </div>
+              <!-- Pro yearly card -->
+              <div class="adm-table-wrap" style="padding:18px;">
+                <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">PRO YEARLY</div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:14px;">
+                  <span style="font-size:13px;color:var(--text3);" id="adm-cur-yearly">$</span>
+                  <input type="number" step="0.01" min="0" class="adm-search" id="adm-price-yearly" style="font-size:24px;font-weight:800;flex:0 1 120px;text-align:right;">
+                  <span style="font-size:13px;color:var(--text3);" data-ru="/год" data-en="/yr">/год</span>
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" data-ru="Stripe Price ID" data-en="Stripe Price ID">Stripe Price ID</div>
+                <input type="text" class="adm-search" id="adm-stripe-yearly" placeholder="price_1Abcd...">
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
+              <button class="adm-refresh" onclick="admSavePrices()" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-color:transparent;">
+                <span data-ru="💾 Сохранить" data-en="💾 Save">💾 Сохранить</span>
+              </button>
+              <div id="adm-prices-saved" style="font-size:12px;color:#22c55e;display:none;" data-ru="✓ Сохранено" data-en="✓ Saved">✓ Сохранено</div>
+            </div>
+            <div class="adm-section-title" data-ru="⚙️ Что показывать пользователям" data-en="⚙️ What users see">⚙️ Что показывать пользователям</div>
+            <div class="adm-table-wrap" style="padding:14px;font-size:12px;color:var(--text2);line-height:1.6;">
+              <div data-ru="Эти цены и Price ID Stripe используются на странице «Личный кабинет → Подписка». После изменения цены — обнови страницу, чтобы пользователи увидели новые тарифы." data-en="These prices and Stripe Price IDs are used on the Personal Cabinet → Subscription page. After changing, refresh the page so users see the new pricing.">Эти цены и Price ID Stripe используются на странице «Личный кабинет → Подписка». После изменения цены — обнови страницу, чтобы пользователи увидели новые тарифы.</div>
+            </div>
+          </div>
+
+          <!-- Config tab -->
           <div id="adm-pane-config" style="display:none;">
-            <div class="adm-table-wrap" style="padding:32px;text-align:center;color:var(--text3);">
-              <div style="font-size:32px;margin-bottom:8px;">⚙️</div>
-              <div style="font-weight:700;color:var(--text2);font-size:14px;margin-bottom:4px;">Настройки приложения</div>
-              <div style="font-size:12px;">Feature flags, режим обслуживания, лимиты — Фаза 4</div>
+            <div class="adm-section-title" data-ru="🎛 Фича-флаги" data-en="🎛 Feature flags">🎛 Фича-флаги</div>
+            <div class="adm-table-wrap" style="padding:8px 0;">
+              <div class="adm-config-row" data-key="features.ai_enabled" data-ru="AI-ассистент включён глобально" data-en="AI assistant enabled globally">AI-ассистент включён глобально</div>
+              <div class="adm-config-row" data-key="features.pro_required_for_ai" data-ru="AI только для Pro подписчиков" data-en="AI is Pro-only">AI только для Pro подписчиков</div>
+              <div class="adm-config-row" data-key="features.pro_required_for_export" data-ru="Экспорт данных только для Pro" data-en="Data export is Pro-only">Экспорт данных только для Pro</div>
+            </div>
+          </div>
+
+          <!-- User detail modal -->
+          <div id="adm-detail-modal" class="adm-modal-overlay" style="display:none;" onclick="if(event.target===this)admCloseDetail()">
+            <div class="adm-modal" onclick="event.stopPropagation()">
+              <div class="adm-modal-head">
+                <div>
+                  <div class="adm-modal-title" id="adm-detail-email">—</div>
+                  <div class="adm-modal-sub" id="adm-detail-uid"></div>
+                </div>
+                <button class="adm-modal-close" onclick="admCloseDetail()">×</button>
+              </div>
+              <div class="adm-modal-body" id="adm-detail-body">
+                <div class="adm-loading">Загрузка…</div>
+              </div>
             </div>
           </div>
         </div>
@@ -5458,6 +5576,7 @@ function navigateTo(page, toolIdx){
     if(adPg) adPg.style.display='';
     _setTbTitle(_t('Управление','Management'),_t('Админ-панель','Admin Panel'));
     try{ admInit(); }catch(e){ console.error('admInit',e); }
+    try{ window._logEvent && _logEvent('admin_panel_open', {}); }catch(e){}
   } else if(page==='riskmanager'){
     _hideAllPages();
     var rmPg=document.getElementById('page-riskmanager');
@@ -5809,12 +5928,105 @@ function _qsRefresh(){
 // "activate Pro locally" via confirm() — that was a UI backdoor that
 // looked unfinished and could be misused. Just show an informational
 // toast/alert pointing to the future payment integration.
+// Subscription state — populated by _subRefresh
+window._subPlan = 'free';
+window._subStatus = 'inactive';
+window._subPricing = { pro_monthly: { amount:9.99, currency:'USD', stripe_price_id:'' } };
+
+// Returns true if current user has an active Pro subscription
+window._isPro = function(){
+  return window._subPlan === 'pro' && window._subStatus === 'active';
+};
+
+// Loads subscription + pricing from Supabase and updates UI in Personal Cabinet
+window._subRefresh = async function(){
+  if(!CloudSync._user || !CloudSync._ready) return;
+  try{
+    // 1) Pricing from app_config
+    var rp = await CloudSync._req('/rest/v1/app_config?key=eq.pricing.pro_monthly&select=value', { method:'GET' });
+    if(rp.ok && rp.data && rp.data.length){
+      window._subPricing.pro_monthly = rp.data[0].value || window._subPricing.pro_monthly;
+    }
+    // 2) User's subscription
+    var rs = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(CloudSync._user.id) + '&select=plan,status,current_period_end,cancel_at_period_end', { method:'GET' });
+    if(rs.ok && rs.data && rs.data.length){
+      window._subPlan   = rs.data[0].plan || 'free';
+      window._subStatus = rs.data[0].status || 'inactive';
+    } else {
+      window._subPlan = 'free'; window._subStatus = 'inactive';
+    }
+  }catch(e){}
+
+  // Update UI
+  try{
+    var price = window._subPricing.pro_monthly || {};
+    var amt = parseFloat(price.amount || 9.99);
+    var whole = Math.floor(amt);
+    var cents = (amt - whole).toFixed(2).slice(1); // ".99"
+    var symbol = price.currency === 'EUR' ? '€' : price.currency === 'RUB' ? '₽' : '$';
+    var pe = document.getElementById('sub-pro-price'); if(pe) pe.textContent = symbol + whole;
+    var pc = document.getElementById('sub-pro-cents'); if(pc) pc.textContent = cents + (typeof getLang==='function'&&getLang()==='en'?'/mo':'/мес');
+
+    var statusBadge = document.getElementById('sub-status-badge');
+    var statusName  = document.getElementById('sub-status-name');
+    var statusDesc  = document.getElementById('sub-status-desc');
+    var proCta      = document.getElementById('sub-pro-cta');
+    var freeCta     = document.getElementById('sub-free-cta');
+
+    if(window._isPro()){
+      if(statusBadge){ statusBadge.textContent='Pro'; statusBadge.style.background='linear-gradient(135deg,#7c3aed,#ec4899)'; statusBadge.style.color='#fff'; }
+      if(statusName) statusName.textContent = _t('Pro тариф активен','Pro plan active');
+      if(statusDesc) statusDesc.textContent = _t('Все функции разблокированы','All features unlocked');
+      if(proCta){ proCta.textContent = _t('Текущий тариф','Current plan'); proCta.disabled = true; proCta.classList.remove('primary'); proCta.classList.add('secondary'); }
+      if(freeCta){ freeCta.textContent = _t('Перейти на Free','Switch to Free'); freeCta.disabled = false; }
+    } else {
+      if(statusBadge){ statusBadge.textContent='Free'; statusBadge.style.background=''; statusBadge.style.color=''; }
+      if(statusName) statusName.textContent = _t('Бесплатный тариф','Free plan');
+      if(statusDesc) statusDesc.textContent = _t('Pro открывает расширенные функции','Pro unlocks advanced features');
+      if(proCta){ proCta.textContent = _t('Активировать Pro','Activate Pro'); proCta.disabled = false; proCta.classList.add('primary'); proCta.classList.remove('secondary'); }
+      if(freeCta){ freeCta.textContent = _t('Текущий тариф','Current plan'); freeCta.disabled = true; }
+    }
+  }catch(e){}
+};
+
 function _subUpgrade(){
-  var isEn=(typeof getLang==='function'&&getLang()==='en');
-  var msg=isEn
-    ? 'Pro subscription is coming soon. Payment integration (Stripe / Supabase) is on the roadmap. Free features remain fully available.'
-    : 'Pro-подписка скоро будет доступна. Интеграция с платёжной системой (Stripe / Supabase) — в дорожной карте. Бесплатные функции остаются полностью доступными.';
-  try{ showToast2(msg); }catch(_){ alert(msg); }
+  if(!CloudSync._user){ try{ _authGateShow(); }catch(_){ } return; }
+  var price = window._subPricing && window._subPricing.pro_monthly;
+  var stripePriceId = price && price.stripe_price_id;
+  if(!stripePriceId){
+    // Stripe not yet configured — show coming-soon message
+    var msg = _t(
+      '⚙️ Оплата Pro подписки скоро будет доступна. Мы настраиваем Stripe — следи за обновлениями!',
+      '⚙️ Pro subscription payment will be available soon. Stripe setup is in progress — stay tuned!'
+    );
+    try{ showToast2(msg); }catch(_){ alert(msg); }
+    return;
+  }
+  // Stripe IS configured — open Checkout
+  try{ window._logEvent && _logEvent('upgrade_clicked', { price_id: stripePriceId }); }catch(e){}
+  _stripeCheckout(stripePriceId);
+}
+
+// Stripe Checkout — opens a hosted Checkout page via Supabase Edge Function.
+// The Edge Function (deploy separately) creates a Checkout session and
+// returns a redirect URL. See: db/edge-functions/stripe-checkout/
+async function _stripeCheckout(priceId){
+  var btn = document.getElementById('sub-pro-cta');
+  if(btn){ btn.disabled = true; btn.textContent = _t('Переходим…','Redirecting…'); }
+  var r = await CloudSync._req('/functions/v1/stripe-checkout', {
+    method:'POST', body:{ price_id: priceId, success_url: window.location.origin + '/app/?payment=success', cancel_url: window.location.origin + '/app/?payment=cancel' }
+  });
+  if(btn){ btn.disabled = false; btn.textContent = _t('Активировать Pro','Activate Pro'); }
+  if(r.ok && r.data && r.data.url){
+    window.location.href = r.data.url;
+  } else {
+    var emsg = (r.error||'').toLowerCase();
+    if(emsg.indexOf('not found')!==-1 || emsg.indexOf('404')!==-1){
+      alert(_t('Stripe ещё не подключён. Админ должен задеплоить Edge Function.','Stripe is not yet set up. Admin must deploy the Edge Function.'));
+    } else {
+      alert(_t('Ошибка платежа: ','Payment error: ') + (r.error||'unknown'));
+    }
+  }
 }
 
 // Auth gate — shown when entering Personal Cabinet if user is not signed in.
@@ -6028,6 +6240,8 @@ function _pcMoney(v){
 
 // Main entry point — called when navigating to profile page
 function renderPersonalCabinet(){
+  // Refresh subscription state + price labels every time the cabinet opens
+  try{ window._subRefresh && _subRefresh(); }catch(e){}
   var prof=_readUserProfile();
   var isEn=(typeof getLang==='function'&&getLang()==='en');
 
@@ -17114,6 +17328,18 @@ window._isAdmin = false;
 window._admUsers = [];      // cached list
 window._admFilter = 'all';  // active filter
 
+// Log a user event to Supabase (best-effort, never blocks UI).
+// Used for analytics + admin events feed.
+window._logEvent = function(eventName, payload){
+  try{
+    if(!CloudSync._user || !CloudSync._ready) return;
+    CloudSync._req('/rest/v1/user_events', {
+      method:'POST',
+      body:{ user_id: CloudSync._user.id, event: eventName, payload: payload || {} }
+    }).catch(function(){});
+  }catch(e){}
+};
+
 async function _checkAdminRole(){
   if(!CloudSync._user || !CloudSync._ready){ _setAdminUI(false); return; }
   // Query profiles for current user's role
@@ -17207,17 +17433,20 @@ function admRenderUsers(){
       : '<span class="adm-badge adm-badge-free">FREE</span>';
     var roleBadge = u.role==='admin' ? ' <span class="adm-badge adm-badge-admin">ADMIN</span>' : '';
     var confirmBadge = !u.email_confirmed_at ? ' <span class="adm-badge adm-badge-unconfirmed">✉</span>' : '';
+    var banTag = u.banned_at ? ' <span class="adm-banned-tag">🚫 BAN</span>' : '';
     var actionBtns = '';
     if(u.plan !== 'pro'){
-      actionBtns += '<button class="adm-row-btn pro" onclick="admGrantPro(\'' + u.user_id + '\')" title="' + _t('Дать Pro','Grant Pro') + '">+Pro</button>';
+      actionBtns += '<button class="adm-row-btn pro" onclick="event.stopPropagation();admGrantPro(\'' + u.user_id + '\')" title="' + _t('Дать Pro','Grant Pro') + '">+Pro</button>';
     } else {
-      actionBtns += '<button class="adm-row-btn danger" onclick="admRevokePro(\'' + u.user_id + '\')" title="' + _t('Снять Pro','Revoke Pro') + '">−Pro</button>';
+      actionBtns += '<button class="adm-row-btn danger" onclick="event.stopPropagation();admRevokePro(\'' + u.user_id + '\')" title="' + _t('Снять Pro','Revoke Pro') + '">−Pro</button>';
     }
-    if(u.role !== 'admin'){
-      actionBtns += '<button class="adm-row-btn" onclick="admGrantAdmin(\'' + u.user_id + '\')" title="' + _t('Сделать админом','Make admin') + '">+Admin</button>';
+    if(u.banned_at){
+      actionBtns += '<button class="adm-row-btn ok" onclick="event.stopPropagation();admUnban(\'' + u.user_id + '\')" title="' + _t('Разбанить','Unban') + '" style="color:#22c55e;border-color:rgba(34,197,94,0.3);">↺</button>';
+    } else {
+      actionBtns += '<button class="adm-row-btn danger" onclick="event.stopPropagation();admBan(\'' + u.user_id + '\')" title="' + _t('Заблокировать','Ban') + '">🚫</button>';
     }
-    return '<tr>'
-      + '<td><div class="adm-email">' + _admEsc(u.email||'—') + roleBadge + confirmBadge + '</div>'
+    return '<tr class="adm-row-clickable" onclick="admOpenDetail(\'' + u.user_id + '\')">'
+      + '<td><div class="adm-email">' + _admEsc(u.email||'—') + roleBadge + confirmBadge + banTag + '</div>'
       +   (u.display_name ? '<div class="adm-uid">' + _admEsc(u.display_name) + '</div>' : '')
       +   '<div class="adm-uid">' + (u.user_id||'').slice(0,8) + '…</div></td>'
       + '<td>' + planBadge + '</td>'
@@ -17241,10 +17470,15 @@ function admSwitchTab(name){
   document.querySelectorAll('.adm-tab').forEach(function(b){
     b.classList.toggle('active', b.getAttribute('data-adm-tab') === name);
   });
-  ['users','prices','config'].forEach(function(t){
+  ['users','activity','events','prices','config'].forEach(function(t){
     var el = document.getElementById('adm-pane-' + t);
     if(el) el.style.display = (t === name) ? '' : 'none';
   });
+  // Lazy-load tab contents on first switch
+  if(name==='activity') admLoadActivity();
+  else if(name==='events') admLoadEvents();
+  else if(name==='prices') admLoadPrices();
+  else if(name==='config') admLoadConfig();
 }
 
 // ── Admin actions ──────────────────────────────────────────────────────
@@ -17291,6 +17525,297 @@ async function admGrantAdmin(userId){
     admLoadUsers(); admLoadStats();
   } else {
     alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+async function admBan(userId){
+  var reason = prompt(_t('Причина блокировки (необязательно):','Ban reason (optional):'), '');
+  if(reason === null) return; // cancelled
+  var r = await CloudSync._req('/rest/v1/rpc/admin_ban_user', {
+    method:'POST', body:{ target_user_id: userId, reason: reason || null }
+  });
+  if(r.ok){
+    try{ showToast2('🚫 ' + _t('Пользователь заблокирован','User banned')); }catch(e){}
+    admLoadUsers();
+  } else {
+    alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+async function admUnban(userId){
+  if(!confirm(_t('Разблокировать пользователя?','Unban this user?'))) return;
+  var r = await CloudSync._req('/rest/v1/rpc/admin_unban_user', {
+    method:'POST', body:{ target_user_id: userId }
+  });
+  if(r.ok){
+    try{ showToast2('✓ ' + _t('Пользователь разблокирован','User unbanned')); }catch(e){}
+    admLoadUsers();
+  } else {
+    alert('Ошибка: ' + (r.error || 'unknown'));
+  }
+}
+
+// ── User detail modal ──────────────────────────────────────────────────
+async function admOpenDetail(userId){
+  var modal = document.getElementById('adm-detail-modal');
+  var body  = document.getElementById('adm-detail-body');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  if(body) body.innerHTML = '<div class="adm-loading">' + _t('Загрузка…','Loading…') + '</div>';
+  document.getElementById('adm-detail-email').textContent = '—';
+  document.getElementById('adm-detail-uid').textContent = '';
+
+  var r = await CloudSync._req('/rest/v1/rpc/admin_user_detail', {
+    method:'POST', body:{ target_user_id: userId }
+  });
+  if(!r.ok){
+    if(body) body.innerHTML = '<div class="adm-empty">⚠ ' + (r.error||'Failed to load') + '</div>';
+    return;
+  }
+  var d = r.data || {};
+  var u = d.user || {};
+  var p = d.profile || {};
+  var s = d.subscription || {};
+  var events = d.events || [];
+  var dataKeys = d.data_keys || [];
+
+  document.getElementById('adm-detail-email').textContent = u.email || '—';
+  document.getElementById('adm-detail-uid').textContent = u.id || '';
+
+  var planBadge = (s.plan === 'pro')
+    ? '<span class="adm-badge adm-badge-pro">PRO</span>'
+    : '<span class="adm-badge adm-badge-free">FREE</span>';
+  var roleBadge = (p.role === 'admin') ? '<span class="adm-badge adm-badge-admin">ADMIN</span>' : '';
+  var banSection = '';
+  if(p.banned_at){
+    banSection = '<div style="background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.28);border-radius:10px;padding:10px 14px;margin-bottom:14px;">'
+      + '<div style="font-weight:700;color:#ef4444;margin-bottom:4px;">🚫 ' + _t('Пользователь заблокирован','User is banned') + '</div>'
+      + (p.ban_reason ? '<div style="font-size:12px;color:var(--text2);">' + _admEsc(p.ban_reason) + '</div>' : '')
+      + '<div style="font-size:11px;color:var(--text3);margin-top:4px;">' + _t('Заблокирован: ','Banned at: ') + _admFmtDate(p.banned_at) + '</div>'
+      + '</div>';
+  }
+
+  function row(k, v){
+    return '<div class="adm-detail-item"><div class="adm-detail-key">' + _admEsc(k) + '</div><div class="adm-detail-val">' + (v || '—') + '</div></div>';
+  }
+
+  var html = banSection
+    + '<div class="adm-detail-grid">'
+    +   row(_t('План','Plan'), planBadge + ' ' + roleBadge)
+    +   row(_t('Статус','Status'), s.status || 'free')
+    +   row(_t('Регистрация','Signed up'), _admFmtDate(u.created_at) + (u.email_confirmed_at ? ' ✓' : ' <span style="color:#f59e0b;">(не подтв.)</span>'))
+    +   row(_t('Последний вход','Last sign-in'), u.last_sign_in_at ? _admFmtDate(u.last_sign_in_at) : '—')
+    +   row(_t('Записей данных','Data rows'), dataKeys.length)
+    +   row(_t('Stripe customer','Stripe customer'), s.stripe_customer_id || '—')
+    + '</div>';
+
+  // Action buttons
+  html += '<div class="adm-detail-action-row">';
+  if((s.plan||'free') !== 'pro'){
+    html += '<button class="ok" onclick="admGrantPro(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">+ Pro</button>';
+  } else {
+    html += '<button class="danger" onclick="admRevokePro(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">− Pro</button>';
+  }
+  if((p.role||'user') !== 'admin'){
+    html += '<button onclick="admGrantAdmin(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">+ Admin</button>';
+  }
+  if(p.banned_at){
+    html += '<button class="ok" onclick="admUnban(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">↺ ' + _t('Разбанить','Unban') + '</button>';
+  } else {
+    html += '<button class="danger" onclick="admBan(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">🚫 ' + _t('Бан','Ban') + '</button>';
+  }
+  html += '</div>';
+
+  // Recent events
+  if(events.length){
+    html += '<div class="adm-section-title" style="margin:18px 0 8px;">📜 ' + _t('Последние события','Recent events') + '</div>';
+    html += '<div class="adm-events-mini">';
+    events.slice(0, 15).forEach(function(e){
+      html += '<div class="adm-events-mini-row">'
+        + '<span class="adm-events-mini-event">' + _admEsc(e.event) + '</span>'
+        + '<span class="adm-events-mini-time">' + _admFmtDate(e.created_at) + '</span>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  if(body) body.innerHTML = html;
+}
+
+function admCloseDetail(){
+  var m = document.getElementById('adm-detail-modal');
+  if(m) m.style.display = 'none';
+}
+
+// ── Activity tab ────────────────────────────────────────────────────────
+var _admChart = null;
+async function admLoadActivity(){
+  var r = await CloudSync._req('/rest/v1/rpc/admin_signups_by_day', {
+    method:'POST', body:{ days_back: 30 }
+  });
+  if(!r.ok) return;
+  var labels = r.data.map(function(d){
+    var dt = new Date(d.day);
+    return dt.getDate() + '/' + (dt.getMonth()+1);
+  });
+  var data = r.data.map(function(d){ return d.count; });
+
+  var ctx = document.getElementById('adm-signups-chart');
+  if(!ctx || typeof Chart === 'undefined') return;
+  if(_admChart){ _admChart.destroy(); }
+  // detect theme color for axes
+  var textColor = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim() || '#999';
+  var borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'rgba(0,0,0,0.08)';
+  _admChart = new Chart(ctx.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: _t('Регистраций', 'Signups'),
+        data: data,
+        backgroundColor: 'rgba(124,58,237,0.7)',
+        borderColor: 'rgba(236,72,153,1)',
+        borderWidth: 0,
+        borderRadius: 6,
+        barThickness: 'flex',
+        maxBarThickness: 22
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins:{ legend:{ display:false }, tooltip:{ enabled:true } },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ color:textColor, font:{size:10} } },
+        y: { beginAtZero:true, grid:{ color:borderColor }, ticks:{ color:textColor, font:{size:10}, precision:0 } }
+      }
+    }
+  });
+
+  // Top-10 by data volume
+  var top = (window._admUsers||[]).slice().sort(function(a,b){ return (b.data_rows||0) - (a.data_rows||0); }).slice(0,10);
+  var topTbody = document.getElementById('adm-top-tbody');
+  if(topTbody){
+    if(!top.length){
+      topTbody.innerHTML = '<tr><td colspan="3" class="adm-empty">—</td></tr>';
+    } else {
+      topTbody.innerHTML = top.map(function(u){
+        var pb = (u.plan==='pro') ? '<span class="adm-badge adm-badge-pro">PRO</span>' : '<span class="adm-badge adm-badge-free">FREE</span>';
+        return '<tr><td class="adm-email">' + _admEsc(u.email||'—') + '</td>'
+          + '<td><strong>' + (u.data_rows||0) + '</strong></td>'
+          + '<td>' + pb + '</td></tr>';
+      }).join('');
+    }
+  }
+}
+
+// ── Events tab ──────────────────────────────────────────────────────────
+async function admLoadEvents(){
+  var tbody = document.getElementById('adm-events-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" class="adm-loading">' + _t('Загрузка…','Loading…') + '</td></tr>';
+  var r = await CloudSync._req('/rest/v1/rpc/admin_recent_events', {
+    method:'POST', body:{ limit_n: 100 }
+  });
+  if(!r.ok){
+    tbody.innerHTML = '<tr><td colspan="4" class="adm-empty">⚠ ' + (r.error||'') + '</td></tr>';
+    return;
+  }
+  var events = r.data || [];
+  if(!events.length){
+    tbody.innerHTML = '<tr><td colspan="4" class="adm-empty">' + _t('Событий ещё нет','No events yet') + '</td></tr>';
+    return;
+  }
+  tbody.innerHTML = events.map(function(e){
+    var payload = '';
+    try{ payload = JSON.stringify(e.payload).slice(0, 80); }catch(_){ payload = ''; }
+    return '<tr>'
+      + '<td class="adm-date">' + _admFmtDate(e.created_at) + '</td>'
+      + '<td class="adm-email">' + _admEsc(e.user_email || '—') + '</td>'
+      + '<td><span style="font-family:var(--mono),monospace;font-size:11px;font-weight:600;color:var(--accent);">' + _admEsc(e.event) + '</span></td>'
+      + '<td style="font-family:var(--mono),monospace;font-size:11px;color:var(--text3);">' + _admEsc(payload) + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ── Prices tab ──────────────────────────────────────────────────────────
+async function admLoadPrices(){
+  // Load both pro_monthly and pro_yearly
+  var r = await CloudSync._req('/rest/v1/app_config?key=in.(pricing.pro_monthly,pricing.pro_yearly)&select=key,value', { method:'GET' });
+  if(!r.ok) return;
+  var byKey = {};
+  (r.data||[]).forEach(function(row){ byKey[row.key] = row.value; });
+  var m = byKey['pricing.pro_monthly'] || { amount: 9.99, currency: 'USD', stripe_price_id: '' };
+  var y = byKey['pricing.pro_yearly']  || { amount: 89.99, currency: 'USD', stripe_price_id: '' };
+  function _set(id, v){ var el=document.getElementById(id); if(el) el.value = v; }
+  _set('adm-price-monthly', m.amount);
+  _set('adm-stripe-monthly', m.stripe_price_id || '');
+  _set('adm-price-yearly', y.amount);
+  _set('adm-stripe-yearly', y.stripe_price_id || '');
+}
+
+async function admSavePrices(){
+  var monthly = {
+    amount: parseFloat(document.getElementById('adm-price-monthly').value) || 0,
+    currency: 'USD',
+    stripe_price_id: document.getElementById('adm-stripe-monthly').value.trim()
+  };
+  var yearly = {
+    amount: parseFloat(document.getElementById('adm-price-yearly').value) || 0,
+    currency: 'USD',
+    stripe_price_id: document.getElementById('adm-stripe-yearly').value.trim()
+  };
+  // Use upsert via Prefer: resolution=merge-duplicates
+  var r1 = await CloudSync._req('/rest/v1/app_config', {
+    method:'POST',
+    body:{ key:'pricing.pro_monthly', value: monthly },
+    headers:{ 'Prefer':'resolution=merge-duplicates' }
+  });
+  var r2 = await CloudSync._req('/rest/v1/app_config', {
+    method:'POST',
+    body:{ key:'pricing.pro_yearly', value: yearly },
+    headers:{ 'Prefer':'resolution=merge-duplicates' }
+  });
+  if(r1.ok && r2.ok){
+    var ok = document.getElementById('adm-prices-saved');
+    if(ok){ ok.style.display=''; setTimeout(function(){ ok.style.display='none'; }, 2000); }
+    try{ showToast2(_t('💾 Цены сохранены','💾 Prices saved')); }catch(e){}
+  } else {
+    alert('Ошибка: ' + (r1.error || r2.error || 'unknown'));
+  }
+}
+
+// ── Config tab (feature flags) ──────────────────────────────────────────
+async function admLoadConfig(){
+  var r = await CloudSync._req('/rest/v1/app_config?key=like.features.*&select=key,value', { method:'GET' });
+  if(!r.ok) return;
+  var byKey = {};
+  (r.data||[]).forEach(function(row){ byKey[row.key] = row.value; });
+  document.querySelectorAll('.adm-config-row').forEach(function(row){
+    var key = row.getAttribute('data-key');
+    var val = byKey[key];
+    if(val === undefined) return;
+    var isOn = (val === true || val === 'true');
+    // Remove old toggle and re-create with current state
+    var oldTog = row.querySelector('.adm-cfg-toggle');
+    if(oldTog) oldTog.remove();
+    var tog = document.createElement('div');
+    tog.className = 'adm-cfg-toggle' + (isOn ? ' on' : '');
+    tog.onclick = function(){ admToggleConfig(key, !isOn, tog); };
+    row.appendChild(tog);
+  });
+}
+
+async function admToggleConfig(key, newVal, togEl){
+  var r = await CloudSync._req('/rest/v1/app_config', {
+    method:'POST',
+    body:{ key: key, value: newVal },
+    headers:{ 'Prefer':'resolution=merge-duplicates' }
+  });
+  if(r.ok){
+    togEl.classList.toggle('on', newVal);
+    togEl.onclick = function(){ admToggleConfig(key, !newVal, togEl); };
+    try{ showToast2('✓ ' + (newVal ? _t('Включено','Enabled') : _t('Выключено','Disabled'))); }catch(e){}
   }
 }
 
@@ -20434,6 +20959,7 @@ function restoreAll(inp) {
       try{ _authGateShow(); }catch(e){}
       return;
     }
+    try{ window._logEvent && _logEvent('ai_message_sent', {}); }catch(e){}
     var inp = document.getElementById('ai-input2');
     var txt = inp.value.trim();
     if(!txt && !_attachList.length) return;
@@ -21527,6 +22053,8 @@ async function _gateSignIn(){
   try{ showToast2(_t('Добро пожаловать','Welcome')+' 👋'); }catch(e){}
   try{ _cloudAutoDownloadOnLogin(); }catch(e){}
   try{ _checkAdminRole(); }catch(e){}
+  try{ window._subRefresh && _subRefresh(); }catch(e){}
+  try{ setTimeout(function(){ window._logEvent && _logEvent('sign_in', { source:'gate' }); }, 1000); }catch(e){}
 }
 
 async function _gateRegister(){
@@ -21592,6 +22120,7 @@ async function _gateRegister(){
     try{ _guestModeClear(); }catch(e){}
     try{ _cloudRefreshUI(); }catch(e){}
     try{ showToast2(_t('Аккаунт создан','Account created')+' ✓'); }catch(e){}
+    try{ setTimeout(function(){ window._logEvent && _logEvent('sign_up', { auto_confirmed: true }); }, 1000); }catch(e){}
   }
 }
 
