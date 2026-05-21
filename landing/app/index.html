@@ -2915,11 +2915,28 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .adm-feat-name{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
 .adm-feat-desc{font-size:11.5px;color:var(--text3);line-height:1.45;}
 .adm-feat-key{font-family:var(--mono),monospace;font-size:10px;color:var(--text3);opacity:0.7;margin-top:4px;}
-.adm-tier-picker{display:flex;gap:0;background:var(--card-bg);padding:3px;border-radius:9px;flex-shrink:0;}
-.adm-tier-btn{padding:7px 14px;font-size:11.5px;font-weight:700;color:var(--text3);background:transparent;border:none;cursor:pointer;border-radius:6px;transition:all .15s;letter-spacing:.03em;}
-.adm-tier-btn:hover{color:var(--text);}
-.adm-tier-btn.active.free{background:var(--card2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
-.adm-tier-btn.active.pro{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;}
+
+/* iOS-style toggle: FREE ⟷ PRO */
+.adm-feat-toggle-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.adm-feat-tier-label{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text3);min-width:38px;text-align:left;}
+.adm-feat-tier-label.free{color:#9ca3af;}
+.adm-feat-tier-label.pro{background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;}
+.adm-feat-switch{position:relative;width:46px;height:26px;border-radius:13px;background:#9ca3af;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.adm-feat-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+.adm-feat-switch.on{background:linear-gradient(135deg,#7c3aed,#ec4899);}
+.adm-feat-switch.on::after{left:23px;}
+
+/* AI usage limit input */
+.adm-ai-limit-wrap{display:flex;align-items:center;gap:14px;padding:14px 18px;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(236,72,153,0.04));border:1px solid rgba(124,58,237,0.2);border-radius:12px;margin-top:14px;}
+.adm-ai-limit-icon{font-size:24px;flex-shrink:0;}
+.adm-ai-limit-body{flex:1;min-width:0;}
+.adm-ai-limit-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.adm-ai-limit-desc{font-size:11.5px;color:var(--text3);line-height:1.45;}
+.adm-ai-limit-input{width:80px;padding:9px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;font-weight:700;text-align:center;outline:none;}
+.adm-ai-limit-input:focus{border-color:var(--accent);}
+.adm-ai-limit-save{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.adm-ai-limit-save:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,58,237,.3);}
+.adm-ai-limit-unit{font-size:12px;color:var(--text3);}
 
 /* ── Guest mode lock badge in sidebar ─────────────────────────── */
 .sb-lock-badge{
@@ -5976,13 +5993,27 @@ window._isPro = function(){
 // If a page maps to a Pro-only feature and the user isn't Pro, the sidebar
 // item shows a 🔒 badge and navigateTo() shows the upsell instead.
 window.PAGE_FEATURE_MAP = {
-  'ai':           'ai_chat',
+  // Trading
+  'portfolio':    'portfolio',
+  'journal':      'journal',
   'paper':        'paper_trading',
-  'strategy':     'strategy_module',
+  'strategy':     'strategy',
+  'futures':      'futures_calc',
+  'options':      'options_calc',
+  'riskmanager':  'risk_manager',
+  // Analysis
   'derivatives':  'funding_oi',
-  'futures':      null,  // free calculator
-  'options':      null,  // free calculator
-  'riskmanager':  null,  // free
+  'diary':        'diary',
+  'psycho':       'psycho_journal',
+  'watchlist':    'watchlist',
+  'stats':        'stats',
+  // Planning
+  'myday':        'myday',
+  'goalchart':    'goal_table',
+  'weekplan':     'trading_plan',
+  'ideas':        'idea_tracker',
+  // AI
+  'ai':           'ai_chat',
 };
 
 // Re-apply Pro locks to sidebar items based on current user's plan + feature tiers
@@ -8629,10 +8660,21 @@ function _dsSlotClick(idx, ev){
 
 // Map dashboard widget IDs → feature catalog IDs (for Pro gating in picker)
 var _DS_WIDGET_FEATURES = {
-  news:        'crypto_news',
   paper:       'paper_trading',
   derivatives: 'funding_oi',
-  strategy:    'strategy_module'
+  strategy:    'strategy',
+  journal:     'journal',
+  diary:       'diary',
+  psycho:      'psycho_journal',
+  watchlist:   'watchlist',
+  stats:       'stats',
+  myday:       'myday',
+  goalchart:   'goal_table',
+  weekplan:    'trading_plan',
+  ideas:       'idea_tracker',
+  futures:     'futures_calc',
+  options:     'options_calc',
+  riskmanager: 'risk_manager'
 };
 
 function _dsOpenPicker(slotIdx){
@@ -17447,6 +17489,25 @@ window._isAdmin = false;
 window._admUsers = [];      // cached list
 window._admFilter = 'all';  // active filter
 
+// Подсчитать сколько раз текущий юзер отправил AI-сообщение сегодня.
+// Использует Supabase user_events (RLS пропускает только свои строки).
+window._aiUsageTodayCount = async function(){
+  if(!CloudSync || !CloudSync._user) return 0;
+  try{
+    var todayStart = new Date();
+    todayStart.setHours(0,0,0,0);
+    var iso = todayStart.toISOString();
+    var url = '/rest/v1/user_events'
+      + '?user_id=eq.' + encodeURIComponent(CloudSync._user.id)
+      + '&event=eq.ai_message_sent'
+      + '&created_at=gte.' + encodeURIComponent(iso)
+      + '&select=id';
+    var r = await CloudSync._req(url, { method:'GET' });
+    if(!r.ok || !Array.isArray(r.data)) return 0;
+    return r.data.length;
+  }catch(e){ return 0; }
+};
+
 // Log a user event to Supabase (best-effort, never blocks UI).
 // Used for analytics + admin events feed.
 window._logEvent = function(eventName, payload){
@@ -17940,28 +18001,40 @@ async function admSavePrices(){
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// FEATURE CATALOG — единый источник правды для Pro/Free gating
+// FEATURE CATALOG — каталог реальных разделов сайдбара + AI-фич
 // ══════════════════════════════════════════════════════════════════════════
-// Каждая фича имеет:
-//   id      — стабильный ключ (используется в app_config: 'feature.<id>')
-//   name    — отображаемое название
-//   desc    — короткое описание для админа
-//   default — тариф по умолчанию ('free' или 'pro') — если не настроен иначе
-//   icon    — эмодзи
+// Каждая фича соответствует РЕАЛЬНОМУ разделу/функции приложения.
+// id используется в app_config: ключ 'feature.<id>', значение {tier:'free'|'pro'}
 window.FEATURE_CATALOG = [
-  { id:'ai_chat',           icon:'🤖', name:{ru:'AI-чат',                 en:'AI Chat'},                desc:{ru:'Чат с Claude/GPT для анализа сделок',          en:'Chat with Claude/GPT for trade analysis'},   default:'pro'  },
-  { id:'ai_trade_review',   icon:'🔍', name:{ru:'AI Trade Review',         en:'AI Trade Review'},        desc:{ru:'Автоматический разбор сделок ИИ',              en:'Automated trade analysis by AI'},            default:'pro'  },
-  { id:'paper_trading',     icon:'📝', name:{ru:'Paper Trading',           en:'Paper Trading'},          desc:{ru:'Симуляция торговли без реальных денег',        en:'Trading simulation without real money'},     default:'free' },
-  { id:'export_csv',        icon:'📤', name:{ru:'Экспорт в CSV/Excel',     en:'CSV/Excel Export'},       desc:{ru:'Скачать сделки/портфель в файл',               en:'Download trades/portfolio as file'},         default:'pro'  },
-  { id:'import_exchange',   icon:'🔗', name:{ru:'Импорт с биржи (API)',    en:'Exchange Import (API)'},  desc:{ru:'Импорт сделок с Binance/Bybit по API ключу',   en:'Import trades from Binance/Bybit via API'},  default:'pro'  },
-  { id:'unlimited_widgets', icon:'🔢', name:{ru:'Безлимит виджетов',       en:'Unlimited Widgets'},      desc:{ru:'Снять лимит 5 виджетов на дашборде',           en:'Remove the 5-widget dashboard limit'},       default:'pro'  },
-  { id:'crypto_news',       icon:'📰', name:{ru:'Виджет крипто-новостей',  en:'Crypto News Widget'},     desc:{ru:'Лента новостей в реальном времени',            en:'Real-time news feed'},                       default:'free' },
-  { id:'funding_oi',        icon:'📊', name:{ru:'Funding + OI',            en:'Funding + OI'},           desc:{ru:'Funding rates и open interest по топ-30',       en:'Funding rates and open interest for top-30'},default:'free' },
-  { id:'price_alerts',      icon:'🔔', name:{ru:'Алерты цен',              en:'Price Alerts'},           desc:{ru:'Уведомления о достижении ценовых уровней',     en:'Notifications when price hits levels'},      default:'pro'  },
-  { id:'advanced_stats',    icon:'📈', name:{ru:'Расширенная статистика',  en:'Advanced Stats'},         desc:{ru:'Профит-фактор, Шарп, drawdown, helmet ratio',  en:'Profit factor, Sharpe, drawdown, etc.'},     default:'pro'  },
-  { id:'strategy_module',   icon:'🎯', name:{ru:'Модуль стратегий',        en:'Strategy Module'},        desc:{ru:'Создание и тестирование торговых стратегий',   en:'Build and backtest trading strategies'},     default:'free' },
-  { id:'telegram_notify',   icon:'📱', name:{ru:'Telegram-уведомления',    en:'Telegram Notifications'}, desc:{ru:'Отправка событий в личный Telegram',           en:'Send events to personal Telegram'},          default:'pro'  },
-  { id:'cloud_sync',        icon:'☁️', name:{ru:'Облачная синхронизация',  en:'Cloud Sync'},             desc:{ru:'Авто-бэкап данных в Supabase',                 en:'Auto backup data to Supabase'},              default:'free' },
+  // ── Торговля ───────────────────────────────────────────────────────
+  { id:'portfolio',      icon:'💼', name:{ru:'Портфель',            en:'Portfolio'},        desc:{ru:'Управление позициями и P&L',          en:'Position management & P&L'},      default:'free' },
+  { id:'journal',        icon:'📊', name:{ru:'Торговый журнал',     en:'Trading Journal'},  desc:{ru:'Дневник сделок и статистика',         en:'Trade log and statistics'},       default:'free' },
+  { id:'paper_trading',  icon:'📝', name:{ru:'Paper Trading',       en:'Paper Trading'},    desc:{ru:'Симуляция торговли без денег',        en:'Simulation without real money'},  default:'free' },
+  { id:'strategy',       icon:'🎯', name:{ru:'Стратегия',           en:'Strategy'},         desc:{ru:'Раздел стратегий и торговых правил',  en:'Strategies and trading rules'},   default:'pro'  },
+  { id:'futures_calc',   icon:'📈', name:{ru:'Futures Calc',        en:'Futures Calc'},     desc:{ru:'Калькулятор фьючерсов',               en:'Futures calculator'},             default:'free' },
+  { id:'options_calc',   icon:'⚡', name:{ru:'Опционы Calc',        en:'Options Calc'},     desc:{ru:'Калькулятор опционов',                en:'Options calculator'},             default:'free' },
+  { id:'risk_manager',   icon:'🛡',  name:{ru:'Риск-менеджер',       en:'Risk Manager'},     desc:{ru:'Расчёт размера позиции по риску',     en:'Position sizing by risk'},        default:'free' },
+
+  // ── Анализ ─────────────────────────────────────────────────────────
+  { id:'funding_oi',     icon:'📊', name:{ru:'Funding + OI',        en:'Funding + OI'},     desc:{ru:'Funding rates и open interest',       en:'Funding rates and open interest'},default:'pro'  },
+  { id:'diary',          icon:'📔', name:{ru:'Дневник',             en:'Diary'},            desc:{ru:'Личные заметки трейдера',             en:'Personal trader notes'},          default:'free' },
+  { id:'psycho_journal', icon:'🧠', name:{ru:'Психо-журнал',        en:'Psycho Journal'},   desc:{ru:'Журнал эмоций и психо-защита',        en:'Emotions journal & psycho-guard'},default:'free' },
+  { id:'watchlist',      icon:'👁',  name:{ru:'Вотчлист',            en:'Watchlist'},        desc:{ru:'Отслеживание цен криптовалют',        en:'Crypto price tracking'},          default:'free' },
+  { id:'price_alerts',   icon:'🔔', name:{ru:'Алерты цен',          en:'Price Alerts'},     desc:{ru:'Уведомления о ценовых уровнях',       en:'Price level notifications'},      default:'pro'  },
+  { id:'stats',          icon:'📈', name:{ru:'Статистика',          en:'Stats'},            desc:{ru:'Расширенная статистика по сделкам',   en:'Advanced trade statistics'},      default:'free' },
+
+  // ── Планирование ──────────────────────────────────────────────────
+  { id:'myday',          icon:'📅', name:{ru:'Ежедневник',          en:'My Day'},           desc:{ru:'Задачи и план на день',               en:'Daily tasks and plan'},           default:'free' },
+  { id:'goal_table',     icon:'🏁', name:{ru:'Таблица цели',        en:'Goal Table'},       desc:{ru:'Прогресс к финансовой цели',          en:'Progress towards financial goal'},default:'free' },
+  { id:'trading_plan',   icon:'📋', name:{ru:'Торговый план',       en:'Trading Plan'},     desc:{ru:'Недельное планирование',              en:'Weekly planning'},                default:'free' },
+  { id:'idea_tracker',   icon:'💡', name:{ru:'Трекер идей',         en:'Idea Tracker'},     desc:{ru:'Идеи и улучшения',                    en:'Ideas and improvements'},         default:'free' },
+
+  // ── AI ─────────────────────────────────────────────────────────────
+  { id:'ai_chat',        icon:'🤖', name:{ru:'AI-чат',              en:'AI Chat'},          desc:{ru:'Чат с Claude/GPT (лимит для Free настраивается ниже)', en:'Chat with Claude/GPT (Free limit configured below)'}, default:'pro'  },
+  { id:'ai_trade_review',icon:'🔍', name:{ru:'AI Trade Review',     en:'AI Trade Review'},  desc:{ru:'Автоматический разбор сделок ИИ',     en:'Automated trade analysis by AI'}, default:'pro'  },
+
+  // ── Прочее ─────────────────────────────────────────────────────────
+  { id:'export_csv',     icon:'📤', name:{ru:'Экспорт в CSV/Excel', en:'CSV/Excel Export'}, desc:{ru:'Скачать данные приложения',           en:'Download app data as file'},      default:'pro'  },
 ];
 
 // Кэш текущих тарифов фич (заполняется при логине). Ключ: feature.id, значение: 'free'|'pro'
@@ -17999,7 +18072,7 @@ window._proGate = function(featureId){
   setTimeout(function(){ try{ navigateTo('profile'); var sw=document.querySelector('[data-qs-tab=\"subscription\"]'); if(sw) sw.click(); }catch(e){} }, 800);
 };
 
-// Загружает тарифы фич из Supabase в кэш (вызывается при логине/refresh)
+// Загружает тарифы фич + AI лимит из Supabase в кэш
 window._loadFeatureTiers = async function(){
   try{
     var r = await CloudSync._req('/rest/v1/app_config?key=like.feature.*&select=key,value', { method:'GET' });
@@ -18008,37 +18081,58 @@ window._loadFeatureTiers = async function(){
     (r.data||[]).forEach(function(row){
       var id = row.key.replace(/^feature\./, '');
       var v = row.value;
-      // value can be a JSON object {tier:'pro'} or just a string 'pro'/'free'
+      // Если value — число (типа ai_free_daily_limit) — сохраняем число
+      if(typeof v === 'number'){ tiers[id] = v; return; }
+      // Если объект {tier:'pro'} или строка 'pro'/'free' — это tier-конфиг
       var tier = (v && v.tier) || (typeof v === 'string' ? v : null);
       if(tier === 'free' || tier === 'pro') tiers[id] = tier;
     });
     window._featureTiers = tiers;
-    // Re-apply locks in sidebar after tiers loaded
     try{ window._refreshProLocks && _refreshProLocks(); }catch(e){}
   }catch(e){}
 };
 
-// ── Admin Config tab — feature catalog + global toggles ─────────────────
+// ── Admin Config tab — feature catalog + AI limit + global toggles ──────
 async function admLoadConfig(){
-  // 1) Feature catalog with per-feature tier picker
-  await _loadFeatureTiers(); // ensure cache is fresh
+  // 1) Feature catalog with iOS-style toggle (FREE ⟷ PRO)
+  await _loadFeatureTiers();
   var box = document.getElementById('adm-feature-catalog');
   if(box){
     var l = (typeof getLang==='function')?getLang():'ru';
     box.innerHTML = (window.FEATURE_CATALOG||[]).map(function(f){
       var curTier = _featureTier(f.id);
+      var isPro = (curTier === 'pro');
       return '<div class="adm-feat-row" data-feat="' + f.id + '">'
         + '<div class="adm-feat-info">'
         +   '<div class="adm-feat-name">' + f.icon + ' ' + _admEsc(f.name[l] || f.name.ru) + '</div>'
         +   '<div class="adm-feat-desc">' + _admEsc(f.desc[l] || f.desc.ru) + '</div>'
         +   '<div class="adm-feat-key">feature.' + f.id + '</div>'
         + '</div>'
-        + '<div class="adm-tier-picker">'
-        +   '<button class="adm-tier-btn free ' + (curTier==='free'?'active':'') + '" onclick="admSetFeatureTier(\'' + f.id + '\',\'free\')">🆓 FREE</button>'
-        +   '<button class="adm-tier-btn pro '  + (curTier==='pro' ?'active':'') + '" onclick="admSetFeatureTier(\'' + f.id + '\',\'pro\')">⭐ PRO</button>'
+        + '<div class="adm-feat-toggle-wrap">'
+        +   '<span class="adm-feat-tier-label ' + (isPro?'pro':'free') + '">' + (isPro?'⭐ PRO':'🆓 FREE') + '</span>'
+        +   '<div class="adm-feat-switch ' + (isPro?'on':'') + '" onclick="admToggleFeatureTier(\'' + f.id + '\')"></div>'
         + '</div>'
         + '</div>';
     }).join('');
+
+    // After catalog rendered — insert AI limit block right after AI Chat row
+    var aiRow = box.querySelector('.adm-feat-row[data-feat="ai_chat"]');
+    if(aiRow){
+      var limitBlock = document.createElement('div');
+      limitBlock.className = 'adm-ai-limit-wrap';
+      limitBlock.style.margin = '4px 12px 8px 32px';
+      var curLimit = parseInt((window._featureTiers && window._featureTiers['ai_free_daily_limit']) || 5, 10);
+      limitBlock.innerHTML =
+          '<span class="adm-ai-limit-icon">⏱</span>'
+        + '<div class="adm-ai-limit-body">'
+        +   '<div class="adm-ai-limit-title">' + _t('Лимит AI-сообщений для Free','Free AI message limit') + '</div>'
+        +   '<div class="adm-ai-limit-desc">' + _t('Сколько сообщений в день может отправить Free-пользователь. Если AI отмечен как PRO выше — Free вообще не имеют доступа.','How many messages per day a Free user can send. If AI is marked PRO above, Free users have no access at all.') + '</div>'
+        + '</div>'
+        + '<input type="number" min="0" max="1000" step="1" class="adm-ai-limit-input" id="adm-ai-limit-input" value="' + curLimit + '">'
+        + '<span class="adm-ai-limit-unit">' + _t('/день','/day') + '</span>'
+        + '<button class="adm-ai-limit-save" onclick="admSaveAiLimit()">' + _t('💾 Сохранить','💾 Save') + '</button>';
+      aiRow.parentNode.insertBefore(limitBlock, aiRow.nextSibling);
+    }
   }
 
   // 2) Global toggle rows (ai_enabled, maintenance_mode)
@@ -18059,23 +18153,47 @@ async function admLoadConfig(){
   });
 }
 
-async function admSetFeatureTier(featureId, tier){
+async function admToggleFeatureTier(featureId){
+  var curTier = _featureTier(featureId);
+  var newTier = (curTier === 'pro') ? 'free' : 'pro';
   var key = 'feature.' + featureId;
   var r = await CloudSync._req('/rest/v1/app_config', {
     method:'POST',
-    body:{ key: key, value: { tier: tier } },
+    body:{ key: key, value: { tier: newTier } },
     headers:{ 'Prefer':'resolution=merge-duplicates' }
   });
   if(r.ok){
-    window._featureTiers[featureId] = tier;
-    // Update buttons visually
+    window._featureTiers[featureId] = newTier;
     var row = document.querySelector('.adm-feat-row[data-feat="' + featureId + '"]');
     if(row){
-      row.querySelectorAll('.adm-tier-btn').forEach(function(b){
-        b.classList.toggle('active', b.textContent.toLowerCase().indexOf(tier) !== -1);
-      });
+      var sw = row.querySelector('.adm-feat-switch');
+      var lbl = row.querySelector('.adm-feat-tier-label');
+      if(sw) sw.classList.toggle('on', newTier === 'pro');
+      if(lbl){
+        lbl.textContent = (newTier === 'pro') ? '⭐ PRO' : '🆓 FREE';
+        lbl.className = 'adm-feat-tier-label ' + newTier;
+      }
     }
-    try{ showToast2('✓ ' + featureId + ' → ' + tier.toUpperCase()); }catch(e){}
+    try{ showToast2('✓ ' + featureId + ' → ' + newTier.toUpperCase()); }catch(e){}
+    // Refresh sidebar locks immediately
+    try{ _refreshProLocks(); }catch(e){}
+  } else {
+    alert('Ошибка: ' + (r.error||'unknown'));
+  }
+}
+
+async function admSaveAiLimit(){
+  var inp = document.getElementById('adm-ai-limit-input');
+  if(!inp) return;
+  var limit = Math.max(0, Math.min(1000, parseInt(inp.value, 10) || 0));
+  var r = await CloudSync._req('/rest/v1/app_config', {
+    method:'POST',
+    body:{ key: 'feature.ai_free_daily_limit', value: limit },
+    headers:{ 'Prefer':'resolution=merge-duplicates' }
+  });
+  if(r.ok){
+    window._featureTiers['ai_free_daily_limit'] = limit;
+    try{ showToast2('💾 ' + _t('Лимит AI сохранён: ','AI limit saved: ') + limit + _t('/день','/day')); }catch(e){}
   } else {
     alert('Ошибка: ' + (r.error||'unknown'));
   }
@@ -21235,7 +21353,7 @@ function restoreAll(inp) {
     var fi = document.getElementById('ai-file-panel'); if(fi) fi.value='';
   };
 
-  window.aiSend2 = function(){
+  window.aiSend2 = async function(){
     if(!CloudSync._user){
       try{ showToast2(_t('🔒 Зарегистрируйтесь чтобы использовать AI','🔒 Register to use AI')); }catch(e){}
       try{ _authGateShow(); }catch(e){}
@@ -21246,6 +21364,23 @@ function restoreAll(inp) {
       if(typeof _canUseFeature === 'function' && !_canUseFeature('ai_chat')){
         _proGate('ai_chat');
         return;
+      }
+    }catch(e){}
+    // Daily-limit gate for Free users (when ai_chat is FREE but limited)
+    try{
+      if(typeof _isPro === 'function' && !_isPro()){
+        var limit = parseInt((window._featureTiers && window._featureTiers['ai_free_daily_limit']) || 0, 10);
+        if(limit > 0){
+          var used = await _aiUsageTodayCount();
+          if(used >= limit){
+            var msg = (typeof getLang==='function'&&getLang()==='en')
+              ? '⏱ Daily AI limit reached (' + limit + '/day for Free). Upgrade to Pro for unlimited.'
+              : '⏱ Дневной лимит AI исчерпан (' + limit + '/день для Free). Подпишись на Pro для безлимита.';
+            try{ showToast2(msg); }catch(e){}
+            try{ navigateTo('profile'); }catch(e){}
+            return;
+          }
+        }
       }
     }catch(e){}
     try{ window._logEvent && _logEvent('ai_message_sent', {}); }catch(e){}
