@@ -20,7 +20,7 @@
   // ── Language ──────────────────────────────────────────────────────────────
   function getInitialLang(){
     try { var s = localStorage.getItem(LANG_KEY); if(s === 'en' || s === 'ru') return s; } catch(e){}
-    return 'ru';
+    return 'en';
   }
 
   function applyLang(lang){
