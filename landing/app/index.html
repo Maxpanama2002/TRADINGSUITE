@@ -2791,6 +2791,13 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-hint{font-size:11px;color:var(--text3);text-align:center;margin:6px 0 8px;line-height:1.45;}
 .ag-success-icon{display:flex;justify-content:center;margin:8px 0 14px;}
 .ag-success-email{font-size:13px;font-weight:700;color:var(--accent);background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:8px 12px;margin:8px 0 14px;word-break:break-all;}
+/* Email confirmed banner */
+.ag-confirmed{display:none;background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08));border:1px solid rgba(34,197,94,0.35);border-radius:12px;padding:12px 14px;margin-bottom:14px;}
+.ag-confirmed-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#15803d;margin-bottom:4px;}
+.ag-confirmed-head svg{flex-shrink:0;}
+.ag-confirmed-text{font-size:12px;color:#166534;line-height:1.5;}
+[data-theme="dark"] .ag-confirmed-head{color:#4ade80;}
+[data-theme="dark"] .ag-confirmed-text{color:#86efac;}
 .ag-btn.guest{background:transparent;color:var(--text3);border:1px dashed var(--border2);margin-top:4px;font-weight:500;font-size:13px;}
 .ag-btn.guest:hover{color:var(--text);border-color:var(--text3);background:var(--border);}
 .ag-guest-sep{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--text3);font-size:11px;}
@@ -16526,8 +16533,26 @@ var CloudSync = {
       return { ok:true, user: CloudSync._user };
     },
     signUp: async function(email, password){
-      var r = await CloudSync._req('/auth/v1/signup', {
-        method:'POST', noAuth:true, body:{ email:email, password:password }
+      // Build redirect URL so the confirmation link lands on /app/ (not on the landing root)
+      var redirectTo = null;
+      try{
+        var origin = window.location.origin;
+        // For Electron app (file://), fall back to the production web app
+        if(origin && origin.indexOf('http') === 0){
+          redirectTo = origin + '/app/?confirmed=1';
+        } else {
+          redirectTo = 'https://tdsuite.netlify.app/app/?confirmed=1';
+        }
+      }catch(e){
+        redirectTo = 'https://tdsuite.netlify.app/app/?confirmed=1';
+      }
+      var body = {
+        email: email,
+        password: password,
+        options: { emailRedirectTo: redirectTo }
+      };
+      var r = await CloudSync._req('/auth/v1/signup?redirect_to=' + encodeURIComponent(redirectTo), {
+        method:'POST', noAuth:true, body: body
       });
       if(!r.ok) return r;
       // Если email confirmation выключен — сразу получаем session; иначе нужен confirm
@@ -20807,6 +20832,14 @@ window.replayOnboarding = function(){
 
     <!-- ── Sign-in mode ──────────────────────────────────────────────── -->
     <div id="ag-mode-signin">
+      <!-- Email confirmed banner (only shown after returning from confirmation email) -->
+      <div id="ag-confirmed" class="ag-confirmed">
+        <div class="ag-confirmed-head">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span data-ru="Email подтверждён!" data-en="Email confirmed!">Email подтверждён!</span>
+        </div>
+        <div class="ag-confirmed-text" data-ru="Пожалуйста, введите свои данные для входа в аккаунт." data-en="Please enter your credentials to sign in to your account.">Пожалуйста, введите свои данные для входа в аккаунт.</div>
+      </div>
       <div class="ag-title" data-ru="Войди в аккаунт" data-en="Sign in to your account">Войди в аккаунт</div>
       <div class="ag-sub" data-ru="Для работы с приложением необходима авторизация" data-en="Authorization is required to use the app">Для работы с приложением необходима авторизация</div>
       <div class="ag-field">
@@ -20917,6 +20950,8 @@ function _authGateShow(){
 function _authGateHide(){
   var g = document.getElementById('auth-gate');
   if(g) g.style.display='none';
+  // Hide email-confirmed banner so it doesn't show next time
+  var b = document.getElementById('ag-confirmed'); if(b) b.style.display='none';
 }
 
 function _authGateCheck(){
@@ -21066,15 +21101,65 @@ function _guestModeClear(){
   if(bar) bar.style.display='none';
 }
 
+// Detect arrival from Supabase email confirmation link.
+// Supabase sends users to: <site>/?confirmed=1#access_token=...&type=signup
+// We support both query (?confirmed=1) and hash (#type=signup) signals.
+function _agCheckEmailConfirmation(){
+  var fromEmail = false;
+  try{
+    var qs = window.location.search || '';
+    var hs = window.location.hash   || '';
+    if(qs.indexOf('confirmed=1')!==-1) fromEmail = true;
+    if(hs.indexOf('type=signup')!==-1 || hs.indexOf('type=email_change')!==-1) fromEmail = true;
+    if(hs.indexOf('error=')!==-1 || qs.indexOf('error=')!==-1){
+      // Confirmation failed (link expired etc.) — show error on signin
+      sessionStorage.setItem('emailConfirmError','1');
+    }
+    if(fromEmail){
+      // Mark for showing banner; we leave window._guestMode alone
+      sessionStorage.setItem('emailJustConfirmed','1');
+      // Force exit guest mode if was set
+      try{ sessionStorage.removeItem('guestMode'); window._guestMode = false; }catch(e){}
+      // Clean URL (remove ?confirmed=1 and #access_token=… so refresh doesn't repeat)
+      try{
+        var clean = window.location.pathname;
+        history.replaceState(null, '', clean);
+      }catch(e){}
+    }
+  }catch(e){}
+  return fromEmail;
+}
+
+function _agShowConfirmedBanner(){
+  var b = document.getElementById('ag-confirmed');
+  if(!b) return;
+  b.style.display = 'block';
+  _agTranslate();
+  // Also show a toast for extra clarity
+  try{ showToast2(_t('✅ Email подтверждён! Войди в аккаунт.','✅ Email confirmed! Sign in to your account.')); }catch(e){}
+  // Hide banner after the user actually signs in (auth gate hide event)
+}
+
 // Wire: check gate after DOM ready
 document.addEventListener('DOMContentLoaded', function(){
+  // Check URL for email confirmation callback FIRST
+  _agCheckEmailConfirmation();
+
   // Restore guest mode from sessionStorage
   try{
     if(sessionStorage.getItem('guestMode')==='1') window._guestMode = true;
   }catch(e){}
   // small delay to let CloudSync._init finish restoring session
   setTimeout(function(){
-    if(window._guestMode){
+    var justConfirmed = false;
+    try{ justConfirmed = sessionStorage.getItem('emailJustConfirmed')==='1'; }catch(e){}
+    if(justConfirmed){
+      // Show signin form with green banner — regardless of any cached session
+      _authGateShow();
+      _agSwitchMode('signin');
+      _agShowConfirmedBanner();
+      try{ sessionStorage.removeItem('emailJustConfirmed'); }catch(e){}
+    } else if(window._guestMode){
       _authGateHide();
       _guestModeActivate();
     } else {
