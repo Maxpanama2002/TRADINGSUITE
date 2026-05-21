@@ -2761,6 +2761,30 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 /* Theme menu hidden compat */
 .theme-menu,.theme-picker{display:none!important;}
 #lang-dd-wrap{display:none!important;}
+
+/* ══ AUTH GATE ════════════════════════════════════════════════════════════ */
+#auth-gate{position:fixed;inset:0;z-index:99999;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;padding:16px;}
+.ag-box{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.45);}
+.ag-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
+.ag-logo img{width:36px;height:36px;}
+.ag-logo-name{font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
+.ag-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:6px;}
+.ag-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:26px;line-height:1.55;}
+.ag-field{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.ag-input{width:100%;padding:11px 14px;background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .15s;}
+.ag-input:focus{border-color:var(--accent);}
+.ag-err{font-size:12px;color:#ef4444;text-align:center;margin:4px 0;display:none;min-height:16px;}
+.ag-ok{font-size:12px;color:#22c55e;text-align:center;margin:4px 0;display:none;}
+.ag-btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;}
+.ag-btn.primary{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;}
+.ag-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,58,237,.4);}
+.ag-btn.primary:active{transform:translateY(0);}
+.ag-btn.secondary{background:var(--card-bg);color:var(--text2);border:1px solid var(--border);}
+.ag-btn.secondary:hover{background:var(--border);color:var(--text);}
+.ag-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text3);font-size:12px;}
+.ag-divider::before,.ag-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.ag-footer{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.5;}
+.ag-loading{display:none;text-align:center;color:var(--text3);font-size:13px;padding:12px 0;}
 </style>
 <style id="theme-style">
 :root{--bg:#f0efe9;--text:#1a1a18;--sub:#6b6b67;--muted:#9a9a96;--card-bg:#fff;--border:rgba(0,0,0,.17);--topbar:#1a1a18;--input-bg:#fff;--shadow:rgba(0,0,0,.08);}
@@ -5076,17 +5100,7 @@ function navigateTo(page, toolIdx){
     if(pcPg) pcPg.style.display='';
     _setTbTitle(null,_t('Личный кабинет','Personal Cabinet'));
     try{ renderPersonalCabinet(); }catch(e){}
-    // v2.1.166: re-enabled auth modal — user couldn't find login in web.
-    // Show ONCE per session (sessionStorage flag) so users aren't bombarded
-    // every time they navigate to Profile. Dismiss with × → enter as guest.
-    try{
-      var _seen=false;
-      try{ _seen=sessionStorage.getItem('pc_auth_seen')==='1'; }catch(_){}
-      if(!_seen){
-        try{ sessionStorage.setItem('pc_auth_seen','1'); }catch(_){}
-        _pcOpenAuth();
-      }
-    }catch(e){}
+    // Auth gate ensures user is logged in before reaching this point.
   } else if(page==='ai'){
     _hideAllPages();
     if(aiPg) aiPg.style.display='';
@@ -5486,6 +5500,7 @@ async function _tbSignOut(){
   _tbProfileClose();
   _cloudRefreshUI();
   try{ showToast2(_t('Вы вышли из аккаунта','Signed out')); }catch(e){}
+  try{ _authGateCheck(); }catch(e){}
 }
 document.addEventListener('click',function(){ _tbProfileClose(); });
 
@@ -16665,6 +16680,7 @@ async function _cloudSignOut(){
   await CloudSync.auth.signOut();
   _cloudRefreshUI();
   try{ showToast2(_t('Вы вышли','Signed out')); }catch(e){}
+  try{ _authGateCheck(); }catch(e){}
 }
 async function _cloudSyncUp(){
   if(!CloudSync._user){ alert(_t('Войди в аккаунт','Sign in first')); return; }
@@ -19897,6 +19913,11 @@ function restoreAll(inp) {
   };
 
   window.aiSend2 = function(){
+    if(!CloudSync._user){
+      try{ showToast2(_t('Войди в аккаунт чтобы использовать AI','Sign in to use AI')); }catch(e){}
+      try{ _authGateCheck(); }catch(e){}
+      return;
+    }
     var inp = document.getElementById('ai-input2');
     var txt = inp.value.trim();
     if(!txt && !_attachList.length) return;
@@ -20721,6 +20742,161 @@ window.replayOnboarding = function(){
   _onbHideResumePill();
   _onbShow(0);
 };
+</script>
+
+<!-- ══ AUTH GATE OVERLAY ═══════════════════════════════════════════════════ -->
+<div id="auth-gate" style="display:none;flex-direction:column;">
+  <div class="ag-box">
+    <div class="ag-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="36" height="36" style="border-radius:8px;flex-shrink:0;"><defs><linearGradient id="ag-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#ec4899"/></linearGradient></defs><rect width="1024" height="1024" rx="220" ry="220" fill="url(#ag-bg)"/><g fill="white"><rect x="248" y="612" width="128" height="216" rx="24"/><rect x="448" y="412" width="128" height="416" rx="24"/><rect x="648" y="212" width="128" height="616" rx="24"/></g><path d="M 312 540 L 512 340 L 712 140" stroke="white" stroke-opacity="0.45" stroke-width="32" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="white"><circle cx="312" cy="540" r="22"/><circle cx="512" cy="340" r="22"/><circle cx="712" cy="140" r="22"/></g></svg>
+      <span class="ag-logo-name">Trading Suite</span>
+    </div>
+    <div class="ag-loading" id="ag-loading" data-ru="Проверяем сессию…" data-en="Checking session…">Проверяем сессию…</div>
+    <div id="ag-form">
+      <div class="ag-title" id="ag-title" data-ru="Войди в аккаунт" data-en="Sign in to your account">Войди в аккаунт</div>
+      <div class="ag-sub" data-ru="Для работы с приложением необходима авторизация" data-en="Authorization is required to use the app">Для работы с приложением необходима авторизация</div>
+      <div class="ag-field">
+        <input type="email" id="ag-email" class="ag-input" placeholder="email" autocomplete="email">
+        <input type="password" id="ag-pass" class="ag-input" data-ph-ru="пароль" data-ph-en="password" placeholder="пароль" autocomplete="current-password">
+      </div>
+      <div id="ag-err" class="ag-err"></div>
+      <div id="ag-ok" class="ag-ok"></div>
+      <button class="ag-btn primary" id="ag-signin-btn" onclick="_gateSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
+      <div class="ag-divider" data-ru="или" data-en="or">или</div>
+      <button class="ag-btn secondary" id="ag-signup-btn" onclick="_gateSignUp()" data-ru="Зарегистрироваться" data-en="Register">Зарегистрироваться</button>
+    </div>
+    <div class="ag-footer" data-ru="Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту" data-en="Data is encrypted and tied to your account">Данные хранятся в зашифрованном виде и привязаны к вашему аккаунту</div>
+  </div>
+</div>
+
+<script>
+// ══ AUTH GATE ══════════════════════════════════════════════════════════════
+function _agTranslate(){
+  try{
+    var l = typeof getLang==='function'?getLang():'ru';
+    document.querySelectorAll('#auth-gate [data-ru]').forEach(function(el){
+      var txt = l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.innerHTML=txt;
+    });
+    document.querySelectorAll('#auth-gate [data-ph-ru]').forEach(function(el){
+      el.placeholder = l==='en'?(el.dataset.phEn||el.dataset.phRu):el.dataset.phRu;
+    });
+  }catch(e){}
+}
+
+function _authGateShow(){
+  var g = document.getElementById('auth-gate');
+  if(!g) return;
+  // clear inputs & messages
+  var e=document.getElementById('ag-email'); if(e) e.value='';
+  var p=document.getElementById('ag-pass');  if(p) p.value='';
+  var err=document.getElementById('ag-err'); if(err){err.style.display='none';err.textContent='';}
+  var ok=document.getElementById('ag-ok');   if(ok){ok.style.display='none';ok.textContent='';}
+  var btn1=document.getElementById('ag-signin-btn'); if(btn1) btn1.disabled=false;
+  var btn2=document.getElementById('ag-signup-btn'); if(btn2) btn2.disabled=false;
+  g.style.display='flex';
+  _agTranslate();
+  // focus email after paint
+  setTimeout(function(){ var ei=document.getElementById('ag-email'); if(ei) ei.focus(); },100);
+}
+
+function _authGateHide(){
+  var g = document.getElementById('auth-gate');
+  if(g) g.style.display='none';
+}
+
+function _authGateCheck(){
+  if(CloudSync._user){ _authGateHide(); }
+  else { _authGateShow(); }
+}
+
+async function _gateSignIn(){
+  var em = (document.getElementById('ag-email')||{}).value||'';
+  var pw = (document.getElementById('ag-pass')||{}).value||'';
+  var err= document.getElementById('ag-err');
+  var ok = document.getElementById('ag-ok');
+  if(err){err.style.display='none';err.textContent='';}
+  if(ok){ok.style.display='none';ok.textContent='';}
+  var l  = typeof getLang==='function'?getLang():'ru';
+  if(!em||!pw){
+    if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}
+    return;
+  }
+  var btn = document.getElementById('ag-signin-btn');
+  if(btn){btn.disabled=true; btn.textContent=_t('Входим…','Signing in…');}
+  var r = await CloudSync.auth.signIn(em.trim(), pw);
+  if(btn){btn.disabled=false; btn.textContent=_t('Войти','Sign in');}
+  if(!r.ok){
+    var msg = r.error||'';
+    var lc  = msg.toLowerCase();
+    if(lc.indexOf('invalid')!==-1||lc.indexOf('credentials')!==-1){
+      msg = _t('Неверный email или пароль','Wrong email or password');
+    } else if(lc.indexOf('not confirmed')!==-1||lc.indexOf('email not confirmed')!==-1){
+      msg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+    } else if(!msg){ msg = _t('Ошибка входа','Sign-in error'); }
+    if(err){err.style.display='';err.textContent=msg;}
+    return;
+  }
+  _authGateHide();
+  try{ _cloudRefreshUI(); }catch(e){}
+  try{ renderPersonalCabinet(); }catch(e){}
+  try{ showToast2(_t('Добро пожаловать','Welcome')+' 👋'); }catch(e){}
+  try{ _cloudAutoDownloadOnLogin(); }catch(e){}
+}
+
+async function _gateSignUp(){
+  var em = (document.getElementById('ag-email')||{}).value||'';
+  var pw = (document.getElementById('ag-pass')||{}).value||'';
+  var err= document.getElementById('ag-err');
+  var ok = document.getElementById('ag-ok');
+  if(err){err.style.display='none';err.textContent='';}
+  if(ok){ok.style.display='none';ok.textContent='';}
+  if(!em||!pw){
+    if(err){err.style.display='';err.textContent=_t('Заполни email и пароль','Fill in email and password');}
+    return;
+  }
+  if(pw.length<8){
+    if(err){err.style.display='';err.textContent=_t('Пароль минимум 8 символов','Password must be at least 8 characters');}
+    return;
+  }
+  var btn = document.getElementById('ag-signup-btn');
+  if(btn){btn.disabled=true; btn.textContent=_t('Регистрируем…','Registering…');}
+  var r = await CloudSync.auth.signUp(em.trim(), pw);
+  if(btn){btn.disabled=false; btn.textContent=_t('Зарегистрироваться','Register');}
+  if(!r.ok){
+    var msg2 = r.error||'';
+    var lc2  = msg2.toLowerCase();
+    if(lc2.indexOf('already')!==-1||lc2.indexOf('registered')!==-1){
+      msg2 = _t('Этот email уже зарегистрирован. Войди.','This email is already registered. Sign in.');
+    } else if(!msg2){ msg2 = _t('Ошибка регистрации','Registration error'); }
+    if(err){err.style.display='';err.textContent=msg2;}
+    return;
+  }
+  if(r.needsConfirmation){
+    if(ok){ok.style.display='';ok.textContent=_t('Письмо отправлено! Подтверди email и войди.','Email sent! Confirm it then sign in.');}
+  } else {
+    _authGateHide();
+    try{ _cloudRefreshUI(); }catch(e){}
+    try{ showToast2(_t('Аккаунт создан','Account created')+' ✓'); }catch(e){}
+  }
+}
+
+// Wire: check gate after DOM ready
+document.addEventListener('DOMContentLoaded', function(){
+  // small delay to let CloudSync._init finish restoring session
+  setTimeout(function(){ _authGateCheck(); }, 50);
+});
+// Also re-translate gate when language changes (applyLang calls this if gate is visible)
+(function(){
+  var _origApplyLang = window.applyLang;
+  if(typeof _origApplyLang === 'function'){
+    window.applyLang = function(l){
+      _origApplyLang(l);
+      var g = document.getElementById('auth-gate');
+      if(g && g.style.display!=='none') _agTranslate();
+    };
+  }
+})();
 </script>
 
 </body>
