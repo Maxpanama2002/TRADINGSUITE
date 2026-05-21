@@ -5856,6 +5856,7 @@ function _tbProfileClick(e){
   requestAnimationFrame(function(){ m.style.opacity='1'; m.style.transform='translateY(0)'; });
 }
 async function _tbSignOut(){
+  try{ window._logEvent && _logEvent('sign_out', {}); }catch(e){}
   await CloudSync.auth.signOut();
   _tbProfileClose();
   _cloudRefreshUI();
@@ -17079,7 +17080,18 @@ var CloudSync = {
     if(CloudSync._user && typeof _checkAdminRole === 'function'){
       _checkAdminRole();
     }
-  }, 300);
+    // Log session restore as an event (so admin can see returning users)
+    // Throttled: max once per 6 hours per device to avoid noise
+    try{
+      if(CloudSync._user && window._logEvent){
+        var lastLog = parseInt(localStorage.getItem('ts_last_session_log')||'0', 10);
+        if(Date.now() - lastLog > 6*3600*1000){
+          _logEvent('session_restore', { ua: navigator.userAgent.slice(0,80) });
+          try{ Object.getPrototypeOf(localStorage).setItem.call(localStorage, 'ts_last_session_log', String(Date.now())); }catch(e){}
+        }
+      }
+    }catch(e){}
+  }, 1500);
 })();
 
 // ── UI handlers для панели «🌥 Облако» в ЛК (v2.1.133) ──
