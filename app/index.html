@@ -17564,6 +17564,9 @@ function admRenderUsers(){
     } else {
       actionBtns += '<button class="adm-row-btn danger" onclick="event.stopPropagation();admBan(\'' + u.user_id + '\')" title="' + _t('Заблокировать','Ban') + '">🚫</button>';
     }
+    // Delete button (always available; safety checks in admDeleteUser)
+    var emailEscaped = (u.email||'').replace(/'/g, "\\'");
+    actionBtns += '<button class="adm-row-btn danger" onclick="event.stopPropagation();admDeleteUser(\'' + u.user_id + '\',\'' + emailEscaped + '\')" title="' + _t('Удалить навсегда','Delete forever') + '">🗑</button>';
     return '<tr class="adm-row-clickable" onclick="admOpenDetail(\'' + u.user_id + '\')">'
       + '<td><div class="adm-email">' + _admEsc(u.email||'—') + roleBadge + confirmBadge + banTag + '</div>'
       +   (u.display_name ? '<div class="adm-uid">' + _admEsc(u.display_name) + '</div>' : '')
@@ -17674,6 +17677,35 @@ async function admUnban(userId){
   }
 }
 
+async function admDeleteUser(userId, email){
+  // Two-step confirmation — deletion is irreversible
+  var msg1 = _t(
+    '⚠️ Удалить пользователя ' + email + ' навсегда?\n\nВсе его данные (сделки, портфель, журнал, и т.д.) будут безвозвратно удалены.',
+    '⚠️ Permanently delete user ' + email + '?\n\nAll their data (trades, portfolio, journal, etc.) will be lost forever.'
+  );
+  if(!confirm(msg1)) return;
+  var typed = prompt(_t(
+    'Чтобы подтвердить — впиши слово УДАЛИТЬ (заглавными)',
+    'To confirm — type DELETE in uppercase'
+  ), '');
+  if(typed !== 'УДАЛИТЬ' && typed !== 'DELETE'){
+    try{ showToast2(_t('Отменено','Cancelled')); }catch(e){}
+    return;
+  }
+
+  var r = await CloudSync._req('/rest/v1/rpc/admin_delete_user', {
+    method:'POST', body:{ target_user_id: userId }
+  });
+  if(r.ok){
+    try{ showToast2('🗑 ' + _t('Пользователь удалён: ','User deleted: ') + email); }catch(e){}
+    admCloseDetail();
+    admLoadUsers();
+    admLoadStats();
+  } else {
+    alert(_t('Ошибка удаления: ','Delete error: ') + (r.error || 'unknown'));
+  }
+}
+
 // ── User detail modal ──────────────────────────────────────────────────
 async function admOpenDetail(userId){
   var modal = document.getElementById('adm-detail-modal');
@@ -17743,6 +17775,9 @@ async function admOpenDetail(userId){
   } else {
     html += '<button class="danger" onclick="admBan(\'' + u.id + '\').then(function(){admOpenDetail(\'' + u.id + '\');})">🚫 ' + _t('Бан','Ban') + '</button>';
   }
+  // Permanent delete — separated with margin so it's not accidentally clicked
+  var emailEscD = (u.email||'').replace(/'/g, "\\'");
+  html += '<button class="danger" onclick="admDeleteUser(\'' + u.id + '\',\'' + emailEscD + '\')" style="margin-left:auto;background:rgba(239,68,68,0.10);border-color:rgba(239,68,68,0.4);">🗑 ' + _t('Удалить навсегда','Delete forever') + '</button>';
   html += '</div>';
 
   // Recent events
