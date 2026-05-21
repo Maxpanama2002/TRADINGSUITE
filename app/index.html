@@ -21338,22 +21338,48 @@ function _agSwitchMode(mode){
   _agTranslate();
 }
 
+// Returns true if this device has had a successful sign-in/register before.
+// We use this to decide the initial auth-gate mode (returning user → signin,
+// brand-new visitor → register).
+function _agHasKnownUser(){
+  try{
+    if(localStorage.getItem('ts_known_user') === '1') return true;
+    // Also count having an existing session as "known"
+    if(localStorage.getItem('cloud_session_v1')) return true;
+  }catch(e){}
+  return false;
+}
+
 function _authGateShow(){
   var g = document.getElementById('auth-gate');
   if(!g) return;
-  // Reset to signin mode
-  _agSwitchMode('signin');
+  // Choose initial mode based on whether this is a returning user
+  var initialMode = _agHasKnownUser() ? 'signin' : 'register';
+  _agSwitchMode(initialMode);
   // Clear all inputs
   ['ag-email','ag-pass','ag-reg-email','ag-reg-pass','ag-reg-pass2'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.value='';
   });
+  // Pre-fill the last used email if we have it (saves typing for returning users)
+  try{
+    var lastEmail = localStorage.getItem('ts_last_email');
+    if(lastEmail){
+      var em = document.getElementById('ag-email');
+      if(em && initialMode === 'signin') em.value = lastEmail;
+    }
+  }catch(e){}
   // Re-enable buttons
   ['ag-signin-btn','ag-register-btn'].forEach(function(id){
     var b=document.getElementById(id); if(b) b.disabled=false;
   });
   g.style.display='flex';
   _agTranslate();
-  setTimeout(function(){ var ei=document.getElementById('ag-email'); if(ei) ei.focus(); },100);
+  setTimeout(function(){
+    var f = initialMode === 'signin'
+      ? document.getElementById(localStorage.getItem('ts_last_email') ? 'ag-pass' : 'ag-email')
+      : document.getElementById('ag-reg-email');
+    if(f) f.focus();
+  },100);
 }
 
 function _authGateHide(){
@@ -21402,6 +21428,11 @@ async function _gateSignIn(){
     return;
   }
   _authGateHide();
+  // Remember that this device has a known user — next visit shows signin first
+  try{
+    Object.getPrototypeOf(localStorage).setItem.call(localStorage, 'ts_known_user', '1');
+    Object.getPrototypeOf(localStorage).setItem.call(localStorage, 'ts_last_email', em.trim());
+  }catch(e){}
   try{ _guestModeClear(); }catch(e){} // exit guest mode on real login
   try{ _cloudRefreshUI(); }catch(e){}
   try{ renderPersonalCabinet(); }catch(e){}
@@ -21456,6 +21487,12 @@ async function _gateRegister(){
   // Success — switch to success view, show email used
   var seEmail = document.getElementById('ag-success-email');
   if(seEmail) seEmail.textContent = em.trim();
+
+  // Save email so next visit prefills it & shows signin form
+  try{
+    Object.getPrototypeOf(localStorage).setItem.call(localStorage, 'ts_known_user', '1');
+    Object.getPrototypeOf(localStorage).setItem.call(localStorage, 'ts_last_email', em.trim());
+  }catch(e){}
 
   if(r.needsConfirmation){
     // Email confirmation required — show confirmation screen
