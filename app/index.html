@@ -3597,7 +3597,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             </div>
             <div class="bkp-version">
               Trading Suite v<span id="qs-version">—</span>
-              <br><a href="https://tdsuite.netlify.app" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;opacity:0.8;font-size:10.5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">🌐 tdsuite.netlify.app</a>
+              <br><a href="https://tradingsuite.vercel.app" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;opacity:0.8;font-size:10.5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">🌐 tradingsuite.vercel.app</a>
             </div>
           </div>
         </div>
@@ -17052,10 +17052,10 @@ var CloudSync = {
         if(origin && origin.indexOf('http') === 0){
           redirectTo = origin + '/app/?confirmed=1';
         } else {
-          redirectTo = 'https://tdsuite.netlify.app/app/?confirmed=1';
+          redirectTo = 'https://tradingsuite.vercel.app/app/?confirmed=1';
         }
       }catch(e){
-        redirectTo = 'https://tdsuite.netlify.app/app/?confirmed=1';
+        redirectTo = 'https://tradingsuite.vercel.app/app/?confirmed=1';
       }
       var body = {
         email: email,
@@ -17079,9 +17079,9 @@ var CloudSync = {
         if(origin && origin.indexOf('http') === 0){
           redirectTo = origin + '/app/?recovery=1';
         } else {
-          redirectTo = 'https://tdsuite.netlify.app/app/?recovery=1';
+          redirectTo = 'https://tradingsuite.vercel.app/app/?recovery=1';
         }
-      }catch(e){ redirectTo = 'https://tdsuite.netlify.app/app/?recovery=1'; }
+      }catch(e){ redirectTo = 'https://tradingsuite.vercel.app/app/?recovery=1'; }
       var r = await CloudSync._req('/auth/v1/recover?redirect_to=' + encodeURIComponent(redirectTo), {
         method:'POST', noAuth:true, body:{ email: email }
       });
