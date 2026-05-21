@@ -3311,34 +3311,34 @@ body{background:var(--bg) !important;color:var(--text) !important;}
           <!-- Cloud pane — Supabase backend (v2.1.168) -->
           <div class="qs-pane" id="qs-pane-cloud" style="display:none;">
             <div class="bkp-section">
-              <div class="bkp-section-title">🌥 Облако</div>
-              <div class="bkp-status-line"><span class="lbl">Статус:</span><span class="val" style="color:#22c55e;">подключено</span></div>
-              <div class="bkp-status-line"><span class="lbl">Аккаунт:</span><span class="val" id="cloud-user-val">не вошёл</span></div>
+              <div class="bkp-section-title" data-ru="🌥 Облако" data-en="🌥 Cloud">🌥 Облако</div>
+              <div class="bkp-status-line"><span class="lbl" data-ru="Статус:" data-en="Status:">Статус:</span><span class="val" style="color:#22c55e;" data-ru="подключено" data-en="connected">подключено</span></div>
+              <div class="bkp-status-line"><span class="lbl" data-ru="Аккаунт:" data-en="Account:">Аккаунт:</span><span class="val" id="cloud-user-val" data-ru="не вошёл" data-en="not signed in">не вошёл</span></div>
             </div>
             <!-- hidden stubs so _cloudRefreshUI() doesn't crash -->
             <div id="cloud-not-connected" style="display:none;"></div>
             <div id="cloud-connected" style="display:none;"></div>
             <div id="cloud-auth-section">
               <div class="bkp-section">
-                <div class="bkp-section-title">👤 Аккаунт</div>
+                <div class="bkp-section-title" data-ru="👤 Аккаунт" data-en="👤 Account">👤 Аккаунт</div>
                 <div id="cloud-signed-out">
                   <div style="display:flex;flex-direction:column;gap:8px;">
                     <input id="cloud-email" type="email" placeholder="email" autocomplete="email" style="width:100%;padding:8px 11px;background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;outline:none;">
-                    <input id="cloud-pass" type="password" placeholder="пароль (мин. 8)" autocomplete="current-password" style="width:100%;padding:8px 11px;background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;outline:none;">
+                    <input id="cloud-pass" type="password" data-ph-ru="пароль (мин. 8)" data-ph-en="password (min 8)" placeholder="пароль (мин. 8)" autocomplete="current-password" style="width:100%;padding:8px 11px;background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;outline:none;">
                     <div id="cloud-auth-err" style="display:none;font-size:11px;color:#ef4444;"></div>
                     <div class="bkp-btn-row" style="margin:4px 0 0;">
-                      <button class="bkp-actbtn primary" onclick="_cloudSignIn()">Войти</button>
-                      <button class="bkp-actbtn" onclick="_cloudSignUp()">Регистрация</button>
+                      <button class="bkp-actbtn primary" onclick="_cloudSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
+                      <button class="bkp-actbtn" onclick="_cloudSignUp()" data-ru="Регистрация" data-en="Register">Регистрация</button>
                     </div>
                   </div>
                 </div>
                 <div id="cloud-signed-in" style="display:none;">
                   <div class="bkp-btn-row">
-                    <button class="bkp-actbtn primary" onclick="_cloudSyncUp()" id="cloud-sync-up-btn">☁️↑ Загрузить в облако</button>
-                    <button class="bkp-actbtn" onclick="_cloudSyncDown()" id="cloud-sync-down-btn">☁️↓ Скачать из облака</button>
+                    <button class="bkp-actbtn primary" onclick="_cloudSyncUp()" id="cloud-sync-up-btn" data-ru="☁️↑ Загрузить в облако" data-en="☁️↑ Upload to cloud">☁️↑ Загрузить в облако</button>
+                    <button class="bkp-actbtn" onclick="_cloudSyncDown()" id="cloud-sync-down-btn" data-ru="☁️↓ Скачать из облака" data-en="☁️↓ Download from cloud">☁️↓ Скачать из облака</button>
                   </div>
                   <div class="bkp-btn-row" style="margin-top:6px;">
-                    <button class="bkp-actbtn" onclick="_cloudSignOut()">Выйти</button>
+                    <button class="bkp-actbtn" onclick="_cloudSignOut()" data-ru="Выйти" data-en="Sign out">Выйти</button>
                   </div>
                   <div id="cloud-sync-status" style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;"></div>
                 </div>
@@ -3459,53 +3459,53 @@ body{background:var(--bg) !important;color:var(--text) !important;}
       <div id="pc-edit-modal" class="pc-modal-overlay" style="display:none" onclick="if(event.target===this)_pcCloseEdit()">
         <div class="pc-modal" onclick="event.stopPropagation()">
           <div class="pc-modal-head">
-            <div class="pc-modal-title">Редактирование профиля</div>
+            <div class="pc-modal-title" data-ru="Редактирование профиля" data-en="Edit profile">Редактирование профиля</div>
             <button class="pc-modal-close" onclick="_pcCloseEdit()" title="Закрыть">×</button>
           </div>
           <div class="pc-modal-body">
             <div class="pc-field">
-              <label class="pc-field-lbl">Аватар</label>
+              <label class="pc-field-lbl" data-ru="Аватар" data-en="Avatar">Аватар</label>
               <div class="pc-avatar-preview-row">
                 <div class="pc-avatar-preview" id="pc-avatar-preview">?</div>
                 <div class="pc-avatar-controls">
-                  <label class="pc-avatar-upload-btn">
+                  <label class="pc-avatar-upload-btn" data-ru="📷 Загрузить фото" data-en="📷 Upload photo">
                     📷 Загрузить фото
                     <input type="file" id="pc-avatar-file" accept="image/*" style="display:none" onchange="_pcUploadAvatar(this)">
                   </label>
-                  <button class="pc-avatar-clear-btn" onclick="_pcSelectEmoji('')" title="Сбросить">Сбросить</button>
+                  <button class="pc-avatar-clear-btn" onclick="_pcSelectEmoji('')" data-ru="Сбросить" data-en="Reset">Сбросить</button>
                 </div>
               </div>
-              <div class="pc-avatar-section-lbl">или выбери эмодзи:</div>
+              <div class="pc-avatar-section-lbl" data-ru="или выбери эмодзи:" data-en="or pick an emoji:">или выбери эмодзи:</div>
               <div class="pc-emoji-grid" id="pc-emoji-grid"></div>
             </div>
             <div class="pc-field">
-              <label class="pc-field-lbl">Имя</label>
-              <input type="text" class="pc-input" id="pc-edit-name" maxlength="40" placeholder="Как тебя называть" oninput="_pcUpdatePreview()">
+              <label class="pc-field-lbl" data-ru="Имя" data-en="Name">Имя</label>
+              <input type="text" class="pc-input" id="pc-edit-name" maxlength="40" data-ph-ru="Как тебя называть" data-ph-en="What to call you" placeholder="Как тебя называть" oninput="_pcUpdatePreview()">
             </div>
             <div class="pc-field">
-              <label class="pc-field-lbl">Стиль торговли</label>
+              <label class="pc-field-lbl" data-ru="Стиль торговли" data-en="Trading style">Стиль торговли</label>
               <select class="pc-select" id="pc-edit-style">
-                <option value="">— не указан —</option>
-                <option value="scalper">Скальпер</option>
-                <option value="daytrader">Дей-трейдер</option>
-                <option value="swing">Свинг-трейдер</option>
-                <option value="position">Позиционный трейдер</option>
-                <option value="investor">Долгосрочный инвестор</option>
-                <option value="options">Опционный трейдер</option>
+                <option value="" data-ru="— не указан —" data-en="— not set —">— не указан —</option>
+                <option value="scalper" data-ru="Скальпер" data-en="Scalper">Скальпер</option>
+                <option value="daytrader" data-ru="Дей-трейдер" data-en="Day trader">Дей-трейдер</option>
+                <option value="swing" data-ru="Свинг-трейдер" data-en="Swing trader">Свинг-трейдер</option>
+                <option value="position" data-ru="Позиционный трейдер" data-en="Position trader">Позиционный трейдер</option>
+                <option value="investor" data-ru="Долгосрочный инвестор" data-en="Long-term investor">Долгосрочный инвестор</option>
+                <option value="options" data-ru="Опционный трейдер" data-en="Options trader">Опционный трейдер</option>
               </select>
             </div>
             <div class="pc-field">
-              <label class="pc-field-lbl">Торгую с (дата начала)</label>
-              <input type="date" class="pc-input" id="pc-edit-since">
+              <label class="pc-field-lbl" data-ru="Торгую с (год начала)" data-en="Trading since (year)">Торгую с (год начала)</label>
+              <input type="number" class="pc-input" id="pc-edit-since" min="1990" max="2099" data-ph-ru="например 2021" data-ph-en="e.g. 2021" placeholder="например 2021">
             </div>
             <div class="pc-field">
-              <label class="pc-field-lbl">Био / Девиз</label>
-              <textarea class="pc-textarea" id="pc-edit-bio" maxlength="200" placeholder="Короткая фраза про себя как трейдера"></textarea>
+              <label class="pc-field-lbl" data-ru="Био / Девиз" data-en="Bio / Motto">Био / Девиз</label>
+              <textarea class="pc-textarea" id="pc-edit-bio" maxlength="200" data-ph-ru="Короткая фраза про себя как трейдера" data-ph-en="A short phrase describing you as a trader" placeholder="Короткая фраза про себя как трейдера"></textarea>
             </div>
           </div>
           <div class="pc-modal-foot">
-            <button class="pc-set-btn" onclick="_pcCloseEdit()">Отмена</button>
-            <button class="pc-set-btn primary" onclick="_pcSaveProfile()">Сохранить</button>
+            <button class="pc-set-btn" onclick="_pcCloseEdit()" data-ru="Отмена" data-en="Cancel">Отмена</button>
+            <button class="pc-set-btn primary" onclick="_pcSaveProfile()" data-ru="Сохранить" data-en="Save">Сохранить</button>
           </div>
         </div>
       </div>
@@ -5567,6 +5567,17 @@ function _pcOpenAuth(){
   if(m){ m.style.display='flex'; }
   var err=document.getElementById('pc-auth-err');
   if(err){ err.style.display='none'; err.textContent=''; }
+  // Apply current language to modal elements
+  try{
+    var _l=typeof getLang==='function'?getLang():'ru';
+    if(m) m.querySelectorAll('[data-ru]').forEach(function(el){
+      var txt=_l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.innerHTML=txt;
+    });
+    if(m) m.querySelectorAll('[data-ph-ru]').forEach(function(el){
+      el.placeholder=_l==='en'?(el.dataset.phEn||el.dataset.phRu):el.dataset.phRu;
+    });
+  }catch(e){}
 }
 function _pcCloseAuth(){
   var m=document.getElementById('pc-auth-modal');
@@ -5931,6 +5942,17 @@ function _pcEditProfile(){
   // Clear file input
   var f=document.getElementById('pc-avatar-file'); if(f) f.value='';
   modal.style.display='flex';
+  // Apply current language translations to modal
+  try{
+    var _l=typeof getLang==='function'?getLang():'ru';
+    modal.querySelectorAll('[data-ru]').forEach(function(el){
+      var txt=_l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.innerHTML=txt;
+    });
+    modal.querySelectorAll('[data-ph-ru]').forEach(function(el){
+      el.placeholder=_l==='en'?(el.dataset.phEn||el.dataset.phRu):el.dataset.phRu;
+    });
+  }catch(e){}
 }
 function _pcSelectEmoji(emo){
   var modal=document.getElementById('pc-edit-modal');
@@ -16536,11 +16558,20 @@ function _cloudRefreshUI(){
       if(signedIn) signedIn.style.display = '';
       if(badge){ badge.textContent='online'; badge.style.background='linear-gradient(135deg,#22c55e,#16a34a)'; badge.style.color='#fff'; }
     } else {
-      if(userEl) userEl.textContent = _t('не вошёл','signed out');
+      if(userEl) userEl.textContent = _t('не вошёл','not signed in');
       if(signedOut) signedOut.style.display = '';
       if(signedIn) signedIn.style.display = 'none';
       if(badge){ badge.textContent='ready'; badge.style.background=''; badge.style.color=''; }
     }
+    // Re-apply data-ru/data-en translations after DOM updates
+    try{
+      var l=typeof getLang==='function'?getLang():'ru';
+      document.querySelectorAll('#qs-pane-cloud [data-ru]').forEach(function(el){
+        if(el===userEl&&CloudSync._user) return; // keep email text
+        var txt=l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+        if(txt!==undefined) el.innerHTML=txt;
+      });
+    }catch(e){}
   } else {
     notC.style.display = '';
     conC.style.display = 'none';
