@@ -22761,31 +22761,32 @@ function _agHasKnownUser(){
 function _authGateShow(){
   var g = document.getElementById('auth-gate');
   if(!g) return;
-  // Choose initial mode based on whether this is a returning user
-  var initialMode = _agHasKnownUser() ? 'signin' : 'register';
-  _agSwitchMode(initialMode);
+  // Always open in Sign In mode — most visits are returning users, and even
+  // first-time visitors see "No account yet? Create one" link right below
+  // the sign-in form, so they're never stuck.
+  _agSwitchMode('signin');
   // Clear all inputs
   ['ag-email','ag-pass','ag-reg-email','ag-reg-pass','ag-reg-pass2'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.value='';
   });
   // Pre-fill the last used email if we have it (saves typing for returning users)
-  try{
-    var lastEmail = localStorage.getItem('ts_last_email');
-    if(lastEmail){
-      var em = document.getElementById('ag-email');
-      if(em && initialMode === 'signin') em.value = lastEmail;
-    }
-  }catch(e){}
+  var lastEmail = '';
+  try{ lastEmail = localStorage.getItem('ts_last_email') || ''; }catch(e){}
+  if(lastEmail){
+    var em = document.getElementById('ag-email');
+    if(em) em.value = lastEmail;
+  }
   // Re-enable buttons
   ['ag-signin-btn','ag-register-btn'].forEach(function(id){
     var b=document.getElementById(id); if(b) b.disabled=false;
   });
   g.style.display='flex';
   _agTranslate();
+  // If we have a remembered email, focus password (skip typing email);
+  // otherwise focus the email field.
   setTimeout(function(){
-    var f = initialMode === 'signin'
-      ? document.getElementById(localStorage.getItem('ts_last_email') ? 'ag-pass' : 'ag-email')
-      : document.getElementById('ag-reg-email');
+    var targetId = lastEmail ? 'ag-pass' : 'ag-email';
+    var f = document.getElementById(targetId);
     if(f) f.focus();
   },100);
 }
