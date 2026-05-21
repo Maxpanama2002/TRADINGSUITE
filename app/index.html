@@ -7532,9 +7532,10 @@ function _dsToggleHeroExpand(fromChartClick){
 // ══ CUSTOM WIDGETS — 3 user-configurable slots at bottom of dashboard ══
 var _DS_SLOTS_KEY='ds_custom_widgets_v1';
 var _dsActiveSlot=null;  // slot index currently picking for
+var _DS_SLOT_DEFAULTS='["macro","goalchart","news"]';
 function _dsLoadSlots(){
-  try{var d=JSON.parse(localStorage.getItem(_DS_SLOTS_KEY)||'[null,null,null]');return Array.isArray(d)?d:[null,null,null];}
-  catch(e){return[null,null,null];}
+  try{var d=JSON.parse(localStorage.getItem(_DS_SLOTS_KEY)||_DS_SLOT_DEFAULTS);return Array.isArray(d)?d:JSON.parse(_DS_SLOT_DEFAULTS);}
+  catch(e){return JSON.parse(_DS_SLOT_DEFAULTS);}
 }
 function _dsSaveSlots(arr){try{localStorage.setItem(_DS_SLOTS_KEY,JSON.stringify(arr));}catch(e){}}
 function _dsT(ru,en){return (typeof getLang==='function'&&getLang()==='en')?en:ru;}
