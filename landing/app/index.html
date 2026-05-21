@@ -5242,10 +5242,10 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             </div>
           </div>
 
-          <!-- Prices tab -->
+          <!-- Prices tab (LemonSqueezy) -->
           <div id="adm-pane-prices" style="display:none;">
-            <div class="adm-section-title" data-ru="💰 Тарифы" data-en="💰 Pricing plans">💰 Тарифы</div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;">
+            <div class="adm-section-title" data-ru="💰 Тарифы (LemonSqueezy)" data-en="💰 Pricing plans (LemonSqueezy)">💰 Тарифы (LemonSqueezy)</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;">
               <!-- Pro monthly card -->
               <div class="adm-table-wrap" style="padding:18px;">
                 <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">PRO MONTHLY</div>
@@ -5254,8 +5254,12 @@ body{background:var(--bg) !important;color:var(--text) !important;}
                   <input type="number" step="0.01" min="0" class="adm-search" id="adm-price-monthly" style="font-size:24px;font-weight:800;flex:0 1 120px;text-align:right;">
                   <span style="font-size:13px;color:var(--text3);" data-ru="/мес" data-en="/mo">/мес</span>
                 </div>
-                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" data-ru="Stripe Price ID" data-en="Stripe Price ID">Stripe Price ID</div>
-                <input type="text" class="adm-search" id="adm-stripe-monthly" placeholder="price_1Abcd...">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Store URL slug (для buy-ссылок)</div>
+                <input type="text" class="adm-search" id="adm-ls-store-monthly" placeholder="trading-suite" style="margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Variant ID</div>
+                <input type="text" class="adm-search" id="adm-ls-variant-monthly" placeholder="123456" style="margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Full Checkout URL (если есть — приоритетнее)</div>
+                <input type="text" class="adm-search" id="adm-ls-checkout-monthly" placeholder="https://trading-suite.lemonsqueezy.com/buy/abc-...">
               </div>
               <!-- Pro yearly card -->
               <div class="adm-table-wrap" style="padding:18px;">
@@ -5265,8 +5269,12 @@ body{background:var(--bg) !important;color:var(--text) !important;}
                   <input type="number" step="0.01" min="0" class="adm-search" id="adm-price-yearly" style="font-size:24px;font-weight:800;flex:0 1 120px;text-align:right;">
                   <span style="font-size:13px;color:var(--text3);" data-ru="/год" data-en="/yr">/год</span>
                 </div>
-                <div style="font-size:11px;color:var(--text3);margin-bottom:8px;" data-ru="Stripe Price ID" data-en="Stripe Price ID">Stripe Price ID</div>
-                <input type="text" class="adm-search" id="adm-stripe-yearly" placeholder="price_1Abcd...">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Store URL slug</div>
+                <input type="text" class="adm-search" id="adm-ls-store-yearly" placeholder="trading-suite" style="margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Variant ID</div>
+                <input type="text" class="adm-search" id="adm-ls-variant-yearly" placeholder="123457" style="margin-bottom:8px;">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Full Checkout URL</div>
+                <input type="text" class="adm-search" id="adm-ls-checkout-yearly" placeholder="https://trading-suite.lemonsqueezy.com/buy/...">
               </div>
             </div>
             <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
@@ -6013,7 +6021,7 @@ function _qsRefresh(){
 // Subscription state — populated by _subRefresh
 window._subPlan = 'free';
 window._subStatus = 'inactive';
-window._subPricing = { pro_monthly: { amount:9.99, currency:'USD', stripe_price_id:'' } };
+window._subPricing = { pro_monthly: { amount:9.99, currency:'USD', store_id:'', variant_id:'', checkout_url:'' } };
 
 // Рендерит списки фич в карточках Free и Pro на странице "Личный кабинет → Подписка".
 // Берёт текущие тарифы фич из _featureTiers/FEATURE_META через _buildLiveCatalog().
@@ -6122,13 +6130,13 @@ window._refreshProLocks = function(){
 window._subRefresh = async function(){
   if(!CloudSync._user || !CloudSync._ready) return;
   try{
-    // 1) Pricing from app_config
-    var rp = await CloudSync._req('/rest/v1/app_config?key=eq.pricing.pro_monthly&select=value', { method:'GET' });
+    // 1) Pricing from app_config (LemonSqueezy)
+    var rp = await CloudSync._req('/rest/v1/app_config?key=eq.pricing.pro_monthly_ls&select=value', { method:'GET' });
     if(rp.ok && rp.data && rp.data.length){
       window._subPricing.pro_monthly = rp.data[0].value || window._subPricing.pro_monthly;
     }
-    // 2) User's subscription
-    var rs = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(CloudSync._user.id) + '&select=plan,status,current_period_end,cancel_at_period_end', { method:'GET' });
+    // 2) User's subscription (LS fields)
+    var rs = await CloudSync._req('/rest/v1/subscriptions?user_id=eq.' + encodeURIComponent(CloudSync._user.id) + '&select=plan,status,renews_at,ends_at,cancel_at_period_end,lemonsqueezy_status', { method:'GET' });
     if(rs.ok && rs.data && rs.data.length){
       window._subPlan   = rs.data[0].plan || 'free';
       window._subStatus = rs.data[0].status || 'inactive';
@@ -6178,41 +6186,65 @@ window._subRefresh = async function(){
 function _subUpgrade(){
   if(!CloudSync._user){ try{ _authGateShow(); }catch(_){ } return; }
   var price = window._subPricing && window._subPricing.pro_monthly;
-  var stripePriceId = price && price.stripe_price_id;
-  if(!stripePriceId){
-    // Stripe not yet configured — show coming-soon message
+  var checkoutUrl = price && price.checkout_url;
+  var variantId   = price && price.variant_id;
+
+  if(!checkoutUrl && !variantId){
+    // LS not yet configured — show coming-soon
     var msg = _t(
-      '⚙️ Оплата Pro подписки скоро будет доступна. Мы настраиваем Stripe — следи за обновлениями!',
-      '⚙️ Pro subscription payment will be available soon. Stripe setup is in progress — stay tuned!'
+      '⚙️ Оплата Pro подписки скоро будет доступна. Подключаем LemonSqueezy — следи за обновлениями!',
+      '⚙️ Pro subscription payment will be available soon. Setting up LemonSqueezy — stay tuned!'
     );
     try{ showToast2(msg); }catch(_){ alert(msg); }
     return;
   }
-  // Stripe IS configured — open Checkout
-  try{ window._logEvent && _logEvent('upgrade_clicked', { price_id: stripePriceId }); }catch(e){}
-  _stripeCheckout(stripePriceId);
+
+  try{ window._logEvent && _logEvent('upgrade_clicked', { variant_id: variantId||null, provider:'lemonsqueezy' }); }catch(e){}
+  _lemonsqueezyCheckout(price);
 }
 
-// Stripe Checkout — opens a hosted Checkout page via Supabase Edge Function.
-// The Edge Function (deploy separately) creates a Checkout session and
-// returns a redirect URL. See: db/edge-functions/stripe-checkout/
-async function _stripeCheckout(priceId){
+// LemonSqueezy Checkout — builds a direct checkout URL and redirects there.
+// No Edge Function needed for the redirect itself. The webhook handles
+// subscription state updates on the server (see db/edge-functions/lemonsqueezy-webhook/).
+//
+// Two ways to configure in admin → Цены:
+//   1. Full checkout_url (e.g. https://your-store.lemonsqueezy.com/buy/abc-123)
+//   2. Just variant_id — we'll construct the URL from store_id + variant_id
+function _lemonsqueezyCheckout(price){
   var btn = document.getElementById('sub-pro-cta');
-  if(btn){ btn.disabled = true; btn.textContent = _t('Переходим…','Redirecting…'); }
-  var r = await CloudSync._req('/functions/v1/stripe-checkout', {
-    method:'POST', body:{ price_id: priceId, success_url: window.location.origin + '/app/?payment=success', cancel_url: window.location.origin + '/app/?payment=cancel' }
-  });
-  if(btn){ btn.disabled = false; btn.textContent = _t('Активировать Pro','Activate Pro'); }
-  if(r.ok && r.data && r.data.url){
-    window.location.href = r.data.url;
-  } else {
-    var emsg = (r.error||'').toLowerCase();
-    if(emsg.indexOf('not found')!==-1 || emsg.indexOf('404')!==-1){
-      alert(_t('Stripe ещё не подключён. Админ должен задеплоить Edge Function.','Stripe is not yet set up. Admin must deploy the Edge Function.'));
-    } else {
-      alert(_t('Ошибка платежа: ','Payment error: ') + (r.error||'unknown'));
+  var userId = CloudSync._user && CloudSync._user.id;
+  var userEmail = (CloudSync._user && CloudSync._user.email) || '';
+
+  // Build the URL. We prefer the explicit checkout_url; fall back to building
+  // from store_id + variant_id.
+  var url = (price.checkout_url || '').trim();
+  if(!url && price.variant_id){
+    var storeSlug = (price.store_id || '').trim();
+    if(!storeSlug){
+      alert(_t('Админ должен ввести Store URL или полную Checkout URL в админ-панели → Цены.','Admin must set Store URL or full Checkout URL in admin → Pricing.'));
+      return;
     }
+    url = 'https://' + storeSlug + '.lemonsqueezy.com/buy/' + encodeURIComponent(price.variant_id);
   }
+  if(!url){
+    alert(_t('Ссылка на оплату не настроена.','Checkout URL is not configured.'));
+    return;
+  }
+
+  // Append user metadata so the webhook can map back to our user_id.
+  // LemonSqueezy custom data syntax: checkout[custom][user_id]=...
+  var sep = url.indexOf('?') === -1 ? '?' : '&';
+  var params = [];
+  params.push('checkout%5Bcustom%5D%5Buser_id%5D=' + encodeURIComponent(userId));
+  if(userEmail) params.push('checkout%5Bemail%5D=' + encodeURIComponent(userEmail));
+  // Where to land after successful payment
+  var successUrl = (window.location.origin && window.location.origin.indexOf('http')===0)
+    ? window.location.origin + '/app/?payment=success'
+    : 'https://tradingsuite.vercel.app/app/?payment=success';
+  params.push('checkout%5Bsuccess_url%5D=' + encodeURIComponent(successUrl));
+
+  if(btn){ btn.disabled = true; btn.textContent = _t('Переходим…','Redirecting…'); }
+  window.location.href = url + sep + params.join('&');
 }
 
 // Auth gate — shown when entering Personal Cabinet if user is not signed in.
@@ -18226,42 +18258,50 @@ async function admLoadEvents(){
   }).join('');
 }
 
-// ── Prices tab ──────────────────────────────────────────────────────────
+// ── Prices tab (LemonSqueezy) ──────────────────────────────────────────
 async function admLoadPrices(){
-  // Load both pro_monthly and pro_yearly
-  var r = await CloudSync._req('/rest/v1/app_config?key=in.(pricing.pro_monthly,pricing.pro_yearly)&select=key,value', { method:'GET' });
+  // Load LS pricing rows
+  var r = await CloudSync._req('/rest/v1/app_config?key=in.(pricing.pro_monthly_ls,pricing.pro_yearly_ls)&select=key,value', { method:'GET' });
   if(!r.ok) return;
   var byKey = {};
   (r.data||[]).forEach(function(row){ byKey[row.key] = row.value; });
-  var m = byKey['pricing.pro_monthly'] || { amount: 9.99, currency: 'USD', stripe_price_id: '' };
-  var y = byKey['pricing.pro_yearly']  || { amount: 89.99, currency: 'USD', stripe_price_id: '' };
+  var m = byKey['pricing.pro_monthly_ls'] || { amount: 9.99,  currency: 'USD', store_id:'', variant_id:'', checkout_url:'' };
+  var y = byKey['pricing.pro_yearly_ls']  || { amount: 89.99, currency: 'USD', store_id:'', variant_id:'', checkout_url:'' };
   function _set(id, v){ var el=document.getElementById(id); if(el) el.value = v; }
-  _set('adm-price-monthly', m.amount);
-  _set('adm-stripe-monthly', m.stripe_price_id || '');
-  _set('adm-price-yearly', y.amount);
-  _set('adm-stripe-yearly', y.stripe_price_id || '');
+  _set('adm-price-monthly',         m.amount);
+  _set('adm-ls-store-monthly',      m.store_id || '');
+  _set('adm-ls-variant-monthly',    m.variant_id || '');
+  _set('adm-ls-checkout-monthly',   m.checkout_url || '');
+  _set('adm-price-yearly',          y.amount);
+  _set('adm-ls-store-yearly',       y.store_id || '');
+  _set('adm-ls-variant-yearly',     y.variant_id || '');
+  _set('adm-ls-checkout-yearly',    y.checkout_url || '');
 }
 
 async function admSavePrices(){
+  function _val(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; }
   var monthly = {
-    amount: parseFloat(document.getElementById('adm-price-monthly').value) || 0,
+    amount: parseFloat(_val('adm-price-monthly')) || 0,
     currency: 'USD',
-    stripe_price_id: document.getElementById('adm-stripe-monthly').value.trim()
+    store_id:     _val('adm-ls-store-monthly'),
+    variant_id:   _val('adm-ls-variant-monthly'),
+    checkout_url: _val('adm-ls-checkout-monthly')
   };
   var yearly = {
-    amount: parseFloat(document.getElementById('adm-price-yearly').value) || 0,
+    amount: parseFloat(_val('adm-price-yearly')) || 0,
     currency: 'USD',
-    stripe_price_id: document.getElementById('adm-stripe-yearly').value.trim()
+    store_id:     _val('adm-ls-store-yearly'),
+    variant_id:   _val('adm-ls-variant-yearly'),
+    checkout_url: _val('adm-ls-checkout-yearly')
   };
-  // Use upsert via Prefer: resolution=merge-duplicates
   var r1 = await CloudSync._req('/rest/v1/app_config', {
     method:'POST',
-    body:{ key:'pricing.pro_monthly', value: monthly },
+    body:{ key:'pricing.pro_monthly_ls', value: monthly },
     headers:{ 'Prefer':'resolution=merge-duplicates' }
   });
   var r2 = await CloudSync._req('/rest/v1/app_config', {
     method:'POST',
-    body:{ key:'pricing.pro_yearly', value: yearly },
+    body:{ key:'pricing.pro_yearly_ls', value: yearly },
     headers:{ 'Prefer':'resolution=merge-duplicates' }
   });
   if(r1.ok && r2.ok){
