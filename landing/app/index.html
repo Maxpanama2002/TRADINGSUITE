@@ -568,6 +568,8 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 }
 .ds-picker-item.taken{opacity:0.45;cursor:not-allowed;}
 .ds-picker-item.taken:hover{transform:none;border-color:var(--border);background:var(--card-bg2);}
+.ds-picker-item.locked{position:relative;cursor:pointer;background:linear-gradient(135deg,rgba(124,58,237,0.04),rgba(236,72,153,0.03));border-color:rgba(124,58,237,0.25);}
+.ds-picker-item.locked:hover{background:linear-gradient(135deg,rgba(124,58,237,0.10),rgba(236,72,153,0.06));border-color:rgba(124,58,237,0.45);}
 .ds-picker-icon{
   width:34px;height:34px;border-radius:9px;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;
@@ -8625,6 +8627,14 @@ function _dsSlotClick(idx, ev){
   }
 }
 
+// Map dashboard widget IDs → feature catalog IDs (for Pro gating in picker)
+var _DS_WIDGET_FEATURES = {
+  news:        'crypto_news',
+  paper:       'paper_trading',
+  derivatives: 'funding_oi',
+  strategy:    'strategy_module'
+};
+
 function _dsOpenPicker(slotIdx){
   _dsActiveSlot=slotIdx;
   var overlay=document.getElementById('ds-picker-overlay');
@@ -8643,11 +8653,26 @@ function _dsOpenPicker(slotIdx){
     var takenIdx=slots.indexOf(wid);
     var taken = (takenIdx!==-1 && takenIdx!==slotIdx);
     var takenNote = taken ? '<span class="ds-taken-note">· '+_dsT('уже добавлен','already added')+'</span>' : '';
-    html+='<button class="ds-picker-item'+(taken?' taken':'')+'" '
-      +(taken?'disabled':'onclick="_dsPickWidget(\''+wid+'\')"')+'>'
+
+    // Pro gating: is this widget locked for current user?
+    var featId = _DS_WIDGET_FEATURES[wid];
+    var locked = false;
+    var proBadge = '';
+    if(featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId)){
+      locked = true;
+      proBadge = ' <span style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;margin-left:6px;letter-spacing:.03em;">🔒 PRO</span>';
+    }
+
+    var clickAction;
+    if(taken){ clickAction = 'disabled'; }
+    else if(locked){ clickAction = 'onclick="_proGate(\'' + featId + '\')"'; }
+    else { clickAction = 'onclick="_dsPickWidget(\'' + wid + '\')"'; }
+
+    html+='<button class="ds-picker-item'+(taken?' taken':'')+(locked?' locked':'')+'" '
+      +clickAction+'>'
       +'<span class="ds-picker-icon">'+w.icon+'</span>'
       +'<span class="ds-picker-item-text">'
-        +'<div class="ds-picker-item-name">'+esc2(t.title)+takenNote+'</div>'
+        +'<div class="ds-picker-item-name">'+esc2(t.title)+takenNote+proBadge+'</div>'
         +'<div class="ds-picker-item-desc">'+esc2(t.desc)+'</div>'
       +'</span>'
       +'</button>';
@@ -10719,6 +10744,13 @@ async function _aiChatWeb(messages, model, context){
 
 // ── AI Trade Review: AI разбирает конкретную сделку ──
 function _tjAiReview(id){
+  // Pro gate for AI Trade Review
+  try{
+    if(typeof _canUseFeature === 'function' && !_canUseFeature('ai_trade_review')){
+      _proGate('ai_trade_review');
+      return;
+    }
+  }catch(e){}
   var t = _tjLoad().find(function(x){return String(x.id)===String(id);});
   if(!t){ return; }
   // Нормализуем поля (схема меняется во времени)
@@ -13056,6 +13088,13 @@ function wlDel(idx){
 // Multiple alerts per asset are supported — each fires independently and is
 // removed (one-shot semantics) after triggering, to avoid noise loops.
 function wlAddAlert(idx, val){
+  // Pro gate for price alerts
+  try{
+    if(typeof _canUseFeature === 'function' && !_canUseFeature('price_alerts')){
+      _proGate('price_alerts');
+      return;
+    }
+  }catch(e){}
   _wlLoad();
   var coin = _wlList[idx];
   if(!coin) return;
@@ -20818,6 +20857,13 @@ async function _decryptBackup(envelope, password){
 }
 
 async function backupAll() {
+  // Pro gate for export
+  try{
+    if(typeof _canUseFeature === 'function' && !_canUseFeature('export_csv')){
+      _proGate('export_csv');
+      return;
+    }
+  }catch(e){}
   var isEn=(typeof getLang==='function'&&getLang()==='en');
   var pw=prompt(isEn
     ? 'Encrypt backup with password? Leave empty to save unencrypted.'
