@@ -16656,7 +16656,11 @@ var CloudSync = {
       var text = await res.text();
       var json = null; try{ json = text ? JSON.parse(text) : null; }catch(e){}
       if(!res.ok){
-        return { ok:false, error:(json && (json.error_description||json.error||json.message))||('HTTP '+res.status), status:res.status, raw:json };
+        // Supabase returns the human-readable reason in different keys depending on
+        // the endpoint: error_description (OAuth), msg (GoTrue), message (PostgREST),
+        // error (general). Pick whichever is present.
+        var errMsg = json && (json.error_description || json.msg || json.message || json.error || json.error_code);
+        return { ok:false, error: errMsg || ('HTTP '+res.status), status:res.status, raw:json };
       }
       return { ok:true, data: json };
     } catch(e){
@@ -21378,7 +21382,9 @@ async function _gateSignIn(){
   if(!r.ok){
     var msg = r.error||'';
     var lc  = msg.toLowerCase();
-    if(lc.indexOf('invalid')!==-1||lc.indexOf('credentials')!==-1){
+    if(r.status === 429 || lc.indexOf('rate')!==-1 || lc.indexOf('limit')!==-1){
+      msg = _t('⏰ Слишком много попыток. Подожди 1–2 минуты.','⏰ Too many attempts. Wait 1–2 minutes.');
+    } else if(lc.indexOf('invalid')!==-1||lc.indexOf('credentials')!==-1){
       msg = _t('Неверный email или пароль','Wrong email or password');
     } else if(lc.indexOf('not confirmed')!==-1||lc.indexOf('email not confirmed')!==-1){
       msg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
@@ -21419,13 +21425,21 @@ async function _gateRegister(){
   if(!r.ok){
     var msg = r.error||'';
     var lc  = msg.toLowerCase();
-    if(lc.indexOf('already')!==-1||lc.indexOf('registered')!==-1||lc.indexOf('user already')!==-1){
+    // Explicit HTTP status checks first (most reliable)
+    if(r.status === 429 || lc.indexOf('429')!==-1 || lc.indexOf('rate')!==-1 || lc.indexOf('limit')!==-1 || lc.indexOf('over_email')!==-1){
+      msg = _t(
+        '⏰ Лимит писем для регистрации исчерпан (2/час). Попробуй через час или используй другой email.',
+        '⏰ Email signup limit reached (2/hour). Try in an hour or use a different email.'
+      );
+    } else if(lc.indexOf('already')!==-1||lc.indexOf('registered')!==-1||lc.indexOf('user already')!==-1){
       msg = _t('Этот email уже зарегистрирован. Войди в аккаунт.','This email is already registered. Sign in instead.');
-    } else if(lc.indexOf('rate')!==-1||lc.indexOf('limit')!==-1){
-      msg = _t('Слишком много попыток. Подожди минуту.','Too many attempts. Wait a minute.');
     } else if(lc.indexOf('weak')!==-1||lc.indexOf('password')!==-1){
       msg = _t('Пароль слишком простой. Добавь цифры/буквы.','Password too weak. Add numbers/letters.');
-    } else if(!msg){ msg = _t('Ошибка регистрации. Попробуй позже.','Registration error. Try again later.'); }
+    } else if(lc.indexOf('invalid')!==-1 && lc.indexOf('email')!==-1){
+      msg = _t('Email выглядит некорректно','Email looks invalid');
+    } else if(!msg){
+      msg = _t('Ошибка регистрации. Попробуй позже.','Registration error. Try again later.');
+    }
     _agShowErr(err, msg);
     return;
   }
