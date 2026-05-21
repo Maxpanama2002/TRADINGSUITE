@@ -23,6 +23,11 @@
     return 'en';
   }
 
+  var LANGS = [
+    {code:'en', label:'English', flag:'🇬🇧'},
+    {code:'ru', label:'Русский', flag:'🇷🇺'}
+  ];
+
   function applyLang(lang){
     document.documentElement.setAttribute('lang', lang);
     try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
@@ -31,10 +36,62 @@
     document.querySelectorAll('[data-ru]').forEach(function(el){
       el.innerHTML = lang === 'en' ? (el.dataset.en || el.dataset.ru) : el.dataset.ru;
     });
-    // Update lang toggle label: shows the CURRENT active language
+    // Update toggle label + active state in open menus
     document.querySelectorAll('.lang-toggle').forEach(function(b){
-      b.textContent = lang === 'ru' ? 'RU' : 'EN';
+      var lbl = b.querySelector('.lang-toggle-lbl');
+      if(lbl) lbl.textContent = lang.toUpperCase();
     });
+    document.querySelectorAll('.lang-menu-item').forEach(function(item){
+      item.classList.toggle('active', item.dataset.lang === lang);
+    });
+  }
+
+  // ── Build chevron SVG ─────────────────────────────────────────────────────
+  function _chevron(){
+    var s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    s.setAttribute('width','11'); s.setAttribute('height','11');
+    s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('fill','none');
+    s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','2.5');
+    s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round');
+    var p = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    p.setAttribute('points','6 9 12 15 18 9'); s.appendChild(p);
+    return s;
+  }
+
+  // ── Dropdown logic ────────────────────────────────────────────────────────
+  var _langMenu = null;
+  var _langBtn  = null;
+
+  function _closeLangMenu(){
+    if(_langMenu){ _langMenu.classList.remove('open'); }
+    if(_langBtn) { _langBtn.classList.remove('open'); }
+  }
+
+  function _openLangMenu(btn){
+    if(!_langMenu){
+      _langMenu = document.createElement('div');
+      _langMenu.className = 'lang-menu';
+      LANGS.forEach(function(l){
+        var item = document.createElement('div');
+        item.className = 'lang-menu-item' + (l.code === getInitialLang() ? ' active' : '');
+        item.dataset.lang = l.code;
+        item.innerHTML = '<span class="lang-flag">'+l.flag+'</span>'+l.label;
+        item.addEventListener('click', function(e){
+          e.stopPropagation();
+          applyLang(l.code);
+          _closeLangMenu();
+        });
+        _langMenu.appendChild(item);
+      });
+      document.body.appendChild(_langMenu);
+    }
+    // Position below button
+    var r = btn.getBoundingClientRect();
+    _langMenu.style.top  = (r.bottom + 6) + 'px';
+    _langMenu.style.left = Math.max(4, r.right - 130) + 'px';
+    _langBtn = btn;
+    btn.classList.add('open');
+    requestAnimationFrame(function(){ _langMenu.classList.add('open'); });
   }
 
   // Apply theme immediately (before DOM ready) to avoid flash
@@ -61,13 +118,29 @@
       });
     });
 
-    // Language toggles
+    // Language toggles — enhance button markup + open dropdown on click
     document.querySelectorAll('.lang-toggle').forEach(function(b){
-      b.addEventListener('click', function(){
-        var cur = document.documentElement.getAttribute('lang') || getInitialLang();
-        applyLang(cur === 'ru' ? 'en' : 'ru');
+      // Inject label span + chevron if the button only has plain text
+      if(!b.querySelector('.lang-toggle-lbl')){
+        b.innerHTML = '';
+        var lbl = document.createElement('span');
+        lbl.className = 'lang-toggle-lbl';
+        lbl.textContent = (getInitialLang() || 'en').toUpperCase();
+        b.appendChild(lbl);
+        b.appendChild(_chevron());
+      }
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(_langMenu && _langMenu.classList.contains('open')){
+          _closeLangMenu();
+        } else {
+          _openLangMenu(b);
+        }
       });
     });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(){ _closeLangMenu(); });
 
     // Apply initial language (needs DOM ready for querySelectorAll)
     applyLang(getInitialLang());
