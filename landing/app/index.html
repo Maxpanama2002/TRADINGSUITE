@@ -2902,6 +2902,23 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .adm-table tbody tr.adm-row-clickable{cursor:pointer;}
 .adm-banned-tag{color:#ef4444;font-size:10px;font-weight:700;letter-spacing:.04em;margin-left:6px;}
 
+/* Pro lock badge on sidebar items (shown to Free users on Pro-only sections) */
+.sb-pro-lock{margin-left:auto;display:flex;align-items:center;color:#ec4899;opacity:0.7;flex-shrink:0;transition:opacity .15s;}
+.sb-item:hover .sb-pro-lock{opacity:1;}
+
+/* Feature catalog rows */
+.adm-feat-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);}
+.adm-feat-row:last-child{border-bottom:none;}
+.adm-feat-info{flex:1;min-width:0;}
+.adm-feat-name{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.adm-feat-desc{font-size:11.5px;color:var(--text3);line-height:1.45;}
+.adm-feat-key{font-family:var(--mono),monospace;font-size:10px;color:var(--text3);opacity:0.7;margin-top:4px;}
+.adm-tier-picker{display:flex;gap:0;background:var(--card-bg);padding:3px;border-radius:9px;flex-shrink:0;}
+.adm-tier-btn{padding:7px 14px;font-size:11.5px;font-weight:700;color:var(--text3);background:transparent;border:none;cursor:pointer;border-radius:6px;transition:all .15s;letter-spacing:.03em;}
+.adm-tier-btn:hover{color:var(--text);}
+.adm-tier-btn.active.free{background:var(--card2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.adm-tier-btn.active.pro{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;}
+
 /* ── Guest mode lock badge in sidebar ─────────────────────────── */
 .sb-lock-badge{
   margin-left:auto;flex-shrink:0;display:flex;align-items:center;
@@ -5216,13 +5233,19 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             </div>
           </div>
 
-          <!-- Config tab -->
+          <!-- Config tab — feature catalog -->
           <div id="adm-pane-config" style="display:none;">
-            <div class="adm-section-title" data-ru="🎛 Фича-флаги" data-en="🎛 Feature flags">🎛 Фича-флаги</div>
+            <div class="adm-section-title" data-ru="🎛 Каталог функций" data-en="🎛 Feature catalog">🎛 Каталог функций</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5;" data-ru="Для каждой функции выбери тариф: 🆓 Free (доступна всем) или ⭐ Pro (требует подписку). Изменения применяются мгновенно для всех пользователей." data-en="For each feature, choose the tier: 🆓 Free (available to all) or ⭐ Pro (requires subscription). Changes apply instantly for all users.">
+              Для каждой функции выбери тариф: 🆓 Free (доступна всем) или ⭐ Pro (требует подписку). Изменения применяются мгновенно для всех пользователей.
+            </div>
+            <div class="adm-table-wrap" id="adm-feature-catalog">
+              <div class="adm-loading">Загрузка…</div>
+            </div>
+            <div class="adm-section-title" data-ru="⚙️ Глобальные тогглы" data-en="⚙️ Global toggles">⚙️ Глобальные тогглы</div>
             <div class="adm-table-wrap" style="padding:8px 0;">
-              <div class="adm-config-row" data-key="features.ai_enabled" data-ru="AI-ассистент включён глобально" data-en="AI assistant enabled globally">AI-ассистент включён глобально</div>
-              <div class="adm-config-row" data-key="features.pro_required_for_ai" data-ru="AI только для Pro подписчиков" data-en="AI is Pro-only">AI только для Pro подписчиков</div>
-              <div class="adm-config-row" data-key="features.pro_required_for_export" data-ru="Экспорт данных только для Pro" data-en="Data export is Pro-only">Экспорт данных только для Pro</div>
+              <div class="adm-config-row" data-key="features.ai_enabled" data-ru="AI-ассистент включён глобально (можно выключить для всех)" data-en="AI assistant enabled globally (can disable for everyone)">AI-ассистент включён глобально (можно выключить для всех)</div>
+              <div class="adm-config-row" data-key="features.maintenance_mode" data-ru="Режим обслуживания (показывает баннер всем)" data-en="Maintenance mode (shows banner to all)">Режим обслуживания (показывает баннер всем)</div>
             </div>
           </div>
 
@@ -5382,6 +5405,14 @@ var _activeToolIdx = null;
 var _equityChart = null;
 
 function navigateTo(page, toolIdx){
+  // Pro/Free gating — block navigation to Pro-only pages for non-Pro users
+  try{
+    var featId = window.PAGE_FEATURE_MAP && window.PAGE_FEATURE_MAP[page];
+    if(featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId)){
+      _proGate(featId);
+      return;
+    }
+  }catch(e){}
   _activePage = page;
   _activeToolIdx = (toolIdx !== undefined) ? toolIdx : null;
   // Update sidebar items
@@ -5939,6 +5970,39 @@ window._isPro = function(){
   return window._subPlan === 'pro' && window._subStatus === 'active';
 };
 
+// Map sidebar/page names → feature catalog IDs.
+// If a page maps to a Pro-only feature and the user isn't Pro, the sidebar
+// item shows a 🔒 badge and navigateTo() shows the upsell instead.
+window.PAGE_FEATURE_MAP = {
+  'ai':           'ai_chat',
+  'paper':        'paper_trading',
+  'strategy':     'strategy_module',
+  'derivatives':  'funding_oi',
+  'futures':      null,  // free calculator
+  'options':      null,  // free calculator
+  'riskmanager':  null,  // free
+};
+
+// Re-apply Pro locks to sidebar items based on current user's plan + feature tiers
+window._refreshProLocks = function(){
+  document.querySelectorAll('#sb-nav .sb-item[data-page]').forEach(function(el){
+    var page = el.getAttribute('data-page');
+    var featureId = window.PAGE_FEATURE_MAP[page];
+    var lock = el.querySelector('.sb-pro-lock');
+    if(lock) lock.remove();
+    if(!featureId) return;
+    if(_canUseFeature(featureId)) return;
+    // Locked: add lock badge
+    var badge = document.createElement('span');
+    badge.className = 'sb-pro-lock';
+    badge.title = (typeof getLang==='function'&&getLang()==='en')
+      ? 'Pro feature — click to upgrade'
+      : 'Pro функция — нажми чтобы открыть';
+    badge.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+    el.appendChild(badge);
+  });
+};
+
 // Loads subscription + pricing from Supabase and updates UI in Personal Cabinet
 window._subRefresh = async function(){
   if(!CloudSync._user || !CloudSync._ready) return;
@@ -5967,6 +6031,10 @@ window._subRefresh = async function(){
     var symbol = price.currency === 'EUR' ? '€' : price.currency === 'RUB' ? '₽' : '$';
     var pe = document.getElementById('sub-pro-price'); if(pe) pe.textContent = symbol + whole;
     var pc = document.getElementById('sub-pro-cents'); if(pc) pc.textContent = cents + (typeof getLang==='function'&&getLang()==='en'?'/mo':'/мес');
+
+    // Refresh feature tiers + sidebar locks now that plan is known
+    try{ await _loadFeatureTiers(); }catch(e){}
+    try{ _refreshProLocks(); }catch(e){}
 
     var statusBadge = document.getElementById('sub-status-badge');
     var statusName  = document.getElementById('sub-status-name');
@@ -17797,8 +17865,109 @@ async function admSavePrices(){
   }
 }
 
-// ── Config tab (feature flags) ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// FEATURE CATALOG — единый источник правды для Pro/Free gating
+// ══════════════════════════════════════════════════════════════════════════
+// Каждая фича имеет:
+//   id      — стабильный ключ (используется в app_config: 'feature.<id>')
+//   name    — отображаемое название
+//   desc    — короткое описание для админа
+//   default — тариф по умолчанию ('free' или 'pro') — если не настроен иначе
+//   icon    — эмодзи
+window.FEATURE_CATALOG = [
+  { id:'ai_chat',           icon:'🤖', name:{ru:'AI-чат',                 en:'AI Chat'},                desc:{ru:'Чат с Claude/GPT для анализа сделок',          en:'Chat with Claude/GPT for trade analysis'},   default:'pro'  },
+  { id:'ai_trade_review',   icon:'🔍', name:{ru:'AI Trade Review',         en:'AI Trade Review'},        desc:{ru:'Автоматический разбор сделок ИИ',              en:'Automated trade analysis by AI'},            default:'pro'  },
+  { id:'paper_trading',     icon:'📝', name:{ru:'Paper Trading',           en:'Paper Trading'},          desc:{ru:'Симуляция торговли без реальных денег',        en:'Trading simulation without real money'},     default:'free' },
+  { id:'export_csv',        icon:'📤', name:{ru:'Экспорт в CSV/Excel',     en:'CSV/Excel Export'},       desc:{ru:'Скачать сделки/портфель в файл',               en:'Download trades/portfolio as file'},         default:'pro'  },
+  { id:'import_exchange',   icon:'🔗', name:{ru:'Импорт с биржи (API)',    en:'Exchange Import (API)'},  desc:{ru:'Импорт сделок с Binance/Bybit по API ключу',   en:'Import trades from Binance/Bybit via API'},  default:'pro'  },
+  { id:'unlimited_widgets', icon:'🔢', name:{ru:'Безлимит виджетов',       en:'Unlimited Widgets'},      desc:{ru:'Снять лимит 5 виджетов на дашборде',           en:'Remove the 5-widget dashboard limit'},       default:'pro'  },
+  { id:'crypto_news',       icon:'📰', name:{ru:'Виджет крипто-новостей',  en:'Crypto News Widget'},     desc:{ru:'Лента новостей в реальном времени',            en:'Real-time news feed'},                       default:'free' },
+  { id:'funding_oi',        icon:'📊', name:{ru:'Funding + OI',            en:'Funding + OI'},           desc:{ru:'Funding rates и open interest по топ-30',       en:'Funding rates and open interest for top-30'},default:'free' },
+  { id:'price_alerts',      icon:'🔔', name:{ru:'Алерты цен',              en:'Price Alerts'},           desc:{ru:'Уведомления о достижении ценовых уровней',     en:'Notifications when price hits levels'},      default:'pro'  },
+  { id:'advanced_stats',    icon:'📈', name:{ru:'Расширенная статистика',  en:'Advanced Stats'},         desc:{ru:'Профит-фактор, Шарп, drawdown, helmet ratio',  en:'Profit factor, Sharpe, drawdown, etc.'},     default:'pro'  },
+  { id:'strategy_module',   icon:'🎯', name:{ru:'Модуль стратегий',        en:'Strategy Module'},        desc:{ru:'Создание и тестирование торговых стратегий',   en:'Build and backtest trading strategies'},     default:'free' },
+  { id:'telegram_notify',   icon:'📱', name:{ru:'Telegram-уведомления',    en:'Telegram Notifications'}, desc:{ru:'Отправка событий в личный Telegram',           en:'Send events to personal Telegram'},          default:'pro'  },
+  { id:'cloud_sync',        icon:'☁️', name:{ru:'Облачная синхронизация',  en:'Cloud Sync'},             desc:{ru:'Авто-бэкап данных в Supabase',                 en:'Auto backup data to Supabase'},              default:'free' },
+];
+
+// Кэш текущих тарифов фич (заполняется при логине). Ключ: feature.id, значение: 'free'|'pro'
+window._featureTiers = {};
+
+// Возвращает тариф фичи. Если не настроен — берёт default из каталога.
+window._featureTier = function(featureId){
+  if(window._featureTiers[featureId]) return window._featureTiers[featureId];
+  var f = (window.FEATURE_CATALOG||[]).find(function(x){ return x.id === featureId; });
+  return f ? f.default : 'free';
+};
+
+// Главный хелпер для gating. Возвращает true если у юзера есть доступ к фиче.
+//  - Free-фича → всегда true
+//  - Pro-фича → true только если _isPro()
+//  - Если юзер не залогинен (гость) → false для любой не-free фичи
+window._canUseFeature = function(featureId){
+  var tier = _featureTier(featureId);
+  if(tier === 'free') return true;
+  if(!window.CloudSync || !CloudSync._user) return false;
+  return window._isPro && _isPro();
+};
+
+// Показывает upsell-уведомление + предлагает открыть Личный кабинет
+window._proGate = function(featureId){
+  var f = (window.FEATURE_CATALOG||[]).find(function(x){ return x.id === featureId; });
+  var l = (typeof getLang==='function')?getLang():'ru';
+  var name = f ? (f.name[l] || f.name.ru) : featureId;
+  var msg = (l==='en')
+    ? '🔒 "' + name + '" is a Pro feature. Upgrade to unlock.'
+    : '🔒 «' + name + '» — функция Pro. Подпишись чтобы разблокировать.';
+  try{ showToast2(msg); }catch(e){ alert(msg); }
+  try{ window._logEvent && _logEvent('pro_gate_shown', { feature: featureId }); }catch(e){}
+  // Подсветим Личный кабинет где можно купить Pro
+  setTimeout(function(){ try{ navigateTo('profile'); var sw=document.querySelector('[data-qs-tab=\"subscription\"]'); if(sw) sw.click(); }catch(e){} }, 800);
+};
+
+// Загружает тарифы фич из Supabase в кэш (вызывается при логине/refresh)
+window._loadFeatureTiers = async function(){
+  try{
+    var r = await CloudSync._req('/rest/v1/app_config?key=like.feature.*&select=key,value', { method:'GET' });
+    if(!r.ok) return;
+    var tiers = {};
+    (r.data||[]).forEach(function(row){
+      var id = row.key.replace(/^feature\./, '');
+      var v = row.value;
+      // value can be a JSON object {tier:'pro'} or just a string 'pro'/'free'
+      var tier = (v && v.tier) || (typeof v === 'string' ? v : null);
+      if(tier === 'free' || tier === 'pro') tiers[id] = tier;
+    });
+    window._featureTiers = tiers;
+    // Re-apply locks in sidebar after tiers loaded
+    try{ window._refreshProLocks && _refreshProLocks(); }catch(e){}
+  }catch(e){}
+};
+
+// ── Admin Config tab — feature catalog + global toggles ─────────────────
 async function admLoadConfig(){
+  // 1) Feature catalog with per-feature tier picker
+  await _loadFeatureTiers(); // ensure cache is fresh
+  var box = document.getElementById('adm-feature-catalog');
+  if(box){
+    var l = (typeof getLang==='function')?getLang():'ru';
+    box.innerHTML = (window.FEATURE_CATALOG||[]).map(function(f){
+      var curTier = _featureTier(f.id);
+      return '<div class="adm-feat-row" data-feat="' + f.id + '">'
+        + '<div class="adm-feat-info">'
+        +   '<div class="adm-feat-name">' + f.icon + ' ' + _admEsc(f.name[l] || f.name.ru) + '</div>'
+        +   '<div class="adm-feat-desc">' + _admEsc(f.desc[l] || f.desc.ru) + '</div>'
+        +   '<div class="adm-feat-key">feature.' + f.id + '</div>'
+        + '</div>'
+        + '<div class="adm-tier-picker">'
+        +   '<button class="adm-tier-btn free ' + (curTier==='free'?'active':'') + '" onclick="admSetFeatureTier(\'' + f.id + '\',\'free\')">🆓 FREE</button>'
+        +   '<button class="adm-tier-btn pro '  + (curTier==='pro' ?'active':'') + '" onclick="admSetFeatureTier(\'' + f.id + '\',\'pro\')">⭐ PRO</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // 2) Global toggle rows (ai_enabled, maintenance_mode)
   var r = await CloudSync._req('/rest/v1/app_config?key=like.features.*&select=key,value', { method:'GET' });
   if(!r.ok) return;
   var byKey = {};
@@ -17806,9 +17975,7 @@ async function admLoadConfig(){
   document.querySelectorAll('.adm-config-row').forEach(function(row){
     var key = row.getAttribute('data-key');
     var val = byKey[key];
-    if(val === undefined) return;
     var isOn = (val === true || val === 'true');
-    // Remove old toggle and re-create with current state
     var oldTog = row.querySelector('.adm-cfg-toggle');
     if(oldTog) oldTog.remove();
     var tog = document.createElement('div');
@@ -17816,6 +17983,28 @@ async function admLoadConfig(){
     tog.onclick = function(){ admToggleConfig(key, !isOn, tog); };
     row.appendChild(tog);
   });
+}
+
+async function admSetFeatureTier(featureId, tier){
+  var key = 'feature.' + featureId;
+  var r = await CloudSync._req('/rest/v1/app_config', {
+    method:'POST',
+    body:{ key: key, value: { tier: tier } },
+    headers:{ 'Prefer':'resolution=merge-duplicates' }
+  });
+  if(r.ok){
+    window._featureTiers[featureId] = tier;
+    // Update buttons visually
+    var row = document.querySelector('.adm-feat-row[data-feat="' + featureId + '"]');
+    if(row){
+      row.querySelectorAll('.adm-tier-btn').forEach(function(b){
+        b.classList.toggle('active', b.textContent.toLowerCase().indexOf(tier) !== -1);
+      });
+    }
+    try{ showToast2('✓ ' + featureId + ' → ' + tier.toUpperCase()); }catch(e){}
+  } else {
+    alert('Ошибка: ' + (r.error||'unknown'));
+  }
 }
 
 async function admToggleConfig(key, newVal, togEl){
@@ -20971,6 +21160,13 @@ function restoreAll(inp) {
       try{ _authGateShow(); }catch(e){}
       return;
     }
+    // Pro gate for AI if configured as Pro-only feature
+    try{
+      if(typeof _canUseFeature === 'function' && !_canUseFeature('ai_chat')){
+        _proGate('ai_chat');
+        return;
+      }
+    }catch(e){}
     try{ window._logEvent && _logEvent('ai_message_sent', {}); }catch(e){}
     var inp = document.getElementById('ai-input2');
     var txt = inp.value.trim();
