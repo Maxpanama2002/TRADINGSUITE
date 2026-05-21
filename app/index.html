@@ -5448,7 +5448,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.1.167';
+window._APP_VERSION = '2.2.0';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -15812,7 +15812,7 @@ function _ppRender(){
           +'<td style="padding:9px 6px;text-align:right;font-size:11px;color:var(--text2);">'+leverageBadge+'</td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+pnlCellHtml+'</td>'
           +'<td style="padding:9px 6px;text-align:right;white-space:nowrap;">'
-            +(isPending ? '' : '<button onclick="_ppEditPosition(\''+p.id+'\')" title="Изменить SL/TP" style="background:rgba(124,58,237,0.13);border:1px solid rgba(124,58,237,0.35);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;color:var(--accent);font-family:inherit;margin-right:5px;">✏</button>')
+            +'<button onclick="_ppEditPosition(\''+p.id+'\')" title="' + (isPending ? _t('Изменить цену входа / SL / TP','Edit entry / SL / TP') : _t('Изменить SL/TP','Edit SL/TP')) + '" style="background:rgba(124,58,237,0.13);border:1px solid rgba(124,58,237,0.35);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;color:var(--accent);font-family:inherit;margin-right:5px;">✏</button>'
             +'<button onclick="_ppClosePosition(\''+p.id+'\')" style="background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;">'+closeBtnLabel+'</button>'
           +'</td>'
           +'</tr>';
@@ -16554,6 +16554,17 @@ function _ppEditPosition(id){
         +'<div style="font-size:12px;color:var(--text3);margin-top:4px;"><b>'+esc2(p.sym)+'</b> <span style="padding:1px 7px;border-radius:7px;font-size:10px;font-weight:700;background:'+dirBg+';margin-left:6px;">'+p.dir.toUpperCase()+'</span> · '+p.size+' @ '+_ppFmtPrice(p.entry)+' · '+EL.cur+' '+_ppFmtPrice(curPrice)+'</div></div>'
         +'<button onclick="_ppCloseEditModal()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:28px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:16px;">×</button>'
       +'</div>'
+      // For pending limit orders — also let admin edit the entry trigger price
+      +(p.pendingTriggerSide
+        ? '<div style="margin-bottom:14px;"><label style="'+lblStyle+'">' + _t('Цена входа (лимит)','Entry price (limit)') + '</label>'
+            +'<input id="ppe-entry" type="number" step="any" value="'+(p.entry||'')+'" placeholder="'+_ppFmtPrice(curPrice)+'" style="'+inputStyle+'">'
+            +'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'
+              + _t('Текущая цена: ','Current price: ') + '<b>' + _ppFmtPrice(curPrice) + '</b>' + ' · '
+              + _t('Ордер сработает когда цена ' + (p.pendingTriggerSide === 'below' ? 'опустится до' : 'поднимется до') + ' указанной.',
+                   'Order triggers when price ' + (p.pendingTriggerSide === 'below' ? 'drops to' : 'rises to') + ' this level.')
+            +'</div></div>'
+        : ''
+      )
       +'<div style="margin-bottom:14px;"><label style="'+lblStyle+'">'+EL.sl+'</label>'
         +'<input id="ppe-sl" type="number" step="any" value="'+(p.sl||'')+'" placeholder="'+EL.slPh+'" oninput="_ppEditUpdateSlPreview()" style="'+inputStyle+'">'
         +'<div id="ppe-sl-preview" style="font-size:11px;line-height:1.4;margin-top:5px;min-height:14px;"></div></div>'
@@ -16654,6 +16665,21 @@ function _ppSaveEdit(){
   if(slEl && slEl.blur) try{ slEl.blur(); }catch(e){}
   var newSL = parseFloat(slEl && slEl.value)||0;
   p.sl = newSL;
+
+  // Pending limit orders — also update the entry trigger price
+  var entryEl = document.getElementById('ppe-entry');
+  if(entryEl && p.pendingTriggerSide){
+    var newEntry = parseFloat(entryEl.value) || 0;
+    if(newEntry > 0){
+      p.entry = newEntry;
+      // Recompute trigger side based on new entry vs current market price
+      var symKey = (p.sym||'').toUpperCase();
+      if(!symKey.endsWith('USDT')) symKey = symKey + 'USDT';
+      var curMkt = _PP_PRICES[symKey] || newEntry;
+      p.pendingTriggerSide = (newEntry < curMkt) ? 'below' : 'above';
+    }
+  }
+
   // Cleanup legacy single-tp field (positions от старых версий)
   if('tp' in p) delete p.tp;
   // Сохранить TPs (фильтр валидных)

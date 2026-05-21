@@ -255,6 +255,35 @@ function createWindow() {
     }
     return { action: 'allow' };
   });
+
+  // Fix Cmd+V / Cmd+C / Cmd+X / Cmd+A / Cmd+Z on non-Latin keyboard layouts
+  // (Russian, Ukrainian, etc.). Electron's accelerator strings match the
+  // character produced by the key, not the physical key, so Cmd+V doesn't
+  // fire when the layout is Russian. before-input-event uses input.code
+  // (the physical key name like "KeyV") so it works regardless of layout.
+  win.webContents.on('before-input-event', (event, input) => {
+    if ((input.meta || input.control) && !input.shift && !input.alt && input.type === 'keyDown') {
+      switch (input.code) {
+        case 'KeyV': win.webContents.paste();      event.preventDefault(); break;
+        case 'KeyC': win.webContents.copy();       event.preventDefault(); break;
+        case 'KeyX': win.webContents.cut();        event.preventDefault(); break;
+        case 'KeyA': win.webContents.selectAll();  event.preventDefault(); break;
+        case 'KeyZ': win.webContents.undo();       event.preventDefault(); break;
+      }
+    }
+  });
+
+  // Right-click context menu with paste/copy/cut/select-all so users can
+  // always access these actions without keyboard shortcuts.
+  win.webContents.on('context-menu', (event, params) => {
+    const ctxTemplate = [];
+    if (params.editFlags.canCut)       ctxTemplate.push({ label: 'Вырезать',     role: 'cut' });
+    if (params.editFlags.canCopy)      ctxTemplate.push({ label: 'Копировать',   role: 'copy' });
+    if (params.editFlags.canPaste)     ctxTemplate.push({ label: 'Вставить',     role: 'paste' });
+    if (params.editFlags.canSelectAll) ctxTemplate.push({ label: 'Выделить всё', role: 'selectAll' });
+    if (ctxTemplate.length === 0) return;
+    Menu.buildFromTemplate(ctxTemplate).popup({ window: win });
+  });
 }
 
 app.whenReady().then(() => {
