@@ -2947,9 +2947,18 @@ body{background:var(--bg) !important;color:var(--text) !important;}
             <div id="tb-lang-opt-en" onclick="applyLang('en');closeLangMenuNew()">🇬🇧 English</div>
           </div>
         </div>
-        <button class="tb-profile-btn" onclick="navigateTo('profile')" title="Личный кабинет" aria-label="Личный кабинет" style="background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;display:inline-flex;align-items:center;gap:5px;transition:all .14s;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </button>
+        <div style="position:relative;display:inline-flex;">
+          <button class="tb-profile-btn" id="tb-profile-btn" onclick="_tbProfileClick(event)" title="Личный кабинет" aria-label="Личный кабинет" style="background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;display:inline-flex;align-items:center;gap:5px;transition:all .14s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span id="tb-profile-status" style="display:none;width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;"></span>
+          </button>
+          <div id="tb-profile-menu" style="display:none;position:fixed;z-index:9100;background:var(--card2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:6px;min-width:200px;opacity:0;transform:translateY(-6px);transition:opacity .15s,transform .15s;">
+            <div id="tb-profile-email" style="padding:8px 12px 6px;font-size:11px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+            <div onclick="navigateTo('profile');_tbProfileClose()" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:background .12s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''" data-ru="👤 Личный кабинет" data-en="👤 Personal Cabinet">👤 Личный кабинет</div>
+            <div id="tb-profile-signout" onclick="_tbSignOut()" style="display:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#ef4444;transition:background .12s;" onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background=''" data-ru="← Выйти" data-en="← Sign out">← Выйти</div>
+            <div id="tb-profile-signin" onclick="_pcOpenAuth();_tbProfileClose()" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--accent);transition:background .12s;" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''" data-ru="🔒 Войти" data-en="🔒 Sign in">🔒 Войти</div>
+          </div>
+        </div>
         <button class="tb-deal-btn" onclick="navigateTo('new-trade')">+ Сделка</button>
       </div>
     </header>
@@ -5434,6 +5443,51 @@ function sbToggleSection(id){
 // Settings
 // Gear icon in sidebar → open the Personal Cabinet (quick settings live there now)
 function toggleSettings(){ if(typeof navigateTo==='function') navigateTo('profile'); }
+
+// ── Toolbar profile button dropdown ──
+function _tbProfileClose(){
+  var m=document.getElementById('tb-profile-menu');
+  if(!m) return;
+  m.style.opacity='0'; m.style.transform='translateY(-6px)';
+  setTimeout(function(){ m.style.display='none'; },150);
+}
+function _tbProfileClick(e){
+  e.stopPropagation();
+  var btn=document.getElementById('tb-profile-btn');
+  var m=document.getElementById('tb-profile-menu');
+  if(!btn||!m) return;
+  if(m.style.display!=='none'){ _tbProfileClose(); return; }
+  // Position below button
+  var r=btn.getBoundingClientRect();
+  m.style.top=(r.bottom+6)+'px';
+  m.style.right=(window.innerWidth-r.right)+'px';
+  m.style.left='auto';
+  // Update content
+  var emailEl=document.getElementById('tb-profile-email');
+  var signout=document.getElementById('tb-profile-signout');
+  var signin=document.getElementById('tb-profile-signin');
+  var status=document.getElementById('tb-profile-status');
+  if(CloudSync._user){
+    if(emailEl) emailEl.textContent=CloudSync._user.email||'';
+    if(signout) signout.style.display='';
+    if(signin) signin.style.display='none';
+    if(status) status.style.display='';
+  } else {
+    if(emailEl) emailEl.textContent=_t('Не вошёл','Not signed in');
+    if(signout) signout.style.display='none';
+    if(signin) signin.style.display='';
+    if(status) status.style.display='none';
+  }
+  m.style.display='block';
+  requestAnimationFrame(function(){ m.style.opacity='1'; m.style.transform='translateY(0)'; });
+}
+async function _tbSignOut(){
+  await CloudSync.auth.signOut();
+  _tbProfileClose();
+  _cloudRefreshUI();
+  try{ showToast2(_t('Вы вышли из аккаунта','Signed out')); }catch(e){}
+}
+document.addEventListener('click',function(){ _tbProfileClose(); });
 
 // ══════════════════════════════════════════════════════════════════════════
 // QUICK SETTINGS (bottom section of Personal Cabinet)
