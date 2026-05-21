@@ -2788,6 +2788,8 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-toggle-row{text-align:center;font-size:12.5px;color:var(--text3);margin-top:10px;padding:4px 0;}
 .ag-toggle-row .ag-link{color:var(--accent);font-weight:700;cursor:pointer;margin-left:4px;text-decoration:none;}
 .ag-toggle-row .ag-link:hover{text-decoration:underline;}
+.ag-toggle-row .ag-link-muted{color:var(--text3);font-weight:600;margin-left:0;}
+.ag-toggle-row .ag-link-muted:hover{color:var(--accent);text-decoration:underline;}
 .ag-hint{font-size:11px;color:var(--text3);text-align:center;margin:6px 0 8px;line-height:1.45;}
 .ag-success-icon{display:flex;justify-content:center;margin:8px 0 14px;}
 .ag-success-email{font-size:13px;font-weight:700;color:var(--accent);background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:8px 12px;margin:8px 0 14px;word-break:break-all;}
@@ -16746,6 +16748,33 @@ var CloudSync = {
       if(r.data && r.data.access_token) CloudSync._saveSession(r.data);
       return { ok:true, user: (r.data && r.data.user) || null, needsConfirmation: !r.data.access_token };
     },
+    // Request password reset email. Always succeeds from the user's perspective —
+    // Supabase doesn't reveal whether the email exists (anti-enumeration).
+    resetPassword: async function(email){
+      var redirectTo = null;
+      try{
+        var origin = window.location.origin;
+        if(origin && origin.indexOf('http') === 0){
+          redirectTo = origin + '/app/?recovery=1';
+        } else {
+          redirectTo = 'https://tdsuite.netlify.app/app/?recovery=1';
+        }
+      }catch(e){ redirectTo = 'https://tdsuite.netlify.app/app/?recovery=1'; }
+      var r = await CloudSync._req('/auth/v1/recover?redirect_to=' + encodeURIComponent(redirectTo), {
+        method:'POST', noAuth:true, body:{ email: email }
+      });
+      return r; // {ok, error?, status?}
+    },
+
+    // Update password — requires a valid session (either signed in normally,
+    // or restored from a recovery link).
+    updatePassword: async function(newPassword){
+      var r = await CloudSync._req('/auth/v1/user', {
+        method:'PUT', body:{ password: newPassword }
+      });
+      return r;
+    },
+
     signOut: async function(){
       if(CloudSync._token){
         try{ await CloudSync._req('/auth/v1/logout', { method:'POST' }); }catch(e){}
@@ -21258,11 +21287,44 @@ window.replayOnboarding = function(){
       <div id="ag-err" class="ag-err"></div>
       <button class="ag-btn primary" id="ag-signin-btn" onclick="_gateSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
       <div class="ag-toggle-row">
+        <a class="ag-link ag-link-muted" onclick="_agSwitchMode('reset-request')" data-ru="Забыли пароль?" data-en="Forgot password?">Забыли пароль?</a>
+      </div>
+      <div class="ag-toggle-row">
         <span data-ru="Нет аккаунта?" data-en="No account yet?">Нет аккаунта?</span>
         <a class="ag-link" onclick="_agSwitchMode('register')" data-ru="Зарегистрироваться" data-en="Create one">Зарегистрироваться</a>
       </div>
       <div class="ag-guest-sep" data-ru="или" data-en="or">или</div>
       <button class="ag-btn guest" onclick="_gateGuest()" data-ru="👁 Войти как гость (просмотр)" data-en="👁 Continue as guest (view only)">👁 Войти как гость (просмотр)</button>
+    </div>
+
+    <!-- ── Reset password — Step 1: request email ──────────────────── -->
+    <div id="ag-mode-reset-request" style="display:none;">
+      <div class="ag-title" data-ru="🔑 Восстановление пароля" data-en="🔑 Reset password">🔑 Восстановление пароля</div>
+      <div class="ag-sub" data-ru="Введи email от аккаунта — пришлём ссылку для установки нового пароля" data-en="Enter your account email — we'll send a link to set a new password">Введи email от аккаунта — пришлём ссылку для установки нового пароля</div>
+      <div class="ag-field">
+        <input type="email" id="ag-reset-email" class="ag-input" placeholder="email" autocomplete="email">
+      </div>
+      <div id="ag-reset-err" class="ag-err"></div>
+      <div id="ag-reset-ok" class="ag-ok"></div>
+      <button class="ag-btn primary" id="ag-reset-btn" onclick="_gateResetRequest()" data-ru="Отправить ссылку" data-en="Send reset link">Отправить ссылку</button>
+      <div class="ag-toggle-row">
+        <span data-ru="Вспомнили пароль?" data-en="Remembered it?">Вспомнили пароль?</span>
+        <a class="ag-link" onclick="_agSwitchMode('signin')" data-ru="Войти" data-en="Sign in">Войти</a>
+      </div>
+      <div class="ag-hint" data-ru="🔒 Из соображений безопасности мы не сообщаем, существует ли указанный email." data-en="🔒 For security reasons we never reveal whether the given email exists.">🔒 Из соображений безопасности мы не сообщаем, существует ли указанный email.</div>
+    </div>
+
+    <!-- ── Reset password — Step 2: set new password ──────────────── -->
+    <div id="ag-mode-reset-confirm" style="display:none;">
+      <div class="ag-title" data-ru="🔑 Новый пароль" data-en="🔑 New password">🔑 Новый пароль</div>
+      <div class="ag-sub" data-ru="Придумай новый пароль для своего аккаунта" data-en="Choose a new password for your account">Придумай новый пароль для своего аккаунта</div>
+      <div class="ag-field">
+        <input type="password" id="ag-new-pass" class="ag-input" data-ph-ru="новый пароль (минимум 8 символов)" data-ph-en="new password (min 8 characters)" placeholder="новый пароль (минимум 8 символов)" autocomplete="new-password">
+        <input type="password" id="ag-new-pass2" class="ag-input" data-ph-ru="повтори пароль" data-ph-en="confirm password" placeholder="повтори пароль" autocomplete="new-password">
+      </div>
+      <div id="ag-newp-err" class="ag-err"></div>
+      <div id="ag-newp-ok" class="ag-ok"></div>
+      <button class="ag-btn primary" id="ag-newp-btn" onclick="_gateUpdatePassword()" data-ru="Установить новый пароль" data-en="Set new password">Установить новый пароль</button>
     </div>
 
     <!-- ── Register mode ────────────────────────────────────────────── -->
@@ -21319,19 +21381,22 @@ function _agTranslate(){
 }
 
 function _agSwitchMode(mode){
-  // mode: 'signin' | 'register' | 'success'
-  var modes = ['signin','register','success'];
+  // mode: 'signin' | 'register' | 'success' | 'reset-request' | 'reset-confirm'
+  var modes = ['signin','register','success','reset-request','reset-confirm'];
   modes.forEach(function(m){
     var el = document.getElementById('ag-mode-'+m);
     if(el) el.style.display = (m===mode) ? '' : 'none';
   });
-  // Clear errors
-  var e1=document.getElementById('ag-err');     if(e1){e1.style.display='none';e1.textContent='';}
-  var e2=document.getElementById('ag-reg-err'); if(e2){e2.style.display='none';e2.textContent='';}
+  // Clear all error/ok messages across modes
+  ['ag-err','ag-reg-err','ag-reset-err','ag-reset-ok','ag-newp-err','ag-newp-ok'].forEach(function(id){
+    var el=document.getElementById(id); if(el){el.style.display='none';el.textContent='';}
+  });
   // Focus first input
   setTimeout(function(){
-    var f = mode==='signin' ? document.getElementById('ag-email')
-          : mode==='register' ? document.getElementById('ag-reg-email')
+    var f = mode==='signin'        ? document.getElementById('ag-email')
+          : mode==='register'      ? document.getElementById('ag-reg-email')
+          : mode==='reset-request' ? document.getElementById('ag-reset-email')
+          : mode==='reset-confirm' ? document.getElementById('ag-new-pass')
           : null;
     if(f) f.focus();
   }, 80);
@@ -21510,6 +21575,91 @@ async function _gateRegister(){
 // Keep old name for any legacy callers
 window._gateSignUp = _gateRegister;
 
+// ── Reset password — Step 1: request email ────────────────────────────────
+async function _gateResetRequest(){
+  var em  = (document.getElementById('ag-reset-email')||{}).value||'';
+  var err = document.getElementById('ag-reset-err');
+  var ok  = document.getElementById('ag-reset-ok');
+  if(err){err.style.display='none';err.textContent='';}
+  if(ok){ok.style.display='none';ok.textContent='';}
+
+  // Validate email format on client (cheap check)
+  if(!em || em.indexOf('@')===-1 || em.indexOf('.')===-1){
+    _agShowErr(err, _t('Введи корректный email','Enter a valid email'));
+    return;
+  }
+
+  var btn = document.getElementById('ag-reset-btn');
+  if(btn){btn.disabled=true; btn.textContent=_t('Отправляем…','Sending…');}
+  var r = await CloudSync.auth.resetPassword(em.trim());
+  if(btn){btn.disabled=false; btn.textContent=_t('Отправить ссылку','Send reset link');}
+
+  // SECURITY: We show the SAME neutral message whether the email exists or not.
+  // This is the safe pattern — never reveal account existence.
+  // Only show a real error if it's a network/rate-limit issue.
+  if(!r.ok && r.status === 429){
+    _agShowErr(err, _t('⏰ Слишком много запросов. Подожди 1–2 минуты.','⏰ Too many requests. Wait 1–2 minutes.'));
+    return;
+  }
+  if(!r.ok && r.status >= 500){
+    _agShowErr(err, _t('Сервер недоступен. Попробуй позже.','Server unavailable. Try later.'));
+    return;
+  }
+  // Anything else (including 400 "user not found") → neutral success message
+  _agShowOk(ok, _t(
+    '✅ Если такой email зарегистрирован — мы отправили на него письмо со ссылкой для сброса пароля. Проверь почту (и папку «Спам»).',
+    '✅ If this email is registered, we sent a password reset link. Check your inbox (and spam folder).'
+  ));
+  try{ showToast2(_t('📨 Если email существует, ссылка отправлена','📨 If the email exists, the link was sent')); }catch(e){}
+}
+
+// ── Reset password — Step 2: update password using recovery token ─────────
+async function _gateUpdatePassword(){
+  var pw  = (document.getElementById('ag-new-pass')||{}).value||'';
+  var pw2 = (document.getElementById('ag-new-pass2')||{}).value||'';
+  var err = document.getElementById('ag-newp-err');
+  var ok  = document.getElementById('ag-newp-ok');
+  if(err){err.style.display='none';err.textContent='';}
+  if(ok){ok.style.display='none';ok.textContent='';}
+
+  if(!pw){ _agShowErr(err,_t('Введи новый пароль','Enter a new password')); return; }
+  if(pw.length<8){ _agShowErr(err,_t('Пароль минимум 8 символов','Password must be at least 8 characters')); return; }
+  if(pw!==pw2){ _agShowErr(err,_t('Пароли не совпадают','Passwords don\'t match')); return; }
+
+  if(!CloudSync._token){
+    _agShowErr(err,_t('Сессия восстановления истекла. Запроси ссылку ещё раз.','Recovery session expired. Request a new link.'));
+    return;
+  }
+
+  var btn = document.getElementById('ag-newp-btn');
+  if(btn){btn.disabled=true; btn.textContent=_t('Сохраняем…','Saving…');}
+  var r = await CloudSync.auth.updatePassword(pw);
+  if(btn){btn.disabled=false; btn.textContent=_t('Установить новый пароль','Set new password');}
+
+  if(!r.ok){
+    var msg = r.error||'';
+    var lc  = msg.toLowerCase();
+    if(r.status === 429){
+      msg = _t('⏰ Слишком много попыток. Подожди минуту.','⏰ Too many attempts. Wait a minute.');
+    } else if(lc.indexOf('weak')!==-1 || lc.indexOf('password')!==-1){
+      msg = _t('Пароль слишком простой. Добавь цифры/буквы.','Password too weak. Add numbers/letters.');
+    } else if(lc.indexOf('same')!==-1){
+      msg = _t('Новый пароль должен отличаться от старого','New password must be different from the old one');
+    } else if(!msg){
+      msg = _t('Не удалось изменить пароль. Попробуй ещё раз.','Could not change password. Try again.');
+    }
+    _agShowErr(err, msg);
+    return;
+  }
+
+  // Success — sign the user out of the recovery session and ask them to sign in
+  // with the new password (cleaner than auto-login from recovery context)
+  try{ CloudSync._clearSession(); }catch(e){}
+  _agShowOk(ok, _t('✅ Пароль обновлён! Теперь войди с новым паролем.','✅ Password updated! Sign in with the new password.'));
+  try{ showToast2(_t('✓ Пароль изменён','✓ Password updated')); }catch(e){}
+  setTimeout(function(){ _agSwitchMode('signin'); }, 1500);
+}
+
 // ── Guest mode ────────────────────────────────────────────────────────────
 window._guestMode = false;
 
@@ -21563,33 +21713,71 @@ function _guestModeClear(){
   if(bar) bar.style.display='none';
 }
 
-// Detect arrival from Supabase email confirmation link.
-// Supabase sends users to: <site>/?confirmed=1#access_token=...&type=signup
-// We support both query (?confirmed=1) and hash (#type=signup) signals.
+// Detect arrival from Supabase email links (confirmation or password recovery).
+// Supabase URLs look like:
+//   <site>/?confirmed=1#access_token=…&type=signup        — email confirmation
+//   <site>/?recovery=1#access_token=…&type=recovery       — password reset link
+// We parse the hash to extract the access token and save the session so
+// CloudSync can act as the just-authenticated user.
+function _agParseAuthHash(){
+  var hs = (window.location.hash || '').replace(/^#/, '');
+  if(!hs) return null;
+  var params = {};
+  hs.split('&').forEach(function(pair){
+    var i = pair.indexOf('=');
+    if(i === -1) return;
+    var k = decodeURIComponent(pair.slice(0,i));
+    var v = decodeURIComponent(pair.slice(i+1));
+    params[k] = v;
+  });
+  return params;
+}
+
 function _agCheckEmailConfirmation(){
-  var fromEmail = false;
+  var arrivedFromEmail = false;
+  var arrivedFromRecovery = false;
   try{
     var qs = window.location.search || '';
     var hs = window.location.hash   || '';
-    if(qs.indexOf('confirmed=1')!==-1) fromEmail = true;
-    if(hs.indexOf('type=signup')!==-1 || hs.indexOf('type=email_change')!==-1) fromEmail = true;
+    var hashParams = _agParseAuthHash() || {};
+
+    if(qs.indexOf('recovery=1')!==-1 || hashParams.type === 'recovery'){
+      arrivedFromRecovery = true;
+    } else if(qs.indexOf('confirmed=1')!==-1 || hashParams.type === 'signup' || hashParams.type === 'email_change'){
+      arrivedFromEmail = true;
+    }
+
+    // If Supabase gave us tokens in the hash, save the session so we can
+    // call protected APIs (e.g. PUT /auth/v1/user to change the password).
+    if(hashParams.access_token && hashParams.refresh_token){
+      var nowSec = Math.floor(Date.now()/1000);
+      var session = {
+        access_token: hashParams.access_token,
+        refresh_token: hashParams.refresh_token,
+        expires_in: parseInt(hashParams.expires_in||'3600', 10),
+        expires_at: nowSec + parseInt(hashParams.expires_in||'3600', 10),
+        token_type: hashParams.token_type || 'bearer',
+        user: null
+      };
+      try{ CloudSync._saveSession(session); }catch(e){}
+    }
+
     if(hs.indexOf('error=')!==-1 || qs.indexOf('error=')!==-1){
-      // Confirmation failed (link expired etc.) — show error on signin
       sessionStorage.setItem('emailConfirmError','1');
     }
-    if(fromEmail){
-      // Mark for showing banner; we leave window._guestMode alone
-      sessionStorage.setItem('emailJustConfirmed','1');
-      // Force exit guest mode if was set
+    if(arrivedFromRecovery){
+      sessionStorage.setItem('passwordRecovery','1');
       try{ sessionStorage.removeItem('guestMode'); window._guestMode = false; }catch(e){}
-      // Clean URL (remove ?confirmed=1 and #access_token=… so refresh doesn't repeat)
-      try{
-        var clean = window.location.pathname;
-        history.replaceState(null, '', clean);
-      }catch(e){}
+    } else if(arrivedFromEmail){
+      sessionStorage.setItem('emailJustConfirmed','1');
+      try{ sessionStorage.removeItem('guestMode'); window._guestMode = false; }catch(e){}
+    }
+    if(arrivedFromEmail || arrivedFromRecovery){
+      // Clean URL (remove query+hash so refresh doesn't repeat)
+      try{ history.replaceState(null, '', window.location.pathname); }catch(e){}
     }
   }catch(e){}
-  return fromEmail;
+  return arrivedFromEmail || arrivedFromRecovery;
 }
 
 function _agShowConfirmedBanner(){
@@ -21613,9 +21801,17 @@ document.addEventListener('DOMContentLoaded', function(){
   }catch(e){}
   // small delay to let CloudSync._init finish restoring session
   setTimeout(function(){
-    var justConfirmed = false;
-    try{ justConfirmed = sessionStorage.getItem('emailJustConfirmed')==='1'; }catch(e){}
-    if(justConfirmed){
+    var justConfirmed   = false;
+    var passwordRecovery = false;
+    try{ justConfirmed   = sessionStorage.getItem('emailJustConfirmed')==='1'; }catch(e){}
+    try{ passwordRecovery = sessionStorage.getItem('passwordRecovery')==='1'; }catch(e){}
+
+    if(passwordRecovery){
+      // User came from "forgot password" email link — open the new-password form
+      _authGateShow();
+      _agSwitchMode('reset-confirm');
+      try{ sessionStorage.removeItem('passwordRecovery'); }catch(e){}
+    } else if(justConfirmed){
       // Show signin form with green banner — regardless of any cached session
       _authGateShow();
       _agSwitchMode('signin');
@@ -21639,6 +21835,12 @@ document.addEventListener('DOMContentLoaded', function(){
   ['ag-reg-email','ag-reg-pass','ag-reg-pass2'].forEach(function(id){
     var el=document.getElementById(id);
     if(el) el.addEventListener('keydown', _agEnterHandler('register', _gateRegister));
+  });
+  var rEl = document.getElementById('ag-reset-email');
+  if(rEl) rEl.addEventListener('keydown', _agEnterHandler('reset', _gateResetRequest));
+  ['ag-new-pass','ag-new-pass2'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('keydown', _agEnterHandler('newp', _gateUpdatePassword));
   });
 });
 
