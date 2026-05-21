@@ -5851,10 +5851,12 @@ async function _pcDoSignIn(){
   if(!r.ok){
     var _errMsg = r.error||'';
     var _lc = _errMsg.toLowerCase();
-    if(_lc.indexOf('invalid')!==-1||_lc.indexOf('credentials')!==-1||_lc.indexOf('wrong')!==-1||_lc.indexOf('password')!==-1){
-      _errMsg = _t('Неверный email или пароль','Wrong email or password');
+    if(r.status === 429 || _lc.indexOf('rate')!==-1){
+      _errMsg = _t('⏰ Слишком много попыток. Подожди 1–2 минуты.','⏰ Too many attempts. Wait 1–2 minutes.');
     } else if(_lc.indexOf('not confirmed')!==-1||_lc.indexOf('email not confirmed')!==-1){
-      _errMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+      _errMsg = _t('📧 Email не подтверждён. Проверь почту.','📧 Email not confirmed. Check your inbox.');
+    } else if(_lc.indexOf('invalid')!==-1||_lc.indexOf('credentials')!==-1||r.status === 400){
+      _errMsg = _t('❌ Пользователь не найден или неверный пароль','❌ User not found or wrong password');
     } else if(!_errMsg){
       _errMsg = _t('Ошибка входа','Sign-in error');
     }
@@ -16915,10 +16917,12 @@ async function _cloudSignIn(){
   if(!r.ok){
     var _csErrMsg = r.error||'';
     var _csLc = _csErrMsg.toLowerCase();
-    if(_csLc.indexOf('invalid')!==-1||_csLc.indexOf('credentials')!==-1||_csLc.indexOf('wrong')!==-1||_csLc.indexOf('password')!==-1){
-      _csErrMsg = _t('Неверный email или пароль','Wrong email or password');
+    if(r.status === 429 || _csLc.indexOf('rate')!==-1){
+      _csErrMsg = _t('⏰ Слишком много попыток. Подожди 1–2 минуты.','⏰ Too many attempts. Wait 1–2 minutes.');
     } else if(_csLc.indexOf('not confirmed')!==-1||_csLc.indexOf('email not confirmed')!==-1){
-      _csErrMsg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+      _csErrMsg = _t('📧 Email не подтверждён. Проверь почту.','📧 Email not confirmed. Check your inbox.');
+    } else if(_csLc.indexOf('invalid')!==-1||_csLc.indexOf('credentials')!==-1||r.status === 400){
+      _csErrMsg = _t('❌ Пользователь не найден или неверный пароль','❌ User not found or wrong password');
     } else if(!_csErrMsg){
       _csErrMsg = _t('Ошибка входа','Sign-in error');
     }
@@ -21384,10 +21388,15 @@ async function _gateSignIn(){
     var lc  = msg.toLowerCase();
     if(r.status === 429 || lc.indexOf('rate')!==-1 || lc.indexOf('limit')!==-1){
       msg = _t('⏰ Слишком много попыток. Подожди 1–2 минуты.','⏰ Too many attempts. Wait 1–2 minutes.');
-    } else if(lc.indexOf('invalid')!==-1||lc.indexOf('credentials')!==-1){
-      msg = _t('Неверный email или пароль','Wrong email or password');
     } else if(lc.indexOf('not confirmed')!==-1||lc.indexOf('email not confirmed')!==-1){
-      msg = _t('Email не подтверждён. Проверь почту.','Email not confirmed. Check your inbox.');
+      msg = _t('📧 Email не подтверждён. Проверь почту и перейди по ссылке из письма.','📧 Email not confirmed. Check your inbox and click the link.');
+    } else if(lc.indexOf('invalid')!==-1 || lc.indexOf('credentials')!==-1 || r.status === 400){
+      // Supabase intentionally doesn't distinguish "user not found" from "wrong password"
+      // (anti-enumeration security). So we tell the user both options:
+      msg = _t(
+        '❌ Пользователь не найден или неверный пароль. Проверь email/пароль или зарегистрируйся.',
+        '❌ User not found or wrong password. Check your credentials or register.'
+      );
     } else if(!msg){ msg = _t('Ошибка входа','Sign-in error'); }
     _agShowErr(err, msg);
     return;
