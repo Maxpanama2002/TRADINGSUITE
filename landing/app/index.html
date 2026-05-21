@@ -3547,29 +3547,15 @@ body{background:var(--bg) !important;color:var(--text) !important;}
               <div class="sub-plan" id="sub-plan-free">
                 <div class="sub-plan-title">🆓 Free</div>
                 <div class="sub-plan-price">$0<span class="sub-plan-price-cents">/мес</span></div>
-                <ul class="sub-plan-features">
-                  <li>Портфель и журнал сделок</li>
-                  <li>Дневник, психо-журнал</li>
-                  <li>До 5 кастомных виджетов</li>
-                  <li>AI-чат (через свой ключ)</li>
-                  <li class="locked">Импорт сделок с биржи</li>
-                  <li class="locked">Telegram-уведомления</li>
-                  <li class="locked">Расширенный backtest</li>
-                </ul>
+                <!-- Features list is rendered dynamically by _subRenderPlans() -->
+                <ul class="sub-plan-features" id="sub-free-features"></ul>
                 <button class="sub-plan-cta secondary" id="sub-free-cta" disabled>Текущий тариф</button>
               </div>
               <div class="sub-plan pro" id="sub-plan-pro">
                 <div class="sub-plan-title">⭐ Pro <span class="sub-plan-badge popular">Популярный</span></div>
                 <div class="sub-plan-price"><span id="sub-pro-price">$9</span><span class="sub-plan-price-cents" id="sub-pro-cents">.99/мес</span></div>
-                <ul class="sub-plan-features">
-                  <li>Всё из Free</li>
-                  <li>Безлимит виджетов на дашборде</li>
-                  <li>Импорт сделок с Binance/Bybit по API</li>
-                  <li>Расширенная статистика и отчёты</li>
-                  <li>AI-чат без лимитов (наш ключ)</li>
-                  <li>Telegram-уведомления</li>
-                  <li>Приоритетная поддержка</li>
-                </ul>
+                <!-- Features list is rendered dynamically by _subRenderPlans() -->
+                <ul class="sub-plan-features" id="sub-pro-features"></ul>
                 <button class="sub-plan-cta primary" id="sub-pro-cta" onclick="_subUpgrade()">Активировать Pro</button>
               </div>
             </div>
@@ -6027,6 +6013,57 @@ window._subPlan = 'free';
 window._subStatus = 'inactive';
 window._subPricing = { pro_monthly: { amount:9.99, currency:'USD', stripe_price_id:'' } };
 
+// Рендерит списки фич в карточках Free и Pro на странице "Личный кабинет → Подписка".
+// Берёт текущие тарифы фич из _featureTiers/FEATURE_META через _buildLiveCatalog().
+// Запускается из _subRefresh() — т.е. при каждом открытии Личного кабинета
+// и после изменения подписки.
+window._subRenderPlans = function(){
+  var freeUL = document.getElementById('sub-free-features');
+  var proUL  = document.getElementById('sub-pro-features');
+  if(!freeUL || !proUL) return;
+
+  var l = (typeof getLang==='function')?getLang():'ru';
+  var catalog = [];
+  try{ catalog = (typeof _buildLiveCatalog === 'function') ? _buildLiveCatalog() : []; }catch(e){}
+
+  var freeItems = [];
+  var proItems  = [];
+  catalog.forEach(function(f){
+    var tier = (typeof _featureTier === 'function') ? _featureTier(f.id) : (f.default || 'free');
+    var name = (f.name && (f.name[l] || f.name.ru)) || f.id;
+    var icon = f.icon || '•';
+    if(tier === 'pro'){
+      proItems.push({ icon: icon, name: name });
+    } else {
+      freeItems.push({ icon: icon, name: name });
+    }
+  });
+
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  // Free card — free features as ✓, then Pro features as locked ✗
+  var freeHtml = '';
+  freeItems.forEach(function(it){
+    freeHtml += '<li>' + esc(it.icon) + ' ' + esc(it.name) + '</li>';
+  });
+  // Show first 4 Pro features as locked teasers
+  proItems.slice(0, 4).forEach(function(it){
+    freeHtml += '<li class="locked">' + esc(it.icon) + ' ' + esc(it.name) + '</li>';
+  });
+  if(proItems.length > 4){
+    freeHtml += '<li class="locked">+ ' + (proItems.length - 4) + ' ' + (l==='en'?'more Pro features':'Pro функций ещё') + '</li>';
+  }
+  freeUL.innerHTML = freeHtml;
+
+  // Pro card — "All of Free" + list of Pro features
+  var proHtml = '<li><b>' + (l==='en'?'Everything in Free':'Всё из Free') + '</b></li>';
+  proItems.forEach(function(it){
+    proHtml += '<li>' + esc(it.icon) + ' ' + esc(it.name) + '</li>';
+  });
+  proHtml += '<li>' + (l==='en'?'⚡ Priority support':'⚡ Приоритетная поддержка') + '</li>';
+  proUL.innerHTML = proHtml;
+};
+
 // Returns true if current user has an active Pro subscription
 window._isPro = function(){
   return window._subPlan === 'pro' && window._subStatus === 'active';
@@ -6111,6 +6148,8 @@ window._subRefresh = async function(){
     // Refresh feature tiers + sidebar locks now that plan is known
     try{ await _loadFeatureTiers(); }catch(e){}
     try{ _refreshProLocks(); }catch(e){}
+    // Re-render Free / Pro features lists in the subscription card
+    try{ _subRenderPlans(); }catch(e){}
 
     var statusBadge = document.getElementById('sub-status-badge');
     var statusName  = document.getElementById('sub-status-name');
@@ -18314,8 +18353,9 @@ async function admToggleFeatureTier(featureId){
       }
     }
     try{ showToast2('✓ ' + featureId + ' → ' + newTier.toUpperCase()); }catch(e){}
-    // Refresh sidebar locks immediately
+    // Refresh sidebar locks + subscription plan cards immediately
     try{ _refreshProLocks(); }catch(e){}
+    try{ _subRenderPlans(); }catch(e){}
   } else {
     alert('Ошибка: ' + (r.error||'unknown'));
   }
