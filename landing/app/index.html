@@ -3010,6 +3010,43 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .sb-guest-bar strong{display:block;color:var(--text2);font-size:11.5px;margin-bottom:3px;}
 .sb-guest-bar a{color:var(--accent);cursor:pointer;font-weight:700;text-decoration:none;}
 .sb-guest-bar a:hover{text-decoration:underline;}
+
+/* ── Sign-in CTA card in sidebar (replaces sb-profile in guest mode) ── */
+.sb-signin-card{
+  margin:8px 8px 6px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#7c3aed,#ec4899);
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  color:#fff;
+  user-select:none;
+}
+.sb-signin-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(124,58,237,.35);}
+.sb-signin-card:active{transform:translateY(0);}
+.sb-signin-icon{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:#fff;
+}
+.sb-signin-text{flex:1;min-width:0;}
+.sb-signin-title{font-size:14px;font-weight:800;line-height:1.1;letter-spacing:-.3px;}
+.sb-signin-sub{font-size:10.5px;opacity:.85;margin-top:2px;line-height:1.3;}
+
+/* ── Sign-in button in toolbar (top-right, next to theme/lang) ── */
+.tb-signin-btn{
+  background:linear-gradient(135deg,#7c3aed,#ec4899);
+  color:#fff;border:none;
+  border-radius:20px;
+  padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:transform .14s,box-shadow .14s;
+}
+.tb-signin-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,58,237,.35);}
+.tb-signin-btn:active{transform:translateY(0);}
 </style>
 <style id="theme-style">
 :root{--bg:#f0efe9;--text:#1a1a18;--sub:#6b6b67;--muted:#9a9a96;--card-bg:#fff;--border:rgba(0,0,0,.17);--topbar:#1a1a18;--input-bg:#fff;--shadow:rgba(0,0,0,.08);}
@@ -3178,6 +3215,17 @@ body{background:var(--bg) !important;color:var(--text) !important;}
       <span data-ru="Данные не сохраняются. " data-en="Changes won't be saved. ">Данные не сохраняются. </span><a onclick="_authGateShow()" data-ru="Войти →" data-en="Sign in →">Войти →</a>
     </div>
 
+    <!-- Sign-in card — shown ONLY in guest mode (replaces sb-profile) -->
+    <div class="sb-signin-card" id="sb-signin-card" style="display:none;" onclick="_authGateShow()" title="Войти / Регистрация">
+      <div class="sb-signin-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      </div>
+      <div class="sb-signin-text">
+        <div class="sb-signin-title" data-ru="Войти" data-en="Sign in">Войти</div>
+        <div class="sb-signin-sub" data-ru="чтобы сохранять данные" data-en="to save your data">чтобы сохранять данные</div>
+      </div>
+    </div>
+
     <div class="sb-profile" id="sb-profile" onclick="navigateTo('profile')" title="Открыть личный кабинет">
       <div class="sb-avatar" id="sb-avatar">?</div>
       <div class="sb-profile-info">
@@ -3205,6 +3253,11 @@ body{background:var(--bg) !important;color:var(--text) !important;}
           </div>
           <div class="tb-tz-menu" id="tb-tz-menu" style="display:none"></div>
         </div>
+        <!-- Sign-in button in toolbar — shown ONLY in guest mode -->
+        <button class="tb-signin-btn" id="tb-signin-btn" style="display:none;" onclick="_authGateShow()" title="Войти в аккаунт / Зарегистрироваться">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span data-ru="Войти" data-en="Sign in">Войти</span>
+        </button>
         <button class="tb-theme-btn" id="tb-theme-btn" onclick="toggleNewTheme()">☆ Light</button>
         <div class="tb-lang-wrap" id="tb-lang-wrap-new">
           <button class="tb-lang-btn" onclick="toggleLangMenuNew()">
@@ -23071,6 +23124,32 @@ function _guestModeActivate(){
       if(txt!==undefined) el.innerHTML=txt;
     });
   }
+
+  // Show "Sign in" CTA card in sidebar — replaces sb-profile for guests
+  var card = document.getElementById('sb-signin-card');
+  if(card){
+    card.style.display = 'flex';
+    card.querySelectorAll('[data-ru]').forEach(function(el){
+      var txt = l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.textContent=txt;
+    });
+  }
+  // Hide the regular profile chip while in guest mode
+  var prof = document.getElementById('sb-profile');
+  if(prof) prof.style.display='none';
+
+  // Show "Sign in" button in the toolbar (top-right)
+  var tbBtn = document.getElementById('tb-signin-btn');
+  if(tbBtn){
+    tbBtn.style.display = 'inline-flex';
+    tbBtn.querySelectorAll('[data-ru]').forEach(function(el){
+      var txt = l==='en'?(el.dataset.en||el.dataset.ru):el.dataset.ru;
+      if(txt!==undefined) el.textContent=txt;
+    });
+  }
+  // Hide the regular toolbar profile button (avatar circle)
+  var tbProf = document.getElementById('tb-profile-btn');
+  if(tbProf) tbProf.style.display='none';
 }
 
 function _guestModeClear(){
@@ -23080,6 +23159,16 @@ function _guestModeClear(){
   document.querySelectorAll('.sb-lock-badge').forEach(function(b){ b.remove(); });
   var bar = document.getElementById('sb-guest-bar');
   if(bar) bar.style.display='none';
+
+  // Hide guest sign-in CTAs, restore regular profile UI
+  var card = document.getElementById('sb-signin-card');
+  if(card) card.style.display='none';
+  var prof = document.getElementById('sb-profile');
+  if(prof) prof.style.display='';
+  var tbBtn = document.getElementById('tb-signin-btn');
+  if(tbBtn) tbBtn.style.display='none';
+  var tbProf = document.getElementById('tb-profile-btn');
+  if(tbProf) tbProf.style.display='';
 }
 
 // Detect arrival from Supabase email links (confirmation or password recovery).
@@ -23186,11 +23275,16 @@ document.addEventListener('DOMContentLoaded', function(){
       _agSwitchMode('signin');
       _agShowConfirmedBanner();
       try{ sessionStorage.removeItem('emailJustConfirmed'); }catch(e){}
-    } else if(window._guestMode){
+    } else if(CloudSync && CloudSync._user){
+      // Already signed in (cloud session restored) — full access, no gate
+      _authGateHide();
+    } else {
+      // NO session and no special flow — open app in GUEST MODE by default.
+      // User can sign in via the prominent "Войти" button in the sidebar/toolbar.
+      // Auth gate only appears when user explicitly clicks "Sign in".
+      try{ window._guestMode = true; sessionStorage.setItem('guestMode','1'); }catch(e){}
       _authGateHide();
       _guestModeActivate();
-    } else {
-      _authGateCheck();
     }
   }, 50);
   // Enter-key submits the active form
