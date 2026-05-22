@@ -6235,6 +6235,8 @@ async function _tbSignOut(){
   try{ window._isAdmin = false; _setAdminUI(false); }catch(e){}
   try{ showToast2(_t('Вы вышли из аккаунта','Signed out')); }catch(e){}
   try{ _authGateCheck(); }catch(e){}
+  // Sign-out → no user session → force guest UI back on (sign-in plate, etc.)
+  try{ _reconcileAuthUI(); }catch(e){}
 }
 document.addEventListener('click',function(){ _tbProfileClose(); });
 
@@ -23809,6 +23811,36 @@ function _closeGuestAiLimitModal(){
   if(m) m.remove();
 }
 
+// ── Auth UI reconciliation ─────────────────────────────────────────────────
+// Single source of truth: looks at CloudSync._user and forces the correct
+// UI state. Safe to call any number of times from anywhere — e.g. on init,
+// on focus, after session restore, after sign-in/sign-out, on navigation.
+// This is the antidote to "limbo states" where guest CTAs disappear but the
+// user isn't actually signed in (e.g. because session restoration timing
+// races with the DOMContentLoaded guest-mode setup).
+window._reconcileAuthUI = function(){
+  try{
+    var signedIn = !!(window.CloudSync && CloudSync._user);
+    if(signedIn){
+      // User has a real session — make sure guest UI is fully hidden
+      window._guestMode = false;
+      try{ sessionStorage.removeItem('guestMode'); }catch(_){}
+      var card1 = document.getElementById('sb-signin-card');  if(card1) card1.style.display = 'none';
+      var prof1 = document.getElementById('sb-profile');      if(prof1) prof1.style.display = '';
+      var bar1  = document.getElementById('sb-guest-bar');    if(bar1)  bar1.style.display  = 'none';
+      var tbS1  = document.getElementById('tb-signin-btn');   if(tbS1)  tbS1.style.display  = 'none';
+      var tbP1  = document.getElementById('tb-profile-btn');  if(tbP1)  tbP1.style.display  = '';
+      // Lock badges shouldn't be present for signed-in users
+      document.querySelectorAll('.sb-lock-badge').forEach(function(b){ b.remove(); });
+    } else {
+      // No session — force guest UI on (idempotent: _guestModeActivate is safe to re-run)
+      window._guestMode = true;
+      try{ sessionStorage.setItem('guestMode','1'); }catch(_){}
+      _guestModeActivate();
+    }
+  }catch(e){}
+};
+
 function _guestModeActivate(){
   var l = typeof getLang==='function'?getLang():'ru';
   var tipText = l==='en'
@@ -24009,6 +24041,7 @@ document.addEventListener('DOMContentLoaded', function(){
     } else if(CloudSync && CloudSync._user){
       // Already signed in (cloud session restored) — full access, no gate
       _authGateHide();
+      try{ _reconcileAuthUI(); }catch(e){}
     } else {
       // NO session and no special flow — open app in GUEST MODE by default.
       // User can sign in via the prominent "Войти" button in the sidebar/toolbar.
@@ -24017,7 +24050,17 @@ document.addEventListener('DOMContentLoaded', function(){
       _authGateHide();
       _guestModeActivate();
     }
+    // Safety net: run reconcile again 500ms later in case CloudSync session
+    // restoration completed between our first check and now (race condition).
+    setTimeout(function(){ try{ _reconcileAuthUI(); }catch(e){} }, 500);
+    // And once more after 2s for very slow network sessions
+    setTimeout(function(){ try{ _reconcileAuthUI(); }catch(e){} }, 2000);
   }, 50);
+  // Reconcile on tab focus — fixes cases where session was lost while away
+  window.addEventListener('focus', function(){ try{ _reconcileAuthUI(); }catch(e){} });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){ try{ _reconcileAuthUI(); }catch(e){} }
+  });
   // Enter-key submits the active form
   function _agEnterHandler(formMode, submitFn){
     return function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); submitFn(); } };
