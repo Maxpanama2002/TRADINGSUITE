@@ -5744,9 +5744,11 @@ var _equityChart = null;
 
 function navigateTo(page, toolIdx){
   // Pro/Free gating — block navigation to Pro-only pages for non-Pro users
+  // EXCEPTION: guests get to try AI for up to 5 messages (gate in aiSend2)
   try{
     var featId = window.PAGE_FEATURE_MAP && window.PAGE_FEATURE_MAP[page];
-    if(featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId)){
+    var isGuestAiPage = (page === 'ai' && (!window.CloudSync || !CloudSync._user));
+    if(featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId) && !isGuestAiPage){
       _proGate(featId);
       return;
     }
