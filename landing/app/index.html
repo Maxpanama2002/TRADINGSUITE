@@ -3306,7 +3306,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
     <!-- Guest mode banner (shown only in guest mode) -->
     <div class="sb-guest-bar" id="sb-guest-bar">
       <strong data-ru="👤 Режим гостя" data-en="👤 Guest mode">👤 Режим гостя</strong>
-      <span data-ru="Данные не сохраняются. " data-en="Changes won't be saved. ">Данные не сохраняются. </span><a onclick="_authGateShow()" data-ru="Войти →" data-en="Sign in →">Войти →</a>
+      <span data-ru="Данные только в этом браузере. " data-en="Data is only in this browser. ">Данные только в этом браузере. </span><a onclick="_authGateShow()" data-ru="Войти →" data-en="Sign in →">Войти →</a>
     </div>
 
     <!-- Sign-in card — shown ONLY in guest mode (replaces sb-profile) -->
@@ -3316,7 +3316,7 @@ body{background:var(--bg) !important;color:var(--text) !important;}
       </div>
       <div class="sb-signin-text">
         <div class="sb-signin-title" data-ru="Войти" data-en="Sign in">Войти</div>
-        <div class="sb-signin-sub" data-ru="чтобы сохранять данные" data-en="to save your data">чтобы сохранять данные</div>
+        <div class="sb-signin-sub" data-ru="для синхронизации между устройствами" data-en="to sync across devices">для синхронизации между устройствами</div>
       </div>
     </div>
 
@@ -23812,8 +23812,8 @@ function _closeGuestAiLimitModal(){
 function _guestModeActivate(){
   var l = typeof getLang==='function'?getLang():'ru';
   var tipText = l==='en'
-    ? 'Register to access and save features'
-    : 'Зарегистрируйтесь чтобы пользоваться функциями';
+    ? 'Sign in to unlock this feature and sync across devices'
+    : 'Войдите, чтобы открыть эту функцию и синхронизировать данные между устройствами';
 
   // Add lock badges to all interactive sidebar items
   document.querySelectorAll('#sb-nav .sb-item:not(.sb-item-disabled)').forEach(function(item){
@@ -24049,8 +24049,8 @@ document.addEventListener('DOMContentLoaded', function(){
       // Update guest lock badges tip text
       if(window._guestMode){
         var tipText = l==='en'
-          ? 'Register to access and save features'
-          : 'Зарегистрируйтесь чтобы пользоваться функциями';
+          ? 'Sign in to unlock this feature and sync across devices'
+          : 'Войдите, чтобы открыть эту функцию и синхронизировать данные между устройствами';
         document.querySelectorAll('.sb-lock-badge').forEach(function(b){
           b.setAttribute('data-tip', tipText);
         });
