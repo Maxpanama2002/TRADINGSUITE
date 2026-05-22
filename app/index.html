@@ -16606,6 +16606,15 @@ function _ppOpenNew(){
         +'<div><label style="'+lblStyle+'">'+L.sym+'</label><input id="ppm-sym" type="text" value="BTC" oninput="_ppPreview()" style="'+inputStyle+';text-transform:uppercase;"></div>'
         +'<div class="pp-futures-only"><label style="'+lblStyle+'">'+L.lev+'</label><input id="ppm-lev" type="number" value="10" min="1" oninput="_ppPreview()" style="'+inputStyle+'"></div>'
       +'</div>'
+      +'<div style="margin-bottom:10px;">'
+        +'<label style="'+lblStyle+'">'+(isEn?'Strategy (optional)':'Стратегия (необязательно)')+'</label>'
+        +(function(){
+          var strats = (typeof _ppStrategiesLoad==='function' ? _ppStrategiesLoad() : []).filter(function(s){ return s.status !== 'abandoned'; });
+          var opts = '<option value="">'+(isEn?'— no strategy —':'— без стратегии —')+'</option>';
+          strats.forEach(function(s){ opts += '<option value="'+s.id+'">'+s.name+'</option>'; });
+          return '<select id="ppm-strategy" style="'+inputStyle+'font-size:13px;">'+opts+'</select>';
+        })()
+      +'</div>'
       +'<div style="margin-bottom:8px;display:flex;gap:6px;background:var(--card-bg2);padding:4px;border-radius:8px;">'
         +'<button id="ppm-otype-market" onclick="_ppSetOrderType(\'market\')" style="flex:1;padding:7px;border:none;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">⚡ Market</button>'
         +'<button id="ppm-otype-limit" onclick="_ppSetOrderType(\'limit\')" style="flex:1;padding:7px;border:none;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">⏳ Limit</button>'
@@ -17027,6 +17036,8 @@ function _ppExecute(){
     marginMode: isSpot ? 'isolated' : _ppNewMargin,
     marketType: isSpot ? 'spot' : 'futures'
   };
+  var strategyEl = document.getElementById('ppm-strategy');
+  if(strategyEl && strategyEl.value) pos.strategy_id = strategyEl.value;
   if(isLimit){
     pos.status = 'pending';
     pos.pendingPrice = entry;
