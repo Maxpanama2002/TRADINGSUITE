@@ -22420,9 +22420,36 @@ function restoreAll(inp) {
   };
 
   window.aiSend2 = async function(){
+    // Guest-mode AI: free trial of 5 messages, then show registration modal
     if(!CloudSync._user){
-      try{ showToast2(_t('🔒 Зарегистрируйтесь чтобы использовать AI','🔒 Register to use AI')); }catch(e){}
-      try{ _authGateShow(); }catch(e){}
+      var GUEST_AI_LIMIT = 5;
+      var guestUsed = 0;
+      try{ guestUsed = parseInt(localStorage.getItem('guest_ai_used_v1') || '0', 10) || 0; }catch(e){}
+      if(guestUsed >= GUEST_AI_LIMIT){
+        _showGuestAiLimitModal(guestUsed, GUEST_AI_LIMIT);
+        return;
+      }
+      // Allow this message; increment counter
+      try{ localStorage.setItem('guest_ai_used_v1', String(guestUsed + 1)); }catch(e){}
+      // Show a friendly toast about remaining messages (only after 2nd msg and onwards)
+      var left = GUEST_AI_LIMIT - guestUsed - 1;
+      if(left >= 0 && left <= 2){
+        try{
+          var msgL = (left === 0)
+            ? _t('⚠ Это последнее сообщение в гостевом режиме. Зарегистрируйтесь, чтобы продолжить.',
+                  '⚠ Last guest message. Register to keep chatting.')
+            : _t('💬 Осталось ' + left + ' гостевых сообщений из ' + GUEST_AI_LIMIT + '. Зарегистрируйтесь для безлимита.',
+                  '💬 ' + left + ' guest messages left out of ' + GUEST_AI_LIMIT + '. Register for unlimited.');
+          showToast2(msgL);
+        }catch(e){}
+      }
+      // Fall through to send the message — skip Pro/Free gates for guests
+      try{ window._logEvent && _logEvent('ai_message_sent_guest', {used: guestUsed + 1}); }catch(e){}
+      var inpG = document.getElementById('ai-input2');
+      var txtG = inpG ? inpG.value.trim() : '';
+      if(!txtG && !_attachList.length) return;
+      if(inpG) inpG.value = '';
+      _doSend(txtG);
       return;
     }
     // Pro gate for AI if configured as Pro-only feature
@@ -23722,6 +23749,66 @@ function _gateGuest(){
   setTimeout(_guestModeActivate, 80); // after gate hides
 }
 
+// ── Guest AI limit modal: shown when a guest hits the 5-message quota ─────
+function _showGuestAiLimitModal(used, limit){
+  // Avoid stacking duplicates if the user keeps hitting send
+  if(document.getElementById('guest-ai-limit-modal')) return;
+  var en = (typeof getLang==='function' && getLang()==='en');
+  var ov = document.createElement('div');
+  ov.id = 'guest-ai-limit-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100060;display:flex;align-items:center;justify-content:center;padding:20px;animation:gAiFadeIn .22s ease;';
+  ov.innerHTML =
+    '<style>@keyframes gAiFadeIn{from{opacity:0}to{opacity:1}}@keyframes gAiSlideIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}</style>'
+    + '<div style="background:var(--card-bg);border:1px solid var(--border2);border-radius:18px;max-width:440px;width:100%;padding:28px 26px 22px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:gAiSlideIn .26s ease;">'
+    +   '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;color:#fff;box-shadow:0 8px 22px rgba(124,58,237,.4);">✦</div>'
+    +   '<div style="font-size:19px;font-weight:800;text-align:center;color:var(--text);margin-bottom:8px;letter-spacing:-.3px;">'
+    +     (en ? 'You\'ve used your free AI trial' : 'Бесплатные сообщения закончились')
+    +   '</div>'
+    +   '<div style="font-size:13.5px;color:var(--text2);text-align:center;line-height:1.55;margin-bottom:18px;">'
+    +     (en
+    +       ? 'Guest mode includes <strong style="color:var(--text);">' + limit + ' free AI messages</strong>. Register a free account to keep chatting — unlimited messages on the Pro plan.'
+    +       : 'В гостевом режиме доступно <strong style="color:var(--text);">' + limit + ' бесплатных AI-сообщений</strong>. Зарегистрируйтесь бесплатно, чтобы продолжить — на Pro безлимит сообщений.')
+    +   '</div>'
+    +   '<div style="display:flex;gap:8px;flex-direction:column;">'
+    +     '<button id="g-ai-register-btn" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s;">'
+    +       (en ? '✦ Register — free' : '✦ Зарегистрироваться — бесплатно')
+    +     '</button>'
+    +     '<button id="g-ai-signin-btn" style="background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:11px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">'
+    +       (en ? 'I already have an account — sign in' : 'У меня уже есть аккаунт — войти')
+    +     '</button>'
+    +     '<button id="g-ai-close-btn" style="background:transparent;color:var(--text3);border:none;padding:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">'
+    +       (en ? 'Later' : 'Позже')
+    +     '</button>'
+    +   '</div>'
+    + '</div>';
+  ov.onclick = function(e){ if(e.target===ov) _closeGuestAiLimitModal(); };
+  document.body.appendChild(ov);
+  // Wire up the buttons (avoid inline onclicks since they'd need globals)
+  var openAuthAndClose = function(mode){
+    _closeGuestAiLimitModal();
+    try{
+      // Hint the auth gate which view to show, if it supports a mode argument
+      if(typeof _authGateShow === 'function'){
+        try{ _authGateShow(mode); }catch(_){ _authGateShow(); }
+      }
+    }catch(e){}
+  };
+  document.getElementById('g-ai-register-btn').onclick = function(){ openAuthAndClose('register'); };
+  document.getElementById('g-ai-signin-btn').onclick   = function(){ openAuthAndClose('signin');   };
+  document.getElementById('g-ai-close-btn').onclick    = _closeGuestAiLimitModal;
+  // Hover effect for primary button
+  var primary = document.getElementById('g-ai-register-btn');
+  if(primary){
+    primary.onmouseenter = function(){ this.style.transform='translateY(-1px)'; this.style.boxShadow='0 8px 20px rgba(124,58,237,.45)'; };
+    primary.onmouseleave = function(){ this.style.transform=''; this.style.boxShadow=''; };
+  }
+  try{ window._logEvent && _logEvent('guest_ai_limit_modal_shown', {used:used, limit:limit}); }catch(e){}
+}
+function _closeGuestAiLimitModal(){
+  var m = document.getElementById('guest-ai-limit-modal');
+  if(m) m.remove();
+}
+
 function _guestModeActivate(){
   var l = typeof getLang==='function'?getLang():'ru';
   var tipText = l==='en'
@@ -23809,6 +23896,10 @@ function _guestModeClear(){
   if(tbBtn) tbBtn.style.display='none';
   var tbProf = document.getElementById('tb-profile-btn');
   if(tbProf) tbProf.style.display='';
+  // Reset guest AI quota when the user signs in — no need to keep the counter
+  try{ localStorage.removeItem('guest_ai_used_v1'); }catch(e){}
+  // Hide guest AI limit modal if it was open
+  try{ _closeGuestAiLimitModal(); }catch(e){}
 }
 
 // Detect arrival from Supabase email links (confirmation or password recovery).
