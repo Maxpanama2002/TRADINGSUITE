@@ -23299,21 +23299,21 @@ function _onbInit(){
   try{
     if(localStorage.getItem('onboarding_v1_done') === '1') return;
 
-    // GUARD: do not launch onboarding for unauthenticated or guest sessions.
-    // The auth gate covers the screen; showing the tour underneath is jarring
-    // and useless (the user can't actually interact with anything yet).
-    var hasUser = !!(window.CloudSync && CloudSync._user);
-    var isGuest = !!window._guestMode;
-    if(!hasUser || isGuest){
-      // Try again later — after sign-in CloudSync._user becomes truthy and we
-      // can launch the tour for newly registered users. Poll briefly.
+    // GUARD: do not launch onboarding while the auth gate is on screen
+    // (e.g. during password reset / email confirmation flows). Showing the
+    // tour underneath a modal is jarring. Guests and signed-in users both
+    // see the tour — guests get to learn the app before deciding to register.
+    var gate = document.getElementById('auth-gate');
+    if(gate && gate.style.display && gate.style.display !== 'none'){
+      // Auth gate is showing — retry later (after user closes it or signs in)
       var attempts = 0;
       var retry = setInterval(function(){
         attempts++;
-        if(window.CloudSync && CloudSync._user && !window._guestMode){
+        var g = document.getElementById('auth-gate');
+        var gateOpen = g && g.style.display && g.style.display !== 'none';
+        if(!gateOpen){
           clearInterval(retry);
-          // Re-enter init with auth present
-          setTimeout(_onbInit, 200);
+          setTimeout(_onbInit, 300);
         } else if(attempts > 600){ // ~5 minutes max
           clearInterval(retry);
         }
@@ -23327,8 +23327,8 @@ function _onbInit(){
       _onbIdx = savedStep;
       setTimeout(_onbShowResumePill, 600);
     } else {
-      // Fresh first launch (for an authenticated user)
-      setTimeout(function(){ _onbShow(0); }, 700);
+      // Fresh first launch (works for guests and authenticated users)
+      setTimeout(function(){ _onbShow(0); }, 900);
     }
   }catch(_){}
 }
