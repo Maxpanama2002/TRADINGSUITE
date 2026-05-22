@@ -2766,34 +2766,6 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 }
 #toast.show{opacity:1;}
 
-/* ── Guest mode floating CTA (bottom-right) ─────────────────────────────── */
-#guest-float-cta{
-  position:fixed;bottom:24px;right:20px;z-index:99990;
-  display:none;align-items:center;gap:10px;
-  background:var(--card-bg);border:1px solid rgba(124,58,237,.45);
-  border-radius:14px;padding:11px 14px;
-  box-shadow:0 8px 28px rgba(124,58,237,.25),0 2px 8px rgba(0,0,0,.3);
-  cursor:pointer;transition:transform .18s,box-shadow .18s;
-  max-width:240px;
-}
-#guest-float-cta:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(124,58,237,.35),0 4px 12px rgba(0,0,0,.3);}
-#guest-float-cta .gfc-icon{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,#7c3aed,#ec4899);
-  display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;
-}
-#guest-float-cta .gfc-body{flex:1;min-width:0;}
-#guest-float-cta .gfc-title{font-size:12px;font-weight:700;color:var(--text);line-height:1.3;}
-#guest-float-cta .gfc-sub{font-size:10.5px;color:var(--text3);line-height:1.3;margin-top:1px;}
-#guest-float-cta .gfc-close{
-  width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-  color:var(--text3);font-size:14px;line-height:1;border-radius:50%;
-  transition:background .15s,color .15s;
-}
-#guest-float-cta .gfc-close:hover{background:rgba(255,255,255,.1);color:var(--text);}
-@keyframes gfcSlideIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-#guest-float-cta.gfc-visible{display:flex;animation:gfcSlideIn .3s ease;}
-
 /* Scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -5738,15 +5710,6 @@ body{background:var(--bg) !important;color:var(--text) !important;}
 </div>
 <div id="toast"></div>
 
-<!-- Guest mode floating CTA — bottom-right, shown only in guest mode -->
-<div id="guest-float-cta">
-  <div class="gfc-icon">👤</div>
-  <div class="gfc-body" onclick="_authGateShow()">
-    <div class="gfc-title" id="gfc-title">Войти / Зарегистрироваться</div>
-    <div class="gfc-sub" id="gfc-sub">Данные не сохраняются в гостевом режиме</div>
-  </div>
-  <div class="gfc-close" onclick="event.stopPropagation();document.getElementById('guest-float-cta').classList.remove('gfc-visible');" title="Скрыть">×</div>
-</div>
 
 <script>
 
@@ -23763,26 +23726,6 @@ function _guestModeActivate(){
   // Hide the regular toolbar profile button (avatar circle)
   var tbProf = document.getElementById('tb-profile-btn');
   if(tbProf) tbProf.style.display='none';
-
-  // Show floating bottom-right CTA after a short delay (feels like a notification)
-  setTimeout(function(){
-    var floatCta = document.getElementById('guest-float-cta');
-    if(floatCta){
-      var titleEl = document.getElementById('gfc-title');
-      var subEl   = document.getElementById('gfc-sub');
-      if(l==='en'){
-        if(titleEl) titleEl.textContent = 'Sign in / Register';
-        if(subEl)   subEl.textContent   = 'Data is not saved in guest mode';
-      } else {
-        if(titleEl) titleEl.textContent = 'Войти / Зарегистрироваться';
-        if(subEl)   subEl.textContent   = 'Данные не сохраняются в гостевом режиме';
-      }
-      floatCta.classList.add('gfc-visible');
-      // Make the body part clickable to open auth gate
-      var body = floatCta.querySelector('.gfc-body');
-      if(body) body.style.cursor = 'pointer';
-    }
-  }, 1800);
 }
 
 function _guestModeClear(){
@@ -23802,9 +23745,6 @@ function _guestModeClear(){
   if(tbBtn) tbBtn.style.display='none';
   var tbProf = document.getElementById('tb-profile-btn');
   if(tbProf) tbProf.style.display='';
-  // Hide floating bottom-right CTA
-  var floatCta = document.getElementById('guest-float-cta');
-  if(floatCta) floatCta.classList.remove('gfc-visible');
 }
 
 // Detect arrival from Supabase email links (confirmation or password recovery).
