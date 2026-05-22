@@ -3157,9 +3157,41 @@ body{background:var(--bg) !important;color:var(--text) !important;}
 .theme-menu button{display:block;width:100%;text-align:left;padding:9px 12px;background:none;border:none;border-radius:6px;color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;}
 .theme-menu button:hover{background:var(--bg);}
 .theme-menu button.active{font-weight:700;background:var(--bg);}
+/* ── Initial auth state (decided by inline script below, before paint) ── */
+html[data-auth-state="guest"] #sb-signin-card{display:flex !important;}
+html[data-auth-state="guest"] #sb-profile{display:none !important;}
+html[data-auth-state="guest"] #tb-signin-btn{display:inline-flex !important;}
+html[data-auth-state="guest"] #tb-profile-btn{display:none !important;}
+html[data-auth-state="guest"] #sb-guest-bar{display:block !important;}
+html[data-auth-state="authed"] #sb-signin-card{display:none !important;}
+html[data-auth-state="authed"] #sb-profile{display:flex !important;}
+html[data-auth-state="authed"] #tb-signin-btn{display:none !important;}
+html[data-auth-state="authed"] #tb-profile-btn{display:inline-flex !important;}
+html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
 </style>
 </head>
 <body>
+
+<!-- Set initial auth state BEFORE first paint, based on localStorage session.
+     This ensures guests see Sign in CTAs immediately, signed-in users see
+     profile chip immediately, without any flicker or race condition. -->
+<script>
+(function(){
+  try{
+    var raw = localStorage.getItem('cloud_session_v1');
+    var hasSession = false;
+    if(raw){
+      var s = JSON.parse(raw);
+      // Token must exist and not be expired
+      hasSession = !!(s && s.access_token && (!s.exp || s.exp * 1000 > Date.now() + 10000));
+    }
+    document.documentElement.setAttribute('data-auth-state', hasSession ? 'authed' : 'guest');
+  }catch(_){
+    // Anything fails → default to guest (safer to show sign-in CTA)
+    document.documentElement.setAttribute('data-auth-state', 'guest');
+  }
+})();
+</script>
 
 <!-- ════ APP SHELL ════ -->
 <div class="app-shell">
@@ -23823,14 +23855,19 @@ function _closeGuestAiLimitModal(){
 window._reconcileAuthUI = function(){
   try{
     var signedIn = !!(window.CloudSync && CloudSync._user);
+    // Set the HTML attribute that drives our CSS-based default visibility
+    // (avoids races where inline display:none vs the CSS rules conflict).
+    document.documentElement.setAttribute('data-auth-state', signedIn ? 'authed' : 'guest');
     if(signedIn){
       // User has a real session — make sure guest UI is fully hidden
       window._guestMode = false;
       try{ sessionStorage.removeItem('guestMode'); }catch(_){}
-      var card1 = document.getElementById('sb-signin-card');  if(card1) card1.style.display = 'none';
+      // Clear any inline display we may have set during a previous guest activation,
+      // so the CSS rules above take effect (inline > CSS otherwise).
+      var card1 = document.getElementById('sb-signin-card');  if(card1) card1.style.display = '';
       var prof1 = document.getElementById('sb-profile');      if(prof1) prof1.style.display = '';
-      var bar1  = document.getElementById('sb-guest-bar');    if(bar1)  bar1.style.display  = 'none';
-      var tbS1  = document.getElementById('tb-signin-btn');   if(tbS1)  tbS1.style.display  = 'none';
+      var bar1  = document.getElementById('sb-guest-bar');    if(bar1)  bar1.style.display  = '';
+      var tbS1  = document.getElementById('tb-signin-btn');   if(tbS1)  tbS1.style.display  = '';
       var tbP1  = document.getElementById('tb-profile-btn');  if(tbP1)  tbP1.style.display  = '';
       // Lock badges shouldn't be present for signed-in users
       document.querySelectorAll('.sb-lock-badge').forEach(function(b){ b.remove(); });
@@ -23838,6 +23875,12 @@ window._reconcileAuthUI = function(){
       // No session — force guest UI on (idempotent: _guestModeActivate is safe to re-run)
       window._guestMode = true;
       try{ sessionStorage.setItem('guestMode','1'); }catch(_){}
+      // Clear any leftover inline styles so the CSS rules drive visibility.
+      var c2 = document.getElementById('sb-signin-card');  if(c2) c2.style.display = '';
+      var p2 = document.getElementById('sb-profile');      if(p2) p2.style.display = '';
+      var b2 = document.getElementById('sb-guest-bar');    if(b2) b2.style.display = '';
+      var s2 = document.getElementById('tb-signin-btn');   if(s2) s2.style.display = '';
+      var t2 = document.getElementById('tb-profile-btn');  if(t2) t2.style.display = '';
       _guestModeActivate();
     }
   }catch(e){}
