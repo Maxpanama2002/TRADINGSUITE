@@ -3012,11 +3012,12 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .sb-guest-bar a:hover{text-decoration:underline;}
 
 /* ══ Paper Trading: Tabs + Strategies + Analytics ════════════════════════ */
-.pp-tabs{display:flex;gap:4px;background:var(--card-bg);padding:4px;border-radius:12px;margin-bottom:18px;width:fit-content;}
+.pp-tabs{display:flex;gap:4px;background:var(--card-bg);padding:4px;border-radius:12px;margin-bottom:18px;width:fit-content;border:1px solid var(--border);}
 .pp-tab{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;transition:all .15s;display:inline-flex;align-items:center;gap:7px;font-family:inherit;}
-.pp-tab:hover{color:var(--text2);}
-.pp-tab.active{background:var(--card2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
-.pp-tab-count{font-size:10px;font-weight:700;background:rgba(124,58,237,.15);color:var(--accent);padding:1px 7px;border-radius:8px;min-width:18px;text-align:center;}
+.pp-tab:hover{color:var(--text);background:rgba(124,58,237,.08);}
+.pp-tab.active{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;box-shadow:0 4px 12px rgba(124,58,237,.35);}
+.pp-tab.active .pp-tab-count{background:rgba(255,255,255,.25);color:#fff;}
+.pp-tab-count{font-size:10px;font-weight:700;background:rgba(124,58,237,.15);color:var(--accent);padding:1px 7px;border-radius:8px;min-width:18px;text-align:center;transition:all .15s;}
 
 /* Strategies filter row */
 .pp-str-filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
@@ -3045,6 +3046,8 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .pp-str-card-actions{display:flex;gap:6px;margin-top:10px;}
 .pp-str-card-actions button{background:transparent;border:1px solid var(--border);color:var(--text2);padding:5px 11px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;}
 .pp-str-card-actions button:hover{background:var(--card-bg);color:var(--text);}
+.pp-str-card-actions button.pp-str-card-del{color:#ef4444;border-color:rgba(239,68,68,.3);}
+.pp-str-card-actions button.pp-str-card-del:hover{background:rgba(239,68,68,.12);color:#ef4444;border-color:rgba(239,68,68,.55);}
 .pp-str-empty{padding:60px 20px;text-align:center;color:var(--text3);background:var(--card2);border:1px dashed var(--border);border-radius:14px;}
 .pp-str-empty-icon{font-size:48px;margin-bottom:12px;}
 .pp-str-empty-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px;}
@@ -15928,9 +15931,31 @@ function _ppRenderStrategies(){
       + (tfHtml || sideHtml || tagsHtml ? '<div class="pp-str-card-meta">' + tfHtml + sideHtml + tagsHtml + '</div>' : '')
       + '<div class="pp-str-card-actions">'
       +   '<button onclick="event.stopPropagation();_ppOpenStrategyModal(\'' + s.id + '\')">✏ Редактировать</button>'
+      +   '<button class="pp-str-card-del" onclick="event.stopPropagation();_ppStrategyDeleteById(\'' + s.id + '\')">🗑 Удалить</button>'
       + '</div>'
       + '</div>';
   }).join('');
+}
+
+// Delete a strategy directly from the card (no need to open edit modal)
+function _ppStrategyDeleteById(id){
+  if(!id) return;
+  var s = _ppStrategyById(id);
+  if(!s) return;
+  if(!confirm('Удалить стратегию «' + s.name + '»?\n\nСвязанные сделки останутся, но потеряют привязку к стратегии.')) return;
+  var list = _ppStrategiesLoad().filter(function(x){ return x.id !== id; });
+  _ppStrategiesSave(list);
+  // Unlink trades referencing this strategy
+  try{
+    var d = _ppLoad();
+    if(d){
+      (d.positions||[]).forEach(function(p){ if(p.strategy_id === id) delete p.strategy_id; });
+      (d.history||[]).forEach(function(h){ if(h.strategy_id === id) delete h.strategy_id; });
+      _ppSave(d);
+    }
+  }catch(e){}
+  _ppRenderStrategies();
+  try{ showToast2('🗑 Стратегия «' + s.name + '» удалена'); }catch(e){}
 }
 
 function _esc2safe(s){
