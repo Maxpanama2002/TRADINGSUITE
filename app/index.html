@@ -3011,6 +3011,86 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .sb-guest-bar a{color:var(--accent);cursor:pointer;font-weight:700;text-decoration:none;}
 .sb-guest-bar a:hover{text-decoration:underline;}
 
+/* ══ Paper Trading: Tabs + Strategies + Analytics ════════════════════════ */
+.pp-tabs{display:flex;gap:4px;background:var(--card-bg);padding:4px;border-radius:12px;margin-bottom:18px;width:fit-content;}
+.pp-tab{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:transparent;transition:all .15s;display:inline-flex;align-items:center;gap:7px;font-family:inherit;}
+.pp-tab:hover{color:var(--text2);}
+.pp-tab.active{background:var(--card2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.pp-tab-count{font-size:10px;font-weight:700;background:rgba(124,58,237,.15);color:var(--accent);padding:1px 7px;border-radius:8px;min-width:18px;text-align:center;}
+
+/* Strategies filter row */
+.pp-str-filter-row{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.pp-str-filter{padding:7px 14px;font-size:12px;font-weight:600;color:var(--text3);background:var(--card2);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.pp-str-filter:hover{color:var(--text);}
+.pp-str-filter.active{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-color:transparent;}
+
+/* Strategy card */
+.pp-str-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:border-color .15s,transform .15s;cursor:pointer;}
+.pp-str-card:hover{border-color:rgba(124,58,237,.4);transform:translateY(-1px);}
+.pp-str-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.pp-str-card-name{font-size:16px;font-weight:800;color:var(--text);line-height:1.2;letter-spacing:-.3px;flex:1;}
+.pp-str-card-status{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.04em;flex-shrink:0;}
+.pp-str-card-status.testing{background:rgba(245,158,11,.15);color:#f59e0b;}
+.pp-str-card-status.validated{background:rgba(34,197,94,.15);color:#22c55e;}
+.pp-str-card-status.abandoned{background:rgba(115,115,115,.15);color:var(--text3);}
+.pp-str-card-hypothesis{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:12px;}
+.pp-str-card-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:10px;padding:10px;background:var(--card-bg);border-radius:10px;}
+.pp-str-stat{text-align:center;}
+.pp-str-stat-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+.pp-str-stat-val{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.pp-str-stat-val.pos{color:#22c55e;}
+.pp-str-stat-val.neg{color:#ef4444;}
+.pp-str-card-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--text3);}
+.pp-str-tag{background:rgba(124,58,237,.10);color:var(--accent);padding:2px 8px;border-radius:6px;font-weight:600;font-size:10.5px;}
+.pp-str-card-actions{display:flex;gap:6px;margin-top:10px;}
+.pp-str-card-actions button{background:transparent;border:1px solid var(--border);color:var(--text2);padding:5px 11px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;}
+.pp-str-card-actions button:hover{background:var(--card-bg);color:var(--text);}
+.pp-str-empty{padding:60px 20px;text-align:center;color:var(--text3);background:var(--card2);border:1px dashed var(--border);border-radius:14px;}
+.pp-str-empty-icon{font-size:48px;margin-bottom:12px;}
+.pp-str-empty-title{font-size:15px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.pp-str-empty-desc{font-size:13px;line-height:1.5;max-width:420px;margin:0 auto;}
+
+/* Strategy modal */
+.pp-str-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.pp-str-modal{background:#ffffff;border:1px solid rgba(0,0,0,.08);border-radius:18px;width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);}
+[data-theme="dark"] .pp-str-modal{background:#1f2330;border-color:rgba(255,255,255,.10);}
+[data-theme="sepia"] .pp-str-modal{background:#fbf5e7;}
+.pp-str-modal.pp-str-detail{max-width:780px;}
+.pp-str-modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);}
+.pp-str-modal-title{font-size:17px;font-weight:800;color:var(--text);}
+.pp-str-modal-sub{font-size:12px;color:var(--text3);margin-top:3px;}
+.pp-str-modal-close{background:transparent;border:none;color:var(--text3);font-size:26px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;}
+.pp-str-modal-close:hover{background:var(--card-bg);color:var(--text);}
+.pp-str-modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+.pp-str-field{margin-bottom:13px;}
+.pp-str-field label{display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.pp-str-field input[type="text"],.pp-str-field textarea,.pp-str-field select{width:100%;background:var(--card-bg2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;box-sizing:border-box;}
+.pp-str-field input:focus,.pp-str-field textarea:focus,.pp-str-field select:focus{border-color:var(--accent);}
+.pp-str-field textarea{resize:vertical;line-height:1.45;}
+.pp-str-field-row{display:flex;gap:10px;}
+.pp-str-modal-foot{display:flex;gap:8px;padding:14px 22px;border-top:1px solid var(--border);align-items:center;}
+.pp-str-cancel-btn{background:var(--card-bg);border:1px solid var(--border);color:var(--text2);padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.pp-str-save-btn{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.pp-str-delete-btn{background:transparent;border:1px solid rgba(239,68,68,.3);color:#ef4444;padding:9px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.pp-str-delete-btn:hover{background:rgba(239,68,68,.10);}
+
+/* Analytics view */
+.pp-analytics-wrap{}
+.pp-an-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
+.pp-an-kpi{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.pp-an-kpi-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.pp-an-kpi-val{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px;}
+.pp-an-kpi-val.pos{color:#22c55e;}
+.pp-an-kpi-val.neg{color:#ef4444;}
+.pp-an-table{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;border-collapse:collapse;font-size:13px;}
+.pp-an-table th{text-align:left;padding:11px 13px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;background:var(--card-bg);border-bottom:1px solid var(--border);}
+.pp-an-table td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text2);}
+.pp-an-table tr:last-child td{border-bottom:none;}
+.pp-an-table tr:hover td{background:var(--card-bg);}
+
+/* Strategy badge inside trade rows */
+.pp-trade-str-badge{display:inline-block;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:700;background:rgba(124,58,237,.12);color:var(--accent);margin-left:5px;}
+
 /* ── Sign-in CTA card in sidebar (replaces sb-profile in guest mode) ── */
 .sb-signin-card{
   margin:8px 8px 6px;
@@ -4432,13 +4512,32 @@ body{background:var(--bg) !important;color:var(--text) !important;}
               <div style="font-size:13px;color:var(--text2);">Виртуальная торговля без денег · live-цены с Binance</div>
               <div style="font-size:11px;color:var(--text3);" id="pp-status">—</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;">
+            <div style="display:flex;gap:8px;align-items:center;" id="pp-toolbar-trades">
               <button onclick="_ppOpenNew()" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Открыть позицию</button>
               <button id="pp-refresh-btn" onclick="_ppFetchPrices(true)" style="background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);font-family:inherit;">↻ Обновить</button>
               <button onclick="_ppClearHistory()" title="Очистить историю сделок" style="background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;">🗑 История</button>
               <button onclick="_ppReset()" style="background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;">⌫ Сброс</button>
             </div>
+            <div style="display:none;gap:8px;align-items:center;" id="pp-toolbar-strategies">
+              <button onclick="_ppOpenStrategyModal()" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">+ Создать стратегию</button>
+            </div>
           </div>
+
+          <!-- Tabs -->
+          <div class="pp-tabs">
+            <button class="pp-tab active" data-pp-tab="trades" onclick="_ppSwitchTab('trades')">
+              <span style="font-size:14px;">💼</span> Сделки
+            </button>
+            <button class="pp-tab" data-pp-tab="strategies" onclick="_ppSwitchTab('strategies')">
+              <span style="font-size:14px;">🎯</span> Стратегии <span class="pp-tab-count" id="pp-tab-strategies-count">0</span>
+            </button>
+            <button class="pp-tab" data-pp-tab="analytics" onclick="_ppSwitchTab('analytics')">
+              <span style="font-size:14px;">📈</span> Аналитика
+            </button>
+          </div>
+
+          <!-- ── TAB: TRADES (default — wraps existing content) ── -->
+          <div id="pp-tab-trades-content">
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
             <div class="dv-kpi" id="pp-balance-card" onclick="_ppOpenBalanceEdit()" title="Кликни чтобы изменить баланс" style="cursor:pointer;transition:border-color .14s;">
               <div class="dv-kpi-lbl" style="display:flex;justify-content:space-between;align-items:center;">
@@ -4488,6 +4587,117 @@ body{background:var(--bg) !important;color:var(--text) !important;}
                 </tr></thead>
                 <tbody id="pp-history-body"></tbody>
               </table>
+            </div>
+          </div>
+          </div><!-- end pp-tab-trades-content -->
+
+          <!-- ── TAB: STRATEGIES ── -->
+          <div id="pp-tab-strategies-content" style="display:none;">
+            <div class="pp-str-filter-row">
+              <button class="pp-str-filter active" data-pp-str-filter="all" onclick="_ppStrSetFilter('all')">Все</button>
+              <button class="pp-str-filter" data-pp-str-filter="testing" onclick="_ppStrSetFilter('testing')">🧪 Тестируется</button>
+              <button class="pp-str-filter" data-pp-str-filter="validated" onclick="_ppStrSetFilter('validated')">✅ Подтверждена</button>
+              <button class="pp-str-filter" data-pp-str-filter="abandoned" onclick="_ppStrSetFilter('abandoned')">🗑 Отброшена</button>
+            </div>
+            <div id="pp-strategies-list">
+              <!-- Strategy cards render here -->
+            </div>
+          </div>
+
+          <!-- ── TAB: ANALYTICS ── -->
+          <div id="pp-tab-analytics-content" style="display:none;">
+            <div class="pp-analytics-wrap" id="pp-analytics-wrap">
+              <!-- Analytics renders here -->
+            </div>
+          </div>
+
+          <!-- ── Strategy create/edit modal ── -->
+          <div id="pp-strategy-modal" class="pp-str-modal-overlay" style="display:none;" onclick="if(event.target===this)_ppCloseStrategyModal()">
+            <div class="pp-str-modal" onclick="event.stopPropagation()">
+              <div class="pp-str-modal-head">
+                <div class="pp-str-modal-title" id="pp-str-modal-title">Новая стратегия</div>
+                <button class="pp-str-modal-close" onclick="_ppCloseStrategyModal()">×</button>
+              </div>
+              <div class="pp-str-modal-body">
+                <div class="pp-str-field">
+                  <label>Название *</label>
+                  <input type="text" id="pp-str-name" placeholder="Например: Break of structure + retest" maxlength="80">
+                </div>
+                <div class="pp-str-field">
+                  <label>Гипотеза — что проверяем *</label>
+                  <textarea id="pp-str-hypothesis" rows="3" placeholder="Например: При пробое предыдущего хая после консолидации цена продолжает движение в сторону пробоя"></textarea>
+                </div>
+                <div class="pp-str-field-row">
+                  <div class="pp-str-field" style="flex:1;">
+                    <label>Таймфрейм</label>
+                    <select id="pp-str-timeframe">
+                      <option value="">— любой —</option>
+                      <option value="M1">M1</option><option value="M5">M5</option>
+                      <option value="M15">M15</option><option value="M30">M30</option>
+                      <option value="H1">H1</option><option value="H4">H4</option>
+                      <option value="D">D</option><option value="W">W</option>
+                    </select>
+                  </div>
+                  <div class="pp-str-field" style="flex:1;">
+                    <label>Сторона</label>
+                    <select id="pp-str-side">
+                      <option value="both">Long + Short</option>
+                      <option value="long">Только Long</option>
+                      <option value="short">Только Short</option>
+                    </select>
+                  </div>
+                  <div class="pp-str-field" style="flex:1;">
+                    <label>Статус</label>
+                    <select id="pp-str-status">
+                      <option value="testing">🧪 Тестируется</option>
+                      <option value="validated">✅ Подтверждена</option>
+                      <option value="abandoned">🗑 Отброшена</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="pp-str-field">
+                  <label>Правила входа</label>
+                  <textarea id="pp-str-entry" rows="2" placeholder="Условия для открытия позиции"></textarea>
+                </div>
+                <div class="pp-str-field">
+                  <label>Правила выхода (TP/SL)</label>
+                  <textarea id="pp-str-exit" rows="2" placeholder="Где TP, где SL, чем закрываем"></textarea>
+                </div>
+                <div class="pp-str-field">
+                  <label>Риск-менеджмент</label>
+                  <textarea id="pp-str-risk" rows="2" placeholder="Размер позиции, max сделок в день, drawdown limit"></textarea>
+                </div>
+                <div class="pp-str-field">
+                  <label>Теги (через запятую)</label>
+                  <input type="text" id="pp-str-tags" placeholder="breakout, BTC, US session">
+                </div>
+                <div class="pp-str-field">
+                  <label>Заметки</label>
+                  <textarea id="pp-str-notes" rows="2" placeholder="Любые мысли и наблюдения"></textarea>
+                </div>
+              </div>
+              <div class="pp-str-modal-foot">
+                <button class="pp-str-delete-btn" id="pp-str-delete-btn" onclick="_ppStrategyDelete()" style="display:none;">🗑 Удалить</button>
+                <div style="flex:1;"></div>
+                <button class="pp-str-cancel-btn" onclick="_ppCloseStrategyModal()">Отмена</button>
+                <button class="pp-str-save-btn" onclick="_ppStrategySave()">Сохранить</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Strategy detail modal ── -->
+          <div id="pp-strategy-detail-modal" class="pp-str-modal-overlay" style="display:none;" onclick="if(event.target===this)_ppCloseStrategyDetail()">
+            <div class="pp-str-modal pp-str-detail" onclick="event.stopPropagation()">
+              <div class="pp-str-modal-head">
+                <div>
+                  <div class="pp-str-modal-title" id="pp-str-det-name">—</div>
+                  <div class="pp-str-modal-sub" id="pp-str-det-status">—</div>
+                </div>
+                <button class="pp-str-modal-close" onclick="_ppCloseStrategyDetail()">×</button>
+              </div>
+              <div class="pp-str-modal-body" id="pp-str-detail-body">
+                <!-- Stats + trades list renders here -->
+              </div>
             </div>
           </div>
         </div>
@@ -5659,6 +5869,7 @@ function navigateTo(page, toolIdx){
     if(pPg) pPg.style.display='';
     _setTbTitle(_t('Торговля','Trading'),'Paper Trading');
     try{ renderPaper(); }catch(e){}
+    try{ _ppUpdateStrategyTabCount(); }catch(e){}
   } else if(page==='journal'){
     _hideAllPages();
     var jPg=document.getElementById('page-journal');
@@ -15588,6 +15799,359 @@ function _dvFundLevel(f){
 var _PP_KEY = 'paper_portfolio_v1';
 var _PP_PRICES = {};
 var _pp_render_interval = null;
+
+// ════════════════════════════════════════════════════════════════════════════
+// STRATEGIES — структурирование гипотез + связь со сделками + аналитика
+// ════════════════════════════════════════════════════════════════════════════
+var _PP_STR_KEY = 'paper_strategies_v1';
+var _ppCurrentTab = 'trades';
+var _ppStrFilter  = 'all';
+var _ppEditingStrategyId = null;
+
+function _ppStrategiesLoad(){
+  try{ var d=JSON.parse(localStorage.getItem(_PP_STR_KEY)||'[]'); return Array.isArray(d)?d:[]; }catch(e){ return []; }
+}
+function _ppStrategiesSave(arr){ try{ localStorage.setItem(_PP_STR_KEY, JSON.stringify(arr)); }catch(e){} }
+
+function _ppStrategyById(id){
+  return _ppStrategiesLoad().find(function(s){ return s.id === id; }) || null;
+}
+
+// Все trades (open + closed history) — для аналитики по стратегиям
+function _ppAllTrades(){
+  var d = _ppLoad() || { positions: [], history: [] };
+  var trades = [];
+  (d.positions||[]).forEach(function(p){ trades.push(Object.assign({}, p, { _state: 'open' })); });
+  (d.history||[]).forEach(function(h){ trades.push(Object.assign({}, h, { _state: 'closed' })); });
+  return trades;
+}
+
+// Считает метрики стратегии по связанным сделкам (только closed для PnL/WR)
+function _ppStrategyStats(strategyId){
+  var trades = _ppAllTrades().filter(function(t){ return t.strategy_id === strategyId; });
+  var closed = trades.filter(function(t){ return t._state === 'closed'; });
+  var openCount = trades.length - closed.length;
+  var wins = 0, totalPnl = 0, grossWin = 0, grossLoss = 0, best = 0, worst = 0;
+  closed.forEach(function(t){
+    var pnl = parseFloat(t.pnl || t.realized_pnl || 0);
+    totalPnl += pnl;
+    if(pnl > 0){ wins++; grossWin += pnl; if(pnl > best) best = pnl; }
+    else if(pnl < 0){ grossLoss += Math.abs(pnl); if(pnl < worst) worst = pnl; }
+  });
+  var winRate = closed.length ? Math.round((wins / closed.length) * 100) : 0;
+  var profitFactor = grossLoss > 0 ? (grossWin / grossLoss) : (grossWin > 0 ? Infinity : 0);
+  return {
+    totalTrades: trades.length,
+    closedTrades: closed.length,
+    openTrades: openCount,
+    wins: wins,
+    losses: closed.length - wins,
+    winRate: winRate,
+    totalPnl: totalPnl,
+    profitFactor: profitFactor,
+    best: best,
+    worst: worst,
+    closedList: closed
+  };
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────
+function _ppSwitchTab(tab){
+  _ppCurrentTab = tab;
+  document.querySelectorAll('.pp-tab').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-pp-tab') === tab);
+  });
+  ['trades','strategies','analytics'].forEach(function(t){
+    var el = document.getElementById('pp-tab-' + t + '-content');
+    if(el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  // Toolbar switching
+  var tbT = document.getElementById('pp-toolbar-trades');
+  var tbS = document.getElementById('pp-toolbar-strategies');
+  if(tbT) tbT.style.display = (tab === 'trades')   ? 'flex' : 'none';
+  if(tbS) tbS.style.display = (tab === 'strategies')? 'flex' : 'none';
+
+  if(tab === 'strategies') _ppRenderStrategies();
+  else if(tab === 'analytics') _ppRenderAnalytics();
+}
+
+function _ppStrSetFilter(filter){
+  _ppStrFilter = filter;
+  document.querySelectorAll('.pp-str-filter').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-pp-str-filter') === filter);
+  });
+  _ppRenderStrategies();
+}
+
+// ── Strategies list rendering ──────────────────────────────────────────
+function _ppRenderStrategies(){
+  var box = document.getElementById('pp-strategies-list');
+  if(!box) return;
+  var all = _ppStrategiesLoad();
+  // Update tab badge count
+  var cnt = document.getElementById('pp-tab-strategies-count');
+  if(cnt) cnt.textContent = all.length;
+
+  var list = _ppStrFilter === 'all' ? all : all.filter(function(s){ return s.status === _ppStrFilter; });
+  if(!list.length){
+    box.innerHTML = '<div class="pp-str-empty">'
+      + '<div class="pp-str-empty-icon">🎯</div>'
+      + '<div class="pp-str-empty-title">' + (all.length ? 'Нет стратегий с этим статусом' : 'Стратегий пока нет') + '</div>'
+      + '<div class="pp-str-empty-desc">Создай первую стратегию чтобы структурировать торговую гипотезу. Потом при открытии сделки в Paper Trading сможешь привязать её к этой стратегии — и увидеть отдельную статистику.</div>'
+      + '</div>';
+    return;
+  }
+
+  box.innerHTML = list.map(function(s){
+    var st = _ppStrategyStats(s.id);
+    var pnlClass = st.totalPnl > 0 ? 'pos' : (st.totalPnl < 0 ? 'neg' : '');
+    var pfStr = st.profitFactor === Infinity ? '∞' : (st.profitFactor ? st.profitFactor.toFixed(2) : '—');
+    var statusLabel = s.status === 'testing' ? '🧪 Тестируется'
+                    : s.status === 'validated' ? '✅ Подтверждена'
+                    : '🗑 Отброшена';
+    var tagsHtml = (s.tags || []).map(function(t){ return '<span class="pp-str-tag">#' + _esc2safe(t) + '</span>'; }).join('');
+    var tfHtml = s.timeframe ? '<span style="font-size:11px;color:var(--text3);">⏱ ' + _esc2safe(s.timeframe) + '</span>' : '';
+    var sideHtml = s.side && s.side !== 'both' ? '<span style="font-size:11px;color:var(--text3);">' + (s.side === 'long' ? '📈 Long only' : '📉 Short only') + '</span>' : '';
+
+    return '<div class="pp-str-card" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
+      + '<div class="pp-str-card-head">'
+      +   '<div class="pp-str-card-name">' + _esc2safe(s.name) + '</div>'
+      +   '<div class="pp-str-card-status ' + s.status + '">' + statusLabel + '</div>'
+      + '</div>'
+      + (s.hypothesis ? '<div class="pp-str-card-hypothesis">' + _esc2safe(s.hypothesis) + '</div>' : '')
+      + '<div class="pp-str-card-stats">'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Сделок</div><div class="pp-str-stat-val">' + st.totalTrades + (st.openTrades ? ' <span style="font-size:10px;color:#f59e0b;">(' + st.openTrades + ' откр.)</span>' : '') + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Винрейт</div><div class="pp-str-stat-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">P&amp;L</div><div class="pp-str-stat-val ' + pnlClass + '">' + (st.closedTrades ? (st.totalPnl > 0 ? '+' : '') + '$' + Math.abs(st.totalPnl).toFixed(0) : '—') + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Profit factor</div><div class="pp-str-stat-val">' + pfStr + '</div></div>'
+      + '</div>'
+      + (tfHtml || sideHtml || tagsHtml ? '<div class="pp-str-card-meta">' + tfHtml + sideHtml + tagsHtml + '</div>' : '')
+      + '<div class="pp-str-card-actions">'
+      +   '<button onclick="event.stopPropagation();_ppOpenStrategyModal(\'' + s.id + '\')">✏ Редактировать</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function _esc2safe(s){
+  return String(s||'').replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+}
+
+// ── Strategy modal (create/edit) ───────────────────────────────────────
+function _ppOpenStrategyModal(id){
+  _ppEditingStrategyId = id || null;
+  var s = id ? _ppStrategyById(id) : null;
+  document.getElementById('pp-str-modal-title').textContent = s ? 'Редактирование стратегии' : 'Новая стратегия';
+  document.getElementById('pp-str-name').value         = (s && s.name) || '';
+  document.getElementById('pp-str-hypothesis').value   = (s && s.hypothesis) || '';
+  document.getElementById('pp-str-timeframe').value    = (s && s.timeframe) || '';
+  document.getElementById('pp-str-side').value         = (s && s.side) || 'both';
+  document.getElementById('pp-str-status').value       = (s && s.status) || 'testing';
+  document.getElementById('pp-str-entry').value        = (s && s.entry_rules) || '';
+  document.getElementById('pp-str-exit').value         = (s && s.exit_rules) || '';
+  document.getElementById('pp-str-risk').value         = (s && s.risk_rules) || '';
+  document.getElementById('pp-str-tags').value         = (s && s.tags) ? s.tags.join(', ') : '';
+  document.getElementById('pp-str-notes').value        = (s && s.notes) || '';
+  document.getElementById('pp-str-delete-btn').style.display = id ? '' : 'none';
+  document.getElementById('pp-strategy-modal').style.display = 'flex';
+  setTimeout(function(){ var f = document.getElementById('pp-str-name'); if(f) f.focus(); }, 50);
+}
+
+function _ppCloseStrategyModal(){
+  document.getElementById('pp-strategy-modal').style.display = 'none';
+  _ppEditingStrategyId = null;
+}
+
+function _ppStrategySave(){
+  var name = document.getElementById('pp-str-name').value.trim();
+  if(!name){ alert('Введи название стратегии'); return; }
+  var tagsRaw = document.getElementById('pp-str-tags').value.trim();
+  var tags = tagsRaw ? tagsRaw.split(',').map(function(t){return t.trim();}).filter(Boolean) : [];
+
+  var list = _ppStrategiesLoad();
+  var now = Date.now();
+  var rec;
+  if(_ppEditingStrategyId){
+    rec = list.find(function(s){ return s.id === _ppEditingStrategyId; });
+    if(!rec){ alert('Стратегия не найдена'); return; }
+  } else {
+    rec = { id: 'str_' + now + '_' + Math.floor(Math.random()*1000), created_at: now };
+    list.push(rec);
+  }
+  rec.name        = name;
+  rec.hypothesis  = document.getElementById('pp-str-hypothesis').value.trim();
+  rec.timeframe   = document.getElementById('pp-str-timeframe').value;
+  rec.side        = document.getElementById('pp-str-side').value;
+  rec.status      = document.getElementById('pp-str-status').value;
+  rec.entry_rules = document.getElementById('pp-str-entry').value.trim();
+  rec.exit_rules  = document.getElementById('pp-str-exit').value.trim();
+  rec.risk_rules  = document.getElementById('pp-str-risk').value.trim();
+  rec.tags        = tags;
+  rec.notes       = document.getElementById('pp-str-notes').value.trim();
+  rec.updated_at  = now;
+
+  _ppStrategiesSave(list);
+  _ppCloseStrategyModal();
+  _ppRenderStrategies();
+  try{ showToast2('✓ Стратегия сохранена'); }catch(e){}
+}
+
+function _ppStrategyDelete(){
+  if(!_ppEditingStrategyId) return;
+  if(!confirm('Удалить эту стратегию? Связанные сделки останутся, но потеряют привязку.')) return;
+  var list = _ppStrategiesLoad().filter(function(s){ return s.id !== _ppEditingStrategyId; });
+  _ppStrategiesSave(list);
+  // Unlink trades that referenced this strategy
+  try{
+    var d = _ppLoad();
+    if(d){
+      (d.positions||[]).forEach(function(p){ if(p.strategy_id === _ppEditingStrategyId) delete p.strategy_id; });
+      (d.history||[]).forEach(function(h){ if(h.strategy_id === _ppEditingStrategyId) delete h.strategy_id; });
+      _ppSave(d);
+    }
+  }catch(e){}
+  _ppCloseStrategyModal();
+  _ppRenderStrategies();
+  try{ showToast2('🗑 Стратегия удалена'); }catch(e){}
+}
+
+// ── Strategy detail modal ──────────────────────────────────────────────
+function _ppOpenStrategyDetail(id){
+  var s = _ppStrategyById(id);
+  if(!s) return;
+  document.getElementById('pp-str-det-name').textContent = s.name;
+  var statusLabel = s.status === 'testing' ? '🧪 Тестируется' : s.status === 'validated' ? '✅ Подтверждена' : '🗑 Отброшена';
+  document.getElementById('pp-str-det-status').textContent = statusLabel + (s.timeframe ? ' · ' + s.timeframe : '');
+
+  var st = _ppStrategyStats(id);
+  var pnlClass = st.totalPnl > 0 ? 'pos' : (st.totalPnl < 0 ? 'neg' : '');
+  var pfStr = st.profitFactor === Infinity ? '∞' : (st.profitFactor ? st.profitFactor.toFixed(2) : '—');
+
+  var body = document.getElementById('pp-str-detail-body');
+  if(!body) return;
+
+  var html = '';
+  // Hypothesis + rules
+  if(s.hypothesis){
+    html += '<div class="pp-str-field"><label>Гипотеза</label><div style="font-size:13px;color:var(--text);line-height:1.55;">' + _esc2safe(s.hypothesis) + '</div></div>';
+  }
+  var ruleHtml = function(title, val){
+    return val ? '<div class="pp-str-field"><label>' + title + '</label><div style="font-size:12.5px;color:var(--text2);line-height:1.5;white-space:pre-wrap;">' + _esc2safe(val) + '</div></div>' : '';
+  };
+  html += ruleHtml('Правила входа', s.entry_rules);
+  html += ruleHtml('Правила выхода', s.exit_rules);
+  html += ruleHtml('Риск-менеджмент', s.risk_rules);
+  if(s.notes) html += ruleHtml('Заметки', s.notes);
+
+  // Stats
+  html += '<div style="margin-top:18px;"><label style="display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Метрики</label>'
+    + '<div class="pp-an-summary">'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Сделок</div><div class="pp-an-kpi-val">' + st.totalTrades + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Закрытых</div><div class="pp-an-kpi-val">' + st.closedTrades + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Винрейт</div><div class="pp-an-kpi-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (st.closedTrades ? (st.totalPnl > 0 ? '+' : '') + '$' + Math.abs(st.totalPnl).toFixed(2) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Profit factor</div><div class="pp-an-kpi-val">' + pfStr + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Лучшая</div><div class="pp-an-kpi-val pos">' + (st.best > 0 ? '+$' + st.best.toFixed(0) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Худшая</div><div class="pp-an-kpi-val neg">' + (st.worst < 0 ? '−$' + Math.abs(st.worst).toFixed(0) : '—') + '</div></div>'
+    + '</div></div>';
+
+  // Trades list
+  if(st.closedList && st.closedList.length){
+    html += '<div style="margin-top:18px;"><label style="display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">История сделок (' + st.closedList.length + ')</label>'
+      + '<table class="pp-an-table"><thead><tr>'
+      + '<th>Закрыто</th><th>Монета</th><th>Сторона</th><th>P&amp;L</th>'
+      + '</tr></thead><tbody>'
+      + st.closedList.slice().reverse().slice(0,30).map(function(t){
+          var pnl = parseFloat(t.pnl||0);
+          var pnlCls = pnl > 0 ? 'pos' : (pnl < 0 ? 'neg' : '');
+          var dt = t.closed_at ? new Date(t.closed_at) : (t.opened_at ? new Date(t.opened_at) : null);
+          var dtStr = dt ? (dt.getMonth()+1) + '/' + dt.getDate() + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0') : '—';
+          var sideTxt = t.side === 'long' || t.side === 'buy' ? '📈 Long' : '📉 Short';
+          return '<tr><td style="white-space:nowrap;color:var(--text3);font-size:12px;">' + dtStr + '</td><td><strong>' + _esc2safe(t.symbol||t.coin||'—') + '</strong></td><td>' + sideTxt + '</td><td style="text-align:right;font-weight:700;" class="' + pnlCls + '">' + (pnl > 0 ? '+' : '') + '$' + pnl.toFixed(2) + '</td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+  } else {
+    html += '<div style="margin-top:18px;padding:24px;text-align:center;background:var(--card-bg);border-radius:10px;color:var(--text3);font-size:13px;line-height:1.5;">'
+      + 'Сделок по этой стратегии ещё нет.<br>Открой позицию в Paper Trading и привяжи её к стратегии — статистика появится здесь.</div>';
+  }
+
+  // Actions footer
+  html += '<div style="margin-top:18px;display:flex;gap:8px;">'
+    + '<button class="pp-str-cancel-btn" onclick="_ppCloseStrategyDetail();_ppOpenStrategyModal(\'' + id + '\')">✏ Редактировать</button>'
+    + '</div>';
+
+  body.innerHTML = html;
+  document.getElementById('pp-strategy-detail-modal').style.display = 'flex';
+}
+
+function _ppCloseStrategyDetail(){
+  document.getElementById('pp-strategy-detail-modal').style.display = 'none';
+}
+
+// ── Analytics tab (cross-strategy overview) ────────────────────────────
+function _ppRenderAnalytics(){
+  var wrap = document.getElementById('pp-analytics-wrap');
+  if(!wrap) return;
+  var strategies = _ppStrategiesLoad();
+  if(!strategies.length){
+    wrap.innerHTML = '<div class="pp-str-empty">'
+      + '<div class="pp-str-empty-icon">📈</div>'
+      + '<div class="pp-str-empty-title">Аналитика появится когда будут стратегии</div>'
+      + '<div class="pp-str-empty-desc">Создай стратегии во вкладке 🎯 Стратегии, привяжи к ним сделки — и здесь будет сравнение их эффективности.</div>'
+      + '</div>';
+    return;
+  }
+  var rows = strategies.map(function(s){
+    return Object.assign({ _strategy: s }, _ppStrategyStats(s.id));
+  });
+  // Sort by P&L desc
+  rows.sort(function(a,b){ return b.totalPnl - a.totalPnl; });
+
+  // Aggregate KPIs
+  var totalTrades = 0, totalClosed = 0, totalWins = 0, totalPnl = 0;
+  rows.forEach(function(r){
+    totalTrades += r.totalTrades;
+    totalClosed += r.closedTrades;
+    totalWins   += r.wins;
+    totalPnl    += r.totalPnl;
+  });
+  var overallWR = totalClosed ? Math.round((totalWins/totalClosed)*100) : 0;
+  var pnlClass = totalPnl > 0 ? 'pos' : (totalPnl < 0 ? 'neg' : '');
+
+  var html = '<div class="pp-an-summary">'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Стратегий</div><div class="pp-an-kpi-val">' + strategies.length + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Всего сделок</div><div class="pp-an-kpi-val">' + totalTrades + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Винрейт</div><div class="pp-an-kpi-val">' + (totalClosed ? overallWR + '%' : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Общий P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalClosed ? (totalPnl > 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(0) : '—') + '</div></div>'
+    + '</div>';
+
+  html += '<table class="pp-an-table"><thead><tr>'
+    + '<th>Стратегия</th><th>Статус</th><th>Сделок</th><th>Винрейт</th><th>P&amp;L</th><th>PF</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(function(r){
+        var s = r._strategy;
+        var pnlCls = r.totalPnl > 0 ? 'pos' : (r.totalPnl < 0 ? 'neg' : '');
+        var pf = r.profitFactor === Infinity ? '∞' : (r.profitFactor ? r.profitFactor.toFixed(2) : '—');
+        var statusLabel = s.status === 'testing' ? '🧪' : s.status === 'validated' ? '✅' : '🗑';
+        return '<tr style="cursor:pointer;" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
+          + '<td><strong style="color:var(--text);">' + _esc2safe(s.name) + '</strong></td>'
+          + '<td>' + statusLabel + '</td>'
+          + '<td>' + r.totalTrades + '</td>'
+          + '<td>' + (r.closedTrades ? r.winRate + '%' : '—') + '</td>'
+          + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.closedTrades ? (r.totalPnl > 0 ? '+' : '') + '$' + Math.abs(r.totalPnl).toFixed(0) : '—') + '</td>'
+          + '<td>' + pf + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+
+  wrap.innerHTML = html;
+}
+
+// Initial tab count update when entering paper page
+function _ppUpdateStrategyTabCount(){
+  var cnt = document.getElementById('pp-tab-strategies-count');
+  if(cnt) cnt.textContent = _ppStrategiesLoad().length;
+}
 // v2.1.161 — market vs limit order type for the open-position modal.
 // 'market' = open immediately at current Binance price (entry input is auto-filled).
 // 'limit'  = save as pending; converts to open when price crosses the entry level.
@@ -17180,6 +17744,7 @@ var STORAGE_KEYS = {
     'app_lang','app_theme','app_tz','dv_funding_period','tt_theme','tt_v2',
     // Missing keys that were NOT syncing (causing web/desktop data drift):
     'paper_portfolio_v1',         // Paper Trading state
+    'paper_strategies_v1',        // Paper Trading strategies (hypotheses + analytics)
     'ds_custom_widgets_v1',       // Dashboard custom widgets config
     'pre_check_v1',               // Pre-trade checklist state
     'cooling_off_v1',              // Cooling-off after losses (psycho-protect)
