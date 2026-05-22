@@ -3130,6 +3130,17 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 }
 .tb-signin-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,58,237,.35);}
 .tb-signin-btn:active{transform:translateY(0);}
+
+/* ── "Back to site" button in toolbar (web-only) ── */
+.tb-back-btn{
+  background:var(--card-bg);border:1px solid var(--border);color:var(--text2);
+  border-radius:20px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;
+  font-family:inherit;text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:transform .14s,box-shadow .14s,border-color .14s,color .14s;
+}
+.tb-back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent);box-shadow:0 4px 12px rgba(124,58,237,.18);}
+.tb-back-btn:active{transform:translateY(0);}
 </style>
 <style id="theme-style">
 :root{--bg:#f0efe9;--text:#1a1a18;--sub:#6b6b67;--muted:#9a9a96;--card-bg:#fff;--border:rgba(0,0,0,.17);--topbar:#1a1a18;--input-bg:#fff;--shadow:rgba(0,0,0,.08);}
@@ -3328,6 +3339,11 @@ body{background:var(--bg) !important;color:var(--text) !important;}
     <header class="topbar">
       <div class="tb-title" id="tb-page-title">Обзор</div>
       <div class="tb-right">
+        <!-- "Back to landing site" button — visible only in web (hidden in Electron desktop) -->
+        <a class="tb-back-btn" id="tb-back-btn" href="/" style="display:none;" title="Вернуться на сайт" data-tip-ru="Вернуться на сайт" data-tip-en="Back to site">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span data-ru="На сайт" data-en="To site">На сайт</span>
+        </a>
         <div class="tb-live-wrap" id="tb-live-wrap">
           <div class="tb-live" onclick="toggleTzMenu()">
             <span class="tb-live-dot"></span>
@@ -19663,6 +19679,19 @@ window.addEventListener('DOMContentLoaded',function(){
   _updateThemeBtn();
   _updateLiveTime();
   _updateLangLabel();
+  // Show "Back to site" button only in web (hidden in Electron desktop app)
+  try{
+    var isElectron = !!(window.electronAPI || (window.process && window.process.versions && window.process.versions.electron));
+    var backBtn = document.getElementById('tb-back-btn');
+    if(backBtn && !isElectron){
+      backBtn.style.display = 'inline-flex';
+      // Translate label according to current language
+      var lang = (typeof getLang==='function') ? getLang() : 'ru';
+      var span = backBtn.querySelector('span');
+      if(span) span.textContent = (lang==='en' ? 'To site' : 'На сайт');
+      backBtn.title = (lang==='en' ? 'Back to site' : 'Вернуться на сайт');
+    }
+  }catch(e){}
   // (Old sb-name-input handler removed — name is now edited via Settings modal → Приложение tab,
   //  or via Personal Cabinet → Profile edit modal.)
   // Periodic refresh
