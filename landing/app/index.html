@@ -2831,6 +2831,9 @@ html[data-theme="light"] .ag-btn.oauth.apple{background:#000;color:#fff;}
 /* Hide OAuth row in Electron desktop (full-page redirect doesn't work there) */
 html[data-app-runtime="electron"] .ag-oauth-only-web{display:none !important;}
 html[data-app-runtime="electron"] .ag-oauth-sep{display:none !important;}
+/* Hide "← To site" button in Electron desktop (there's no site to return to —
+   the desktop app is the standalone product). Web build keeps it. */
+html[data-app-runtime="electron"] #tb-back-btn{display:none !important;}
 
 /* ══ ADMIN PANEL ═════════════════════════════════════════════════════════ */
 .adm-page{padding:24px 28px;max-width:1400px;margin:0 auto;}
@@ -3204,9 +3207,21 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
     // Anything fails → default to guest (safer to show sign-in CTA)
     document.documentElement.setAttribute('data-auth-state', 'guest');
   }
-  // Mark runtime (electron vs web) — CSS uses this to hide OAuth buttons in desktop
+  // Mark runtime (electron vs web) — CSS uses this to hide OAuth buttons,
+  // the "← To site" button, and other web-only UI in the desktop build.
+  // Detection is multi-pronged because preload.js doesn't expose window.process
+  // (contextIsolation is on) and doesn't expose a generic `electronAPI`:
+  //   1) navigator.userAgent contains "Electron/X.Y.Z" → 100% reliable
+  //   2) one of our preload-exposed globals (window.AI, window.iCloud, etc) exists
+  //   3) fall-back to window.process check for non-isolated Electron builds
   try{
-    var isElectron = !!(window.process && window.process.versions && window.process.versions.electron);
+    var ua = ((navigator && navigator.userAgent) || '').toLowerCase();
+    var hasPreloadGlobal = (typeof window.iCloud !== 'undefined')
+                        || (typeof window.AI !== 'undefined')
+                        || (typeof window.AppShell !== 'undefined')
+                        || (typeof window.electronAPI !== 'undefined');
+    var hasProcess = !!(window.process && window.process.versions && window.process.versions.electron);
+    var isElectron = ua.indexOf('electron') !== -1 || hasPreloadGlobal || hasProcess;
     document.documentElement.setAttribute('data-app-runtime', isElectron ? 'electron' : 'web');
   }catch(_){ document.documentElement.setAttribute('data-app-runtime', 'web'); }
 })();
@@ -19771,11 +19786,14 @@ window.addEventListener('DOMContentLoaded',function(){
   _updateThemeBtn();
   _updateLiveTime();
   _updateLangLabel();
-  // Show "Back to site" button only in web (hidden in Electron desktop app)
+  // Show "Back to site" button only in web (hidden in Electron desktop app).
+  // The CSS rule for html[data-app-runtime="electron"] also hides it, so this
+  // is just to ensure the inline display:inline-flex doesn't override the CSS.
+  // We rely on the data-app-runtime attribute set by the pre-paint script.
   try{
-    var isElectron = !!(window.electronAPI || (window.process && window.process.versions && window.process.versions.electron));
+    var runtime = document.documentElement.getAttribute('data-app-runtime') || 'web';
     var backBtn = document.getElementById('tb-back-btn');
-    if(backBtn && !isElectron){
+    if(backBtn && runtime !== 'electron'){
       backBtn.style.display = 'inline-flex';
       // Translate label according to current language
       var lang = (typeof getLang==='function') ? getLang() : 'ru';
