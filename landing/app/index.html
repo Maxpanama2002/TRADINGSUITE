@@ -23912,6 +23912,18 @@ function _showGuestAiLimitModal(used, limit){
   // Avoid stacking duplicates if the user keeps hitting send
   if(document.getElementById('guest-ai-limit-modal')) return;
   var en = (typeof getLang==='function' && getLang()==='en');
+  // Build the bilingual strings up front so the concat chain below stays
+  // simple — embedding a multi-line ternary into a string-concat chain with
+  // leading-`+` operators broke JS parsing in earlier builds (caused a global
+  // SyntaxError that disabled ALL inline scripts on the page).
+  var titleTxt   = en ? 'You\'ve used your free AI trial' : 'Бесплатные сообщения закончились';
+  var descTxt    = en
+    ? ('Guest mode includes <strong style="color:var(--text);">' + limit + ' free AI messages</strong>. Register a free account to keep chatting — unlimited messages on the Pro plan.')
+    : ('В гостевом режиме доступно <strong style="color:var(--text);">' + limit + ' бесплатных AI-сообщений</strong>. Зарегистрируйтесь бесплатно, чтобы продолжить — на Pro безлимит сообщений.');
+  var registerTxt = en ? '✦ Register — free' : '✦ Зарегистрироваться — бесплатно';
+  var signinTxt   = en ? 'I already have an account — sign in' : 'У меня уже есть аккаунт — войти';
+  var laterTxt    = en ? 'Later' : 'Позже';
+
   var ov = document.createElement('div');
   ov.id = 'guest-ai-limit-modal';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100060;display:flex;align-items:center;justify-content:center;padding:20px;animation:gAiFadeIn .22s ease;';
@@ -23919,24 +23931,12 @@ function _showGuestAiLimitModal(used, limit){
     '<style>@keyframes gAiFadeIn{from{opacity:0}to{opacity:1}}@keyframes gAiSlideIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}</style>'
     + '<div style="background:var(--card-bg);border:1px solid var(--border2);border-radius:18px;max-width:440px;width:100%;padding:28px 26px 22px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:gAiSlideIn .26s ease;">'
     +   '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;color:#fff;box-shadow:0 8px 22px rgba(124,58,237,.4);">✦</div>'
-    +   '<div style="font-size:19px;font-weight:800;text-align:center;color:var(--text);margin-bottom:8px;letter-spacing:-.3px;">'
-    +     (en ? 'You\'ve used your free AI trial' : 'Бесплатные сообщения закончились')
-    +   '</div>'
-    +   '<div style="font-size:13.5px;color:var(--text2);text-align:center;line-height:1.55;margin-bottom:18px;">'
-    +     (en
-    +       ? 'Guest mode includes <strong style="color:var(--text);">' + limit + ' free AI messages</strong>. Register a free account to keep chatting — unlimited messages on the Pro plan.'
-    +       : 'В гостевом режиме доступно <strong style="color:var(--text);">' + limit + ' бесплатных AI-сообщений</strong>. Зарегистрируйтесь бесплатно, чтобы продолжить — на Pro безлимит сообщений.')
-    +   '</div>'
+    +   '<div style="font-size:19px;font-weight:800;text-align:center;color:var(--text);margin-bottom:8px;letter-spacing:-.3px;">' + titleTxt + '</div>'
+    +   '<div style="font-size:13.5px;color:var(--text2);text-align:center;line-height:1.55;margin-bottom:18px;">' + descTxt + '</div>'
     +   '<div style="display:flex;gap:8px;flex-direction:column;">'
-    +     '<button id="g-ai-register-btn" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s;">'
-    +       (en ? '✦ Register — free' : '✦ Зарегистрироваться — бесплатно')
-    +     '</button>'
-    +     '<button id="g-ai-signin-btn" style="background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:11px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">'
-    +       (en ? 'I already have an account — sign in' : 'У меня уже есть аккаунт — войти')
-    +     '</button>'
-    +     '<button id="g-ai-close-btn" style="background:transparent;color:var(--text3);border:none;padding:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">'
-    +       (en ? 'Later' : 'Позже')
-    +     '</button>'
+    +     '<button id="g-ai-register-btn" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s;">' + registerTxt + '</button>'
+    +     '<button id="g-ai-signin-btn" style="background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:11px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">' + signinTxt + '</button>'
+    +     '<button id="g-ai-close-btn" style="background:transparent;color:var(--text3);border:none;padding:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">' + laterTxt + '</button>'
     +   '</div>'
     + '</div>';
   ov.onclick = function(e){ if(e.target===ov) _closeGuestAiLimitModal(); };
