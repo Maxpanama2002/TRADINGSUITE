@@ -23863,7 +23863,7 @@ function _gateGuest(){
 // Sign in via OAuth (Google, Apple). Full-page redirect to Supabase /authorize,
 // which bounces through the provider and back to /app/?oauth=1#access_token=...
 // The hash is parsed by _agCheckEmailConfirmation on the return trip.
-function _gateOAuth(provider){
+async function _gateOAuth(provider){
   if(provider !== 'google' && provider !== 'apple'){
     try{ showToast2(_t('Неподдерживаемый провайдер','Unsupported provider')); }catch(e){}
     return;
@@ -23885,6 +23885,32 @@ function _gateOAuth(provider){
     var err = document.getElementById('ag-err');     if(err) err.style.display = 'none';
     var rerr = document.getElementById('ag-reg-err'); if(rerr) rerr.style.display = 'none';
   }catch(_){}
+  // PRE-CHECK: probe the authorize endpoint with redirect:'manual' so we can
+  // detect "Provider not enabled" before doing a full-page redirect (which
+  // would land the user on a JSON error page from Supabase).
+  try{
+    var btnEls = document.querySelectorAll('.ag-btn.oauth');
+    btnEls.forEach(function(b){ b.disabled = true; b.style.opacity = '0.6'; });
+    var probeUrl = CloudSync._url + '/auth/v1/authorize?provider=' + encodeURIComponent(provider);
+    var resp = await fetch(probeUrl, { method:'GET', redirect:'manual' });
+    btnEls.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+    // Successful = redirect to provider (opaqueredirect under CORS, or status 302)
+    // Failure = status 400 with JSON error (provider not enabled / not configured)
+    if(resp.status === 400){
+      var lang = (typeof getLang==='function') ? getLang() : 'ru';
+      var providerName = provider === 'google' ? 'Google' : 'Apple';
+      var errMsg = lang === 'en'
+        ? '⚙ ' + providerName + ' sign-in is not yet configured. Use email/password or ask the admin to enable it in Supabase.'
+        : '⚙ Вход через ' + providerName + ' пока не настроен. Используй email/пароль или попроси админа включить провайдер в Supabase.';
+      try{ showToast2(errMsg, 6000); }catch(_){ alert(errMsg); }
+      try{ window._logEvent && _logEvent('oauth_provider_not_enabled', { provider: provider }); }catch(_){}
+      return;
+    }
+  }catch(_){
+    // Network / CORS error — proceed with redirect anyway (fail open)
+    var btnEls2 = document.querySelectorAll('.ag-btn.oauth');
+    btnEls2.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+  }
   try{ window._logEvent && _logEvent('oauth_initiated', { provider: provider }); }catch(_){}
   CloudSync.auth.signInWithOAuth(provider);
 }
