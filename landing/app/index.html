@@ -4741,6 +4741,11 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
                   </div>
                 </div>
                 <div class="pp-str-field">
+                  <label data-ru="Бюджет стратегии, $" data-en="Strategy budget, $">Бюджет стратегии, $</label>
+                  <input type="number" id="pp-str-budget" min="0" step="any" placeholder="10000" data-ph-ru="10000" data-ph-en="10000">
+                  <div style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4;" data-ru="Стартовый депозит, на который тестируем стратегию. P&L и ROI считаются от этой суммы — так стратегии можно сравнивать честно." data-en="Starting capital for this strategy test. P&L and ROI are calculated against this amount — that's how strategies can be fairly compared.">Стартовый депозит, на который тестируем стратегию. P&amp;L и ROI считаются от этой суммы — так стратегии можно сравнивать честно.</div>
+                </div>
+                <div class="pp-str-field">
                   <label data-ru="Правила входа" data-en="Entry rules">Правила входа</label>
                   <textarea id="pp-str-entry" rows="2" placeholder="Условия для открытия позиции" data-ph-ru="Условия для открытия позиции" data-ph-en="Conditions for opening a position"></textarea>
                 </div>
@@ -15984,6 +15989,12 @@ function _ppStrategyStats(strategyId){
   });
   var winRate = closed.length ? Math.round((wins / closed.length) * 100) : 0;
   var profitFactor = grossLoss > 0 ? (grossWin / grossLoss) : (grossWin > 0 ? Infinity : 0);
+  // Per-strategy budget — read from the strategy record. Older strategies
+  // without a budget field default to 0, which means we show "—" for ROI.
+  var strategy = _ppStrategyById(strategyId) || {};
+  var budget = parseFloat(strategy.budget) || 0;
+  var currentBalance = budget + totalPnl;
+  var roi = budget > 0 ? (totalPnl / budget) * 100 : 0;
   return {
     totalTrades: trades.length,
     closedTrades: closed.length,
@@ -15995,7 +16006,11 @@ function _ppStrategyStats(strategyId){
     profitFactor: profitFactor,
     best: best,
     worst: worst,
-    closedList: closed
+    closedList: closed,
+    // New: per-strategy budget tracking
+    budget: budget,
+    currentBalance: currentBalance,
+    roi: roi
   };
 }
 
@@ -16057,12 +16072,24 @@ function _ppRenderStrategies(){
     var tfHtml = s.timeframe ? '<span style="font-size:11px;color:var(--text3);">⏱ ' + _esc2safe(s.timeframe) + '</span>' : '';
     var sideHtml = s.side && s.side !== 'both' ? '<span style="font-size:11px;color:var(--text3);">' + (s.side === 'long' ? '📈 Long only' : '📉 Short only') + '</span>' : '';
 
+    // Budget / balance / ROI line — only show if a budget is set (>0).
+    // Old strategies created before this feature have budget=0 → hidden.
+    var roiClass = st.roi > 0 ? 'pos' : (st.roi < 0 ? 'neg' : '');
+    var roiSign = st.roi >= 0 ? '+' : '';
+    var budgetRow = st.budget > 0
+      ? '<div class="pp-str-card-budget" style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:8px 12px;background:var(--card-bg);border-radius:8px;margin-bottom:10px;border:1px dashed var(--border);">'
+        + '<span style="color:var(--text3);">' + _t('Бюджет','Budget') + ' <strong style="color:var(--text);font-size:13px;">$' + st.budget.toFixed(0) + '</strong> → <strong style="color:var(--text);font-size:13px;">$' + st.currentBalance.toFixed(0) + '</strong></span>'
+        + '<span class="' + roiClass + '" style="font-weight:700;font-size:13px;">' + (st.closedTrades ? (roiSign + st.roi.toFixed(1) + '%') : '—') + '</span>'
+        + '</div>'
+      : '';
+
     return '<div class="pp-str-card" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
       + '<div class="pp-str-card-head">'
       +   '<div class="pp-str-card-name">' + _esc2safe(s.name) + '</div>'
       +   '<div class="pp-str-card-status ' + s.status + '">' + statusLabel + '</div>'
       + '</div>'
       + (s.hypothesis ? '<div class="pp-str-card-hypothesis">' + _esc2safe(s.hypothesis) + '</div>' : '')
+      + budgetRow
       + '<div class="pp-str-card-stats">'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-str-stat-val">' + st.totalTrades + (st.openTrades ? ' <span style="font-size:10px;color:#f59e0b;">(' + st.openTrades + ' ' + _t('откр.','open') + ')</span>' : '') + '</div></div>'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-str-stat-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
@@ -16115,6 +16142,7 @@ function _ppOpenStrategyModal(id){
   document.getElementById('pp-str-timeframe').value    = (s && s.timeframe) || '';
   document.getElementById('pp-str-side').value         = (s && s.side) || 'both';
   document.getElementById('pp-str-status').value       = (s && s.status) || 'testing';
+  document.getElementById('pp-str-budget').value       = (s && (s.budget || s.budget === 0)) ? s.budget : 10000;
   document.getElementById('pp-str-entry').value        = (s && s.entry_rules) || '';
   document.getElementById('pp-str-exit').value         = (s && s.exit_rules) || '';
   document.getElementById('pp-str-risk').value         = (s && s.risk_rules) || '';
@@ -16151,6 +16179,11 @@ function _ppStrategySave(){
   rec.timeframe   = document.getElementById('pp-str-timeframe').value;
   rec.side        = document.getElementById('pp-str-side').value;
   rec.status      = document.getElementById('pp-str-status').value;
+  // Per-strategy starting budget — used to compute ROI% so strategies can be
+  // compared fairly. Default $10,000 if user leaves blank; never negative.
+  var budgetRaw = document.getElementById('pp-str-budget').value.trim();
+  var budgetNum = budgetRaw === '' ? 10000 : Math.max(0, parseFloat(budgetRaw) || 0);
+  rec.budget      = budgetNum;
   rec.entry_rules = document.getElementById('pp-str-entry').value.trim();
   rec.exit_rules  = document.getElementById('pp-str-exit').value.trim();
   rec.risk_rules  = document.getElementById('pp-str-risk').value.trim();
@@ -16212,8 +16245,13 @@ function _ppOpenStrategyDetail(id){
   if(s.notes) html += ruleHtml(_t('Заметки','Notes'), s.notes);
 
   // Stats
+  var roiClassDet = st.roi > 0 ? 'pos' : (st.roi < 0 ? 'neg' : '');
+  var roiSignDet = st.roi >= 0 ? '+' : '';
   html += '<div style="margin-top:18px;"><label style="display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">' + _t('Метрики','Metrics') + '</label>'
     + '<div class="pp-an-summary">'
+    + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Бюджет','Budget') + '</div><div class="pp-an-kpi-val">$' + st.budget.toFixed(0) + '</div></div>' : '')
+    + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Сейчас','Current') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">$' + st.currentBalance.toFixed(0) + '</div></div>' : '')
+    + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">ROI</div><div class="pp-an-kpi-val ' + roiClassDet + '">' + (st.closedTrades ? (roiSignDet + st.roi.toFixed(1) + '%') : '—') + '</div></div>' : '')
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-an-kpi-val">' + st.totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Закрытых','Closed') + '</div><div class="pp-an-kpi-val">' + st.closedTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
@@ -16294,20 +16332,28 @@ function _ppRenderAnalytics(){
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalClosed ? (totalPnl > 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(0) : '—') + '</div></div>'
     + '</div>';
 
+  // ROI column added — it's the fair comparator across strategies because
+  // each strategy has its own starting budget. Strategies without a budget
+  // show "—" in the ROI column.
   html += '<table class="pp-an-table"><thead><tr>'
-    + '<th>' + _t('Стратегия','Strategy') + '</th><th>' + _t('Статус','Status') + '</th><th>' + _t('Сделок','Trades') + '</th><th>' + _t('Винрейт','Win-rate') + '</th><th>P&amp;L</th><th>PF</th>'
+    + '<th>' + _t('Стратегия','Strategy') + '</th><th>' + _t('Статус','Status') + '</th><th>' + _t('Бюджет','Budget') + '</th><th>' + _t('Сделок','Trades') + '</th><th>' + _t('Винрейт','Win-rate') + '</th><th>P&amp;L</th><th>ROI</th><th>PF</th>'
     + '</tr></thead><tbody>'
     + rows.map(function(r){
         var s = r._strategy;
         var pnlCls = r.totalPnl > 0 ? 'pos' : (r.totalPnl < 0 ? 'neg' : '');
+        var roiCls = r.roi > 0 ? 'pos' : (r.roi < 0 ? 'neg' : '');
         var pf = r.profitFactor === Infinity ? '∞' : (r.profitFactor ? r.profitFactor.toFixed(2) : '—');
         var statusLabel = s.status === 'testing' ? '🧪' : s.status === 'validated' ? '✅' : '🗑';
+        var budgetTxt = r.budget > 0 ? ('$' + r.budget.toFixed(0)) : '—';
+        var roiTxt = (r.budget > 0 && r.closedTrades) ? ((r.roi >= 0 ? '+' : '') + r.roi.toFixed(1) + '%') : '—';
         return '<tr style="cursor:pointer;" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
           + '<td><strong style="color:var(--text);">' + _esc2safe(s.name) + '</strong></td>'
           + '<td>' + statusLabel + '</td>'
+          + '<td style="color:var(--text3);">' + budgetTxt + '</td>'
           + '<td>' + r.totalTrades + '</td>'
           + '<td>' + (r.closedTrades ? r.winRate + '%' : '—') + '</td>'
           + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.closedTrades ? (r.totalPnl > 0 ? '+' : '') + '$' + Math.abs(r.totalPnl).toFixed(0) : '—') + '</td>'
+          + '<td class="' + roiCls + '" style="font-weight:700;">' + roiTxt + '</td>'
           + '<td>' + pf + '</td>'
           + '</tr>';
       }).join('')
