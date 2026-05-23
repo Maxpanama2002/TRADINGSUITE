@@ -21433,12 +21433,31 @@ function applyLang(l){
       el.placeholder = l==='en' ? (el.dataset.phEn || el.dataset.phRu) : el.dataset.phRu;
     });
   }catch(e){}
-  // Re-render Paper Trading dynamic JS content (strategy cards, analytics tables) on language switch
+  // Re-render Paper Trading dynamic JS content on language switch.
+  // Covers Trades tab (KPI cards subtitles, filter dropdown text, empty
+  // state in tables, "Updated …" timestamp), Strategies tab (empty state
+  // text + per-card stat labels), and Analytics tab (KPI labels + table
+  // headers). Without these calls, content rendered before the language
+  // switch stays in the old language because it's not driven by
+  // data-ru/data-en attributes.
   try{
+    if(typeof _ppRender === 'function'){ _ppRender(); }
     var strBox = document.getElementById('pp-strategies-list');
     if(strBox && strBox.children.length){ _ppRenderStrategies(); }
     var anWrap = document.getElementById('pp-analytics-wrap');
     if(anWrap && anWrap.innerHTML){ _ppRenderAnalytics(); }
+  }catch(e){}
+  // Re-render Trading Journal too — same problem there (empty state text,
+  // analytics labels, table headers were rendered with whatever the lang
+  // was at first paint).
+  try{
+    if(typeof renderJournal === 'function'){
+      // Only call when the user is actually on the Journal page, to avoid
+      // unnecessary DOM churn. The render is idempotent so calling extra
+      // wouldn't break anything, but this keeps switching languages snappy.
+      var jPage = document.getElementById('page-journal');
+      if(jPage && jPage.style.display !== 'none') renderJournal();
+    }
   }catch(e){}
 }
 function loadDashboardConfig(){try{var cfg=localStorage.getItem('dashboard_config_v1');return cfg?JSON.parse(cfg):{groupOrder:['trading','analysis','planning'],customNames:{},toolOrder:{},customToolNames:{}};}catch(e){return{groupOrder:['trading','analysis','planning'],customNames:{},toolOrder:{},customToolNames:{}};}}
