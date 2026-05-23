@@ -16337,11 +16337,13 @@ function _ppOpenStrategyDetail(id){
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Худшая','Worst') + '</div><div class="pp-an-kpi-val neg">' + (st.worst < 0 ? '−$' + Math.abs(st.worst).toFixed(0) : '—') + '</div></div>'
     + '</div></div>';
 
-  // Trades list
+  // Trades list — with a delete (×) action button per row. Uses
+  // _ppDelTradeFromStrat which mirrors _ppDeleteHistory but also re-renders
+  // this strategy detail modal so the trade disappears immediately.
   if(st.closedList && st.closedList.length){
     html += '<div style="margin-top:18px;"><label style="display:block;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">' + _t('История сделок','Trade history') + ' (' + st.closedList.length + ')</label>'
       + '<table class="pp-an-table"><thead><tr>'
-      + '<th>' + _t('Закрыто','Closed') + '</th><th>' + _t('Монета','Coin') + '</th><th>' + _t('Сторона','Side') + '</th><th>P&amp;L</th>'
+      + '<th>' + _t('Закрыто','Closed') + '</th><th>' + _t('Монета','Coin') + '</th><th>' + _t('Сторона','Side') + '</th><th>P&amp;L</th><th style="width:32px;"></th>'
       + '</tr></thead><tbody>'
       + st.closedList.slice().reverse().slice(0,30).map(function(t){
           var pnl = parseFloat(t.pnl||0);
@@ -16349,7 +16351,12 @@ function _ppOpenStrategyDetail(id){
           var dt = t.closed_at ? new Date(t.closed_at) : (t.opened_at ? new Date(t.opened_at) : null);
           var dtStr = dt ? (dt.getMonth()+1) + '/' + dt.getDate() + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0') : '—';
           var sideTxt = t.side === 'long' || t.side === 'buy' ? '📈 Long' : '📉 Short';
-          return '<tr><td style="white-space:nowrap;color:var(--text3);font-size:12px;">' + dtStr + '</td><td><strong>' + _esc2safe(t.symbol||t.coin||'—') + '</strong></td><td>' + sideTxt + '</td><td style="text-align:right;font-weight:700;" class="' + pnlCls + '">' + (pnl > 0 ? '+' : '') + '$' + pnl.toFixed(2) + '</td></tr>';
+          var tradeId = String(t.id || '');
+          var delTitle = _t('Удалить эту сделку','Delete this trade');
+          var delBtn = tradeId
+            ? '<button onclick="_ppDelTradeFromStrat(\'' + tradeId + '\',\'' + id + '\')" title="' + delTitle + '" style="background:none;border:1px solid var(--border);border-radius:6px;width:22px;height:22px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:13px;line-height:1;padding:0;">×</button>'
+            : '';
+          return '<tr><td style="white-space:nowrap;color:var(--text3);font-size:12px;">' + dtStr + '</td><td><strong>' + _esc2safe(t.symbol||t.coin||'—') + '</strong></td><td>' + sideTxt + '</td><td style="text-align:right;font-weight:700;" class="' + pnlCls + '">' + (pnl > 0 ? '+' : '') + '$' + pnl.toFixed(2) + '</td><td style="text-align:right;padding-right:4px;">' + delBtn + '</td></tr>';
         }).join('')
       + '</tbody></table></div>';
   } else {
@@ -16945,6 +16952,29 @@ function _ppDeleteHistory(id){
   _ppSave(d);
   _ppRender();
   try{ showToast2(_t('Запись удалена','Entry deleted')); }catch(e){}
+}
+
+// Delete a trade from inside the strategy detail modal. Same as
+// _ppDeleteHistory but also re-renders the open strategy detail modal +
+// the strategies list (so cross-strategy table reflects the change too).
+function _ppDelTradeFromStrat(tradeId, stratId){
+  if(!tradeId) return;
+  var msg = _t(
+    'Удалить эту сделку из истории?\nБаланс не изменится — убирается только запись.',
+    'Delete this trade from history?\nBalance is not changed — only the record is removed.'
+  );
+  if(!confirm(msg)) return;
+  var d = _ppLoad();
+  var idx = d.history.findIndex(function(h){ return h.id === tradeId; });
+  if(idx < 0) return;
+  d.history.splice(idx, 1);
+  _ppSave(d);
+  // Refresh views that show this trade
+  try{ _ppRender(); }catch(_){}
+  try{ if(stratId) _ppOpenStrategyDetail(stratId); }catch(_){}
+  try{ _ppRenderStrategies(); }catch(_){}
+  try{ _ppRenderAnalytics(); }catch(_){}
+  try{ showToast2(_t('Сделка удалена','Trade deleted')); }catch(_){}
 }
 // Массовое удаление истории — для кнопки рядом с ⌫ Сброс
 function _ppClearHistory(){
