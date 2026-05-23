@@ -5808,6 +5808,27 @@ window._APP_VERSION = '2.2.2';
 var _activeToolIdx = null;
 var _equityChart = null;
 
+// Whitelist of valid page IDs — keeps random hashes from triggering weird states.
+// Auto-built from PAGE_FEATURE_MAP plus a couple of free pages that aren't gated.
+window._VALID_PAGES = {
+  'dashboard':1,'profile':1,'new-trade':1,'tool':1,'admin':1,
+  'portfolio':1,'journal':1,'paper':1,'strategy':1,'futures':1,'options':1,'riskmanager':1,
+  'derivatives':1,'diary':1,'psycho':1,'watchlist':1,'stats':1,
+  'myday':1,'goalchart':1,'weekplan':1,'ideas':1,'ai':1
+};
+
+// Update the URL hash to reflect the active page so a browser refresh / shared link
+// restores the same view. Uses replaceState (no history entry) for in-app navigation
+// to avoid spamming back/forward; the initial load is restored from hash on DOMContentLoaded.
+function _syncUrlHash(page){
+  try{
+    if(!page || !window._VALID_PAGES[page]) return;
+    var current = (window.location.hash || '').replace(/^#/, '');
+    if(current === page) return; // already in sync, no-op
+    history.replaceState(null, '', '#' + page);
+  }catch(_){}
+}
+
 function navigateTo(page, toolIdx){
   // Pro/Free gating — only applies to AUTHENTICATED users.
   // Guests can browse the entire app (demo mode). Their write-actions are
@@ -5823,6 +5844,8 @@ function navigateTo(page, toolIdx){
     }
   }catch(e){}
   _activePage = page;
+  // Reflect new page in the URL hash so refresh/back doesn't snap to dashboard
+  try{ _syncUrlHash(page); }catch(_){}
   _activeToolIdx = (toolIdx !== undefined) ? toolIdx : null;
   // Update sidebar items
   document.querySelectorAll('.sb-item').forEach(function(el){
@@ -19815,6 +19838,29 @@ window.addEventListener('DOMContentLoaded',function(){
   _updateThemeBtn();
   _updateLiveTime();
   _updateLangLabel();
+
+  // ── Restore page from URL hash on initial load ─────────────────────────
+  // Without this, refreshing the page on /app#portfolio would still show
+  // Dashboard because navigateTo state is in-memory only. Run AFTER a small
+  // delay so other init code (CloudSync session restore, profile render)
+  // gets a chance to finish first.
+  setTimeout(function(){
+    try{
+      var hash = (window.location.hash || '').replace(/^#/, '');
+      if(hash && window._VALID_PAGES && window._VALID_PAGES[hash] && hash !== 'dashboard'){
+        navigateTo(hash);
+      }
+    }catch(_){}
+  }, 100);
+  // Browser back/forward — react to hash change
+  window.addEventListener('hashchange', function(){
+    try{
+      var hash = (window.location.hash || '').replace(/^#/, '') || 'dashboard';
+      if(window._VALID_PAGES && window._VALID_PAGES[hash] && hash !== _activePage){
+        navigateTo(hash);
+      }
+    }catch(_){}
+  });
   // Show "Back to site" button only in web (hidden in Electron desktop app).
   // The CSS rule for html[data-app-runtime="electron"] also hides it, so this
   // is just to ensure the inline display:inline-flex doesn't override the CSS.
