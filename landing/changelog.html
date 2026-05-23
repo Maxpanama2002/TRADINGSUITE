@@ -39,6 +39,22 @@
 
     <div class="cl-entry">
       <div class="cl-head">
+        <span class="cl-ver">v2.3.0</span>
+        <span class="cl-date">2026-05-22</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Авторизация через Google и Apple ID.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>🔐 OAuth Google и Apple iCloud</b> — кнопки на формах входа и регистрации. Один клик — и ты в аккаунте, без пароля. Реализовано через Supabase OAuth (full-page redirect через провайдера и обратно с токеном).</li>
+          <li><b>Что нужно для запуска:</b> в Supabase Dashboard → Authentication → Providers нужно включить Google и Apple, прописать ключи из Google Cloud Console и Apple Developer Portal.</li>
+          <li>В Electron-десктопе кнопки скрыты (full-page redirect не работает), там доступен email/password.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cl-entry">
+      <div class="cl-head">
         <span class="cl-ver">v2.2.5</span>
         <span class="cl-date">2026-05-22</span>
         <span class="cl-tag fix">fix</span>

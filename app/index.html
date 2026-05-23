@@ -2818,6 +2818,20 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ag-guest-sep{display:flex;align-items:center;gap:8px;margin:8px 0 4px;color:var(--text3);font-size:11px;}
 .ag-guest-sep::before,.ag-guest-sep::after{content:'';flex:1;height:1px;background:var(--border);}
 
+/* OAuth provider buttons (Google, Apple) */
+.ag-oauth-row{display:flex;gap:8px;margin-top:8px;}
+.ag-btn.oauth{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card-bg);color:var(--text);border:1px solid var(--border);padding:10px;font-size:13px;font-weight:600;transition:all .14s;}
+.ag-btn.oauth:hover{transform:translateY(-1px);border-color:var(--text3);box-shadow:0 4px 14px rgba(0,0,0,.08);}
+.ag-btn.oauth:active{transform:translateY(0);}
+.ag-btn.oauth svg{width:18px;height:18px;flex-shrink:0;}
+.ag-btn.oauth.apple{background:#000;color:#fff;border-color:#000;}
+.ag-btn.oauth.apple:hover{background:#222;border-color:#222;}
+.ag-btn.oauth.apple svg{fill:#fff;}
+html[data-theme="light"] .ag-btn.oauth.apple{background:#000;color:#fff;}
+/* Hide OAuth row in Electron desktop (full-page redirect doesn't work there) */
+html[data-app-runtime="electron"] .ag-oauth-only-web{display:none !important;}
+html[data-app-runtime="electron"] .ag-oauth-sep{display:none !important;}
+
 /* ══ ADMIN PANEL ═════════════════════════════════════════════════════════ */
 .adm-page{padding:24px 28px;max-width:1400px;margin:0 auto;}
 .adm-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:14px;flex-wrap:wrap;}
@@ -3190,6 +3204,11 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
     // Anything fails → default to guest (safer to show sign-in CTA)
     document.documentElement.setAttribute('data-auth-state', 'guest');
   }
+  // Mark runtime (electron vs web) — CSS uses this to hide OAuth buttons in desktop
+  try{
+    var isElectron = !!(window.process && window.process.versions && window.process.versions.electron);
+    document.documentElement.setAttribute('data-app-runtime', isElectron ? 'electron' : 'web');
+  }catch(_){ document.documentElement.setAttribute('data-app-runtime', 'web'); }
 })();
 </script>
 
@@ -17990,6 +18009,37 @@ var CloudSync = {
       return r; // {ok, error?, status?}
     },
 
+    // Sign in via OAuth provider (Google, Apple, etc).
+    // Redirects the user to Supabase's /authorize endpoint, which then
+    // bounces to the provider. After successful auth, the provider redirects
+    // back to <our redirect_to> with #access_token=...&refresh_token=... in
+    // the hash — _agCheckEmailConfirmation parses this and saves the session.
+    //
+    // Provider setup required in Supabase Dashboard:
+    //   • Google: Authentication → Providers → Google → enable, paste
+    //     Client ID + Secret from Google Cloud Console (OAuth 2.0 credentials).
+    //     Add https://<project>.supabase.co/auth/v1/callback as the Google
+    //     authorized redirect URI.
+    //   • Apple: Authentication → Providers → Apple → enable, paste
+    //     Service ID + Team ID + Key ID + private key from Apple Developer.
+    //     Add the same Supabase /callback URL to the Service ID config.
+    signInWithOAuth: function(provider){
+      var redirectTo = null;
+      try{
+        var origin = window.location.origin;
+        if(origin && origin.indexOf('http') === 0){
+          redirectTo = origin + '/app/?oauth=1';
+        } else {
+          redirectTo = 'https://tradingsuite.vercel.app/app/?oauth=1';
+        }
+      }catch(e){ redirectTo = 'https://tradingsuite.vercel.app/app/?oauth=1'; }
+      var url = CloudSync._url + '/auth/v1/authorize?provider=' + encodeURIComponent(provider)
+              + '&redirect_to=' + encodeURIComponent(redirectTo);
+      // Full-page redirect: Supabase will round-trip via the provider and
+      // come back with tokens in the URL hash.
+      window.location.href = url;
+    },
+
     // Update password — requires a valid session (either signed in normally,
     // or restored from a recovery link).
     updatePassword: async function(newPassword){
@@ -23394,7 +23444,18 @@ window.replayOnboarding = function(){
       </div>
       <div id="ag-err" class="ag-err"></div>
       <button class="ag-btn primary" id="ag-signin-btn" onclick="_gateSignIn()" data-ru="Войти" data-en="Sign in">Войти</button>
-      <div class="ag-toggle-row">
+      <div class="ag-guest-sep ag-oauth-sep" data-ru="или войти через" data-en="or sign in with">или войти через</div>
+      <div class="ag-oauth-row ag-oauth-only-web">
+        <button class="ag-btn oauth google" onclick="_gateOAuth('google')" title="Google">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.61z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span>Google</span>
+        </button>
+        <button class="ag-btn oauth apple" onclick="_gateOAuth('apple')" title="Apple">
+          <svg viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span>Apple</span>
+        </button>
+      </div>
+      <div class="ag-toggle-row" style="margin-top:8px;">
         <a class="ag-link ag-link-muted" onclick="_agSwitchMode('reset-request')" data-ru="Забыли пароль?" data-en="Forgot password?">Забыли пароль?</a>
       </div>
       <div class="ag-toggle-row">
@@ -23447,7 +23508,18 @@ window.replayOnboarding = function(){
       <div class="ag-hint" data-ru="🔐 Пароль будет зашифрован. Мы не сможем его восстановить." data-en="🔐 Password is encrypted. We cannot recover it.">🔐 Пароль будет зашифрован. Мы не сможем его восстановить.</div>
       <div id="ag-reg-err" class="ag-err"></div>
       <button class="ag-btn primary" id="ag-register-btn" onclick="_gateRegister()" data-ru="Зарегистрироваться" data-en="Register">Зарегистрироваться</button>
-      <div class="ag-toggle-row">
+      <div class="ag-guest-sep ag-oauth-sep" data-ru="или зарегистрироваться через" data-en="or sign up with">или зарегистрироваться через</div>
+      <div class="ag-oauth-row ag-oauth-only-web">
+        <button class="ag-btn oauth google" onclick="_gateOAuth('google')" title="Google">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.61z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span>Google</span>
+        </button>
+        <button class="ag-btn oauth apple" onclick="_gateOAuth('apple')" title="Apple">
+          <svg viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span>Apple</span>
+        </button>
+      </div>
+      <div class="ag-toggle-row" style="margin-top:8px;">
         <span data-ru="Уже есть аккаунт?" data-en="Already have an account?">Уже есть аккаунт?</span>
         <a class="ag-link" onclick="_agSwitchMode('signin')" data-ru="Войти" data-en="Sign in">Войти</a>
       </div>
@@ -23788,6 +23860,35 @@ function _gateGuest(){
   setTimeout(_guestModeActivate, 80); // after gate hides
 }
 
+// Sign in via OAuth (Google, Apple). Full-page redirect to Supabase /authorize,
+// which bounces through the provider and back to /app/?oauth=1#access_token=...
+// The hash is parsed by _agCheckEmailConfirmation on the return trip.
+function _gateOAuth(provider){
+  if(provider !== 'google' && provider !== 'apple'){
+    try{ showToast2(_t('Неподдерживаемый провайдер','Unsupported provider')); }catch(e){}
+    return;
+  }
+  // In Electron desktop, full-page redirect would break the app —
+  // user has to authenticate via the web version. Block with a helpful toast.
+  var isElectron = !!(window.electronAPI || (window.process && window.process.versions && window.process.versions.electron));
+  if(isElectron){
+    var url = 'https://tradingsuite.vercel.app/app/';
+    var msg = _t(
+      'OAuth через ' + provider + ' доступен только в веб-версии. Открой ' + url + ' и войди там — данные синхронизируются.',
+      'OAuth via ' + provider + ' is web-only. Open ' + url + ' and sign in there — your data will sync.'
+    );
+    try{ showToast2(msg, 6000); }catch(_){ alert(msg); }
+    return;
+  }
+  // Hide any error/banner before navigating away
+  try{
+    var err = document.getElementById('ag-err');     if(err) err.style.display = 'none';
+    var rerr = document.getElementById('ag-reg-err'); if(rerr) rerr.style.display = 'none';
+  }catch(_){}
+  try{ window._logEvent && _logEvent('oauth_initiated', { provider: provider }); }catch(_){}
+  CloudSync.auth.signInWithOAuth(provider);
+}
+
 // ── Guest AI limit modal: shown when a guest hits the 5-message quota ─────
 function _showGuestAiLimitModal(used, limit){
   // Avoid stacking duplicates if the user keeps hitting send
@@ -24005,6 +24106,7 @@ function _agParseAuthHash(){
 function _agCheckEmailConfirmation(){
   var arrivedFromEmail = false;
   var arrivedFromRecovery = false;
+  var arrivedFromOAuth = false;
   try{
     var qs = window.location.search || '';
     var hs = window.location.hash   || '';
@@ -24014,6 +24116,8 @@ function _agCheckEmailConfirmation(){
       arrivedFromRecovery = true;
     } else if(qs.indexOf('confirmed=1')!==-1 || hashParams.type === 'signup' || hashParams.type === 'email_change'){
       arrivedFromEmail = true;
+    } else if(qs.indexOf('oauth=1')!==-1 && hashParams.access_token){
+      arrivedFromOAuth = true;
     }
 
     // If Supabase gave us tokens in the hash, save the session so we can
@@ -24040,13 +24144,36 @@ function _agCheckEmailConfirmation(){
     } else if(arrivedFromEmail){
       sessionStorage.setItem('emailJustConfirmed','1');
       try{ sessionStorage.removeItem('guestMode'); window._guestMode = false; }catch(e){}
+    } else if(arrivedFromOAuth){
+      // OAuth round-trip complete — flag for post-init welcome flow + exit guest mode
+      sessionStorage.setItem('oauthJustSignedIn','1');
+      try{ sessionStorage.removeItem('guestMode'); window._guestMode = false; }catch(e){}
+      // Fetch the user profile from Supabase since the OAuth callback hash
+      // doesn't include user details. Done async — UI will reconcile when ready.
+      try{
+        CloudSync._req('/auth/v1/user', { method:'GET' }).then(function(r){
+          if(r.ok && r.data){
+            try{
+              var raw = localStorage.getItem('cloud_session_v1');
+              if(raw){
+                var s = JSON.parse(raw);
+                s.user = r.data;
+                localStorage.setItem('cloud_session_v1', JSON.stringify(s));
+                CloudSync._user = r.data;
+              }
+            }catch(_){}
+          }
+          try{ window._reconcileAuthUI && _reconcileAuthUI(); }catch(_){}
+          try{ window._cloudRefreshUI && _cloudRefreshUI(); }catch(_){}
+        });
+      }catch(_){}
     }
-    if(arrivedFromEmail || arrivedFromRecovery){
+    if(arrivedFromEmail || arrivedFromRecovery || arrivedFromOAuth){
       // Clean URL (remove query+hash so refresh doesn't repeat)
       try{ history.replaceState(null, '', window.location.pathname); }catch(e){}
     }
   }catch(e){}
-  return arrivedFromEmail || arrivedFromRecovery;
+  return arrivedFromEmail || arrivedFromRecovery || arrivedFromOAuth;
 }
 
 function _agShowConfirmedBanner(){
@@ -24072,14 +24199,24 @@ document.addEventListener('DOMContentLoaded', function(){
   setTimeout(function(){
     var justConfirmed   = false;
     var passwordRecovery = false;
+    var oauthSignedIn   = false;
     try{ justConfirmed   = sessionStorage.getItem('emailJustConfirmed')==='1'; }catch(e){}
     try{ passwordRecovery = sessionStorage.getItem('passwordRecovery')==='1'; }catch(e){}
+    try{ oauthSignedIn   = sessionStorage.getItem('oauthJustSignedIn')==='1'; }catch(e){}
 
     if(passwordRecovery){
       // User came from "forgot password" email link — open the new-password form
       _authGateShow();
       _agSwitchMode('reset-confirm');
       try{ sessionStorage.removeItem('passwordRecovery'); }catch(e){}
+    } else if(oauthSignedIn){
+      // OAuth round-trip just finished — session was saved in _agCheckEmailConfirmation,
+      // just hide the gate and show welcome toast.
+      _authGateHide();
+      try{ _reconcileAuthUI(); }catch(e){}
+      try{ showToast2(_t('Добро пожаловать 👋','Welcome 👋')); }catch(e){}
+      try{ sessionStorage.removeItem('oauthJustSignedIn'); }catch(e){}
+      try{ setTimeout(function(){ window._logEvent && _logEvent('sign_in', { source:'oauth' }); }, 1000); }catch(e){}
     } else if(justConfirmed){
       // Show signin form with green banner — regardless of any cached session
       _authGateShow();
