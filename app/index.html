@@ -5775,12 +5775,15 @@ var _activeToolIdx = null;
 var _equityChart = null;
 
 function navigateTo(page, toolIdx){
-  // Pro/Free gating — block navigation to Pro-only pages for non-Pro users
-  // EXCEPTION: guests get to try AI for up to 5 messages (gate in aiSend2)
+  // Pro/Free gating — only applies to AUTHENTICATED users.
+  // Guests can browse the entire app (demo mode). Their write-actions are
+  // gated individually inside each feature (e.g. AI 5-message trial, paper
+  // trading limits, etc). This lets new visitors evaluate the app and see
+  // its features before deciding to register.
   try{
+    var isGuestUser = !window.CloudSync || !CloudSync._user;
     var featId = window.PAGE_FEATURE_MAP && window.PAGE_FEATURE_MAP[page];
-    var isGuestAiPage = (page === 'ai' && (!window.CloudSync || !CloudSync._user));
-    if(featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId) && !isGuestAiPage){
+    if(!isGuestUser && featId && typeof _canUseFeature === 'function' && !_canUseFeature(featId)){
       _proGate(featId);
       return;
     }
