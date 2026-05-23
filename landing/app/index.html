@@ -16442,7 +16442,56 @@ function _ppRenderAnalytics(){
       }).join('')
     + '</tbody></table>';
 
+  // ── All closed trades — flat list across all strategies with × delete ──
+  // Lets the user clean up history directly from Analytics without drilling
+  // into each strategy's detail modal.
+  try{
+    var allHistory = (_ppLoad().history || []).slice().reverse();
+    if(allHistory.length){
+      html += '<div style="margin-top:24px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        + '<label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;">' + _t('Все сделки','All trades') + ' (' + allHistory.length + ')</label>'
+        + '<span style="font-size:11px;color:var(--text3);">' + _t('кликни × чтобы удалить','click × to delete') + '</span>'
+        + '</div>'
+        + '<table class="pp-an-table"><thead><tr>'
+        + '<th>' + _t('Закрыто','Closed') + '</th><th>' + _t('Монета','Coin') + '</th><th>' + _t('Сторона','Side') + '</th><th>' + _t('Стратегия','Strategy') + '</th><th>P&amp;L</th><th style="width:32px;"></th>'
+        + '</tr></thead><tbody>'
+        + allHistory.slice(0, 100).map(function(t){
+            var pnl = parseFloat(t.pnl || 0);
+            var pnlCls = pnl > 0 ? 'pos' : (pnl < 0 ? 'neg' : '');
+            var dt = t.closedAt ? new Date(t.closedAt) : (t.closed_at ? new Date(t.closed_at) : (t.opened_at ? new Date(t.opened_at) : null));
+            var dtStr = dt ? (dt.getMonth()+1) + '/' + dt.getDate() + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0') : '—';
+            var sideTxt = (t.dir === 'long' || t.side === 'long' || t.side === 'buy') ? '📈 Long' : '📉 Short';
+            var stratName = '—';
+            if(t.strategy_id){
+              var sRef = _ppStrategyById(t.strategy_id);
+              if(sRef) stratName = '🎯 ' + _esc2safe(sRef.name);
+            }
+            var tradeId = String(t.id || '');
+            var delTitle = _t('Удалить эту сделку','Delete this trade');
+            var delBtn = tradeId
+              ? '<button onclick="_ppDeleteHistory(\'' + tradeId + '\')" title="' + delTitle + '" style="background:none;border:1px solid var(--border);border-radius:6px;width:22px;height:22px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:13px;line-height:1;padding:0;">×</button>'
+              : '';
+            return '<tr>'
+              + '<td style="white-space:nowrap;color:var(--text3);font-size:12px;">' + dtStr + '</td>'
+              + '<td><strong>' + _esc2safe(t.sym || t.symbol || t.coin || '—') + '</strong></td>'
+              + '<td>' + sideTxt + '</td>'
+              + '<td style="color:' + (t.strategy_id ? 'var(--accent)' : 'var(--text3)') + ';font-size:12px;">' + stratName + '</td>'
+              + '<td style="text-align:right;font-weight:700;" class="' + pnlCls + '">' + (pnl > 0 ? '+' : '') + '$' + pnl.toFixed(2) + '</td>'
+              + '<td style="text-align:right;padding-right:4px;">' + delBtn + '</td>'
+              + '</tr>';
+          }).join('')
+        + '</tbody></table>'
+        + (allHistory.length > 100 ? '<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--text3);">' + _t('Показаны последние 100 сделок','Showing last 100 trades') + '</div>' : '')
+        + '</div>';
+    }
+  }catch(_){}
+
   wrap.innerHTML = html;
+  // After re-render, _ppDeleteHistory calls _ppRender() which won't refresh
+  // this Analytics view — so we need an MutationObserver-free workaround:
+  // _ppDeleteHistory is patched (below) to also call _ppRenderAnalytics
+  // when the Analytics tab is currently visible.
 }
 
 // Initial tab count update when entering paper page
@@ -16951,6 +17000,12 @@ function _ppDeleteHistory(id){
   d.history.splice(idx, 1);
   _ppSave(d);
   _ppRender();
+  // Also re-render the Analytics tab if it's currently the active view —
+  // otherwise its "All trades" table would still show the deleted row.
+  try{
+    var anWrap = document.getElementById('pp-analytics-wrap');
+    if(anWrap && anWrap.offsetParent !== null) _ppRenderAnalytics();
+  }catch(_){}
   try{ showToast2(_t('Запись удалена','Entry deleted')); }catch(e){}
 }
 
