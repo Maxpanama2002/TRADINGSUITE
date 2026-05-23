@@ -76,6 +76,38 @@ Deno.serve(async (req) => {
 
   try {
     switch (eventName) {
+      // Order created — activate Pro immediately on first paid order.
+      // In LemonSqueezy Test mode, subscription_created sometimes arrives late
+      // or not at all, so we don't wait for it. When subscription_created does
+      // arrive later, the subscription_* handler below will UPDATE the row
+      // with the real subscription_id and renews_at.
+      case 'order_created': {
+        const orderStatus = String(attrs.status || '');
+        if (orderStatus !== 'paid') {
+          console.log('webhook: order_created not paid, ignoring', { orderStatus });
+          break;
+        }
+        const firstItem = attrs.first_order_item || {};
+        // Estimate renews_at as +30 days (LS doesn't include this on order events).
+        // subscription_created will overwrite with the real value when it arrives.
+        const estimatedRenewsAt = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
+        await supa.from('subscriptions').upsert({
+          user_id: userId,
+          plan: 'pro',
+          status: 'active',
+          lemonsqueezy_customer_id:     String(attrs.customer_id || ''),
+          lemonsqueezy_order_id:        String(data.id || ''),
+          lemonsqueezy_product_id:      String(firstItem.product_id || ''),
+          lemonsqueezy_variant_id:      String(firstItem.variant_id || ''),
+          lemonsqueezy_status:          'active',
+          renews_at:                    estimatedRenewsAt,
+          cancel_at_period_end:         false,
+          updated_at:                   new Date().toISOString(),
+        });
+        console.log('webhook: Pro activated via order_created', { userId, customerId: attrs.customer_id });
+        break;
+      }
+
       case 'subscription_created':
       case 'subscription_updated':
       case 'subscription_resumed':

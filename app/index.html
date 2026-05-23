@@ -6593,14 +6593,43 @@ function _lemonsqueezyCheckout(price){
   var params = [];
   params.push('checkout%5Bcustom%5D%5Buser_id%5D=' + encodeURIComponent(userId));
   if(userEmail) params.push('checkout%5Bemail%5D=' + encodeURIComponent(userEmail));
-  // Where to land after successful payment
-  var successUrl = (window.location.origin && window.location.origin.indexOf('http')===0)
-    ? window.location.origin + '/app/?payment=success'
-    : 'https://tradingsuite.vercel.app/app/?payment=success';
+  // Where to land after successful payment — always points to web (Electron has no
+  // local URL we can return to, so we tell LS to redirect to the web app).
+  var successUrl = 'https://tradingsuite.vercel.app/app/?payment=success';
   params.push('checkout%5Bsuccess_url%5D=' + encodeURIComponent(successUrl));
 
+  var fullUrl = url + sep + params.join('&');
+
+  // Electron desktop: open checkout in default browser, NOT in the app window.
+  // Otherwise window.location.href would navigate the Electron window away
+  // from local app/index.html to the LS remote URL, breaking everything.
+  // The runtime attribute was set in the pre-paint inline script at <body>.
+  var isElectron = document.documentElement.getAttribute('data-app-runtime') === 'electron';
+  if(isElectron){
+    // window.open with target=_blank triggers main.js setWindowOpenHandler,
+    // which calls shell.openExternal — opens in default system browser.
+    try{ window.open(fullUrl, '_blank'); }catch(_){}
+    try{
+      showToast2(_t(
+        '🛒 Оплата открыта в браузере. Возвращайся в приложение — Pro активируется автоматически после оплаты.',
+        '🛒 Checkout opened in browser. Come back to the app — Pro will activate automatically after payment.'
+      ), 7000);
+    }catch(_){}
+    // Poll for subscription status every 5s for up to ~5 min after checkout
+    // opens. When webhook lands and DB updates, _subRefresh will pick it up.
+    var pollAttempts = 0;
+    var pollId = setInterval(function(){
+      pollAttempts++;
+      try{ window._subRefresh && _subRefresh(); }catch(_){}
+      try{ window._reconcileAuthUI && _reconcileAuthUI(); }catch(_){}
+      if(pollAttempts > 60){ clearInterval(pollId); }
+    }, 5000);
+    return;
+  }
+
+  // Web: full-page redirect — works because the user returns via success_url.
   if(btn){ btn.disabled = true; btn.textContent = _t('Переходим…','Redirecting…'); }
-  window.location.href = url + sep + params.join('&');
+  window.location.href = fullUrl;
 }
 
 // Auth gate — shown when entering Personal Cabinet if user is not signed in.
@@ -24277,10 +24306,18 @@ document.addEventListener('DOMContentLoaded', function(){
     // And once more after 2s for very slow network sessions
     setTimeout(function(){ try{ _reconcileAuthUI(); }catch(e){} }, 2000);
   }, 50);
-  // Reconcile on tab focus — fixes cases where session was lost while away
-  window.addEventListener('focus', function(){ try{ _reconcileAuthUI(); }catch(e){} });
+  // Reconcile on tab/window focus — fixes cases where session was lost while
+  // away, AND triggers subscription refresh so Pro status updates after the
+  // user returns from a checkout flow opened in another tab/browser.
+  window.addEventListener('focus', function(){
+    try{ _reconcileAuthUI(); }catch(e){}
+    try{ window._subRefresh && _subRefresh(); }catch(e){}
+  });
   document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState === 'visible'){ try{ _reconcileAuthUI(); }catch(e){} }
+    if(document.visibilityState === 'visible'){
+      try{ _reconcileAuthUI(); }catch(e){}
+      try{ window._subRefresh && _subRefresh(); }catch(e){}
+    }
   });
   // Enter-key submits the active form
   function _agEnterHandler(formMode, submitFn){
