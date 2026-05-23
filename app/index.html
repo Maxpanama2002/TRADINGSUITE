@@ -4623,6 +4623,16 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
 
           <!-- ── TAB: TRADES (default — wraps existing content) ── -->
           <div id="pp-tab-trades-content">
+          <!-- Strategy filter — narrows KPIs and tables below to one strategy.
+               Built dynamically by _ppRefreshStrategyFilter() from current strategies. -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;" data-ru="Стратегия:" data-en="Strategy:">Стратегия:</label>
+            <select id="pp-strategy-filter" onchange="_ppSetStrategyFilter(this.value)" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--text);font-family:inherit;cursor:pointer;min-width:240px;outline:none;">
+              <option value="" data-ru="Все сделки" data-en="All trades">Все сделки</option>
+              <option value="__nostrat__" data-ru="Без стратегии" data-en="Without strategy">Без стратегии</option>
+            </select>
+            <span id="pp-strategy-filter-hint" style="font-size:11px;color:var(--text3);display:none;"></span>
+          </div>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
             <div class="dv-kpi" id="pp-balance-card" onclick="_ppOpenBalanceEdit()" title="Кликни чтобы изменить баланс" style="cursor:pointer;transition:border-color .14s;">
               <div class="dv-kpi-lbl" style="display:flex;justify-content:space-between;align-items:center;">
@@ -16612,8 +16622,93 @@ function _ppCheckSLTP(){
   if(changed) _ppSave(d);
 }
 
+// Strategy filter for the Trades tab. '' = show all, '__nostrat__' = trades without strategy,
+// anything else = strategy_id. Mutated by _ppSetStrategyFilter, read by _ppRender.
+window._ppStrategyFilter = window._ppStrategyFilter || '';
+
+function _ppSetStrategyFilter(v){
+  window._ppStrategyFilter = v || '';
+  try{ _ppRender(); }catch(e){}
+}
+
+// Re-populate the <select> with current strategies. Called whenever strategies
+// change so the dropdown reflects the actual list.
+function _ppRefreshStrategyFilter(){
+  var sel = document.getElementById('pp-strategy-filter');
+  if(!sel) return;
+  var strategies = (typeof _ppStrategiesLoad === 'function') ? _ppStrategiesLoad() : [];
+  var prev = window._ppStrategyFilter || '';
+  var en = (typeof getLang==='function') && getLang()==='en';
+  // Rebuild options preserving the two fixed options
+  sel.innerHTML = '';
+  var optAll = document.createElement('option');
+  optAll.value = '';
+  optAll.textContent = en ? 'All trades' : 'Все сделки';
+  sel.appendChild(optAll);
+  var optNo = document.createElement('option');
+  optNo.value = '__nostrat__';
+  optNo.textContent = en ? 'Without strategy' : 'Без стратегии';
+  sel.appendChild(optNo);
+  strategies.forEach(function(s){
+    var o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = '🎯 ' + s.name;
+    sel.appendChild(o);
+  });
+  sel.value = prev;
+}
+
 function _ppRender(){
   var d = _ppLoad();
+  // Refresh strategy filter options (in case strategies were added/removed)
+  try{ _ppRefreshStrategyFilter(); }catch(_){}
+
+  // Apply strategy filter — slice positions and history to match the selection.
+  // Empty filter = show everything (original behaviour).
+  var filterId = window._ppStrategyFilter || '';
+  var rawPositions = d.positions || [];
+  var rawHistory   = d.history   || [];
+  if(filterId){
+    var matches = function(item){
+      if(filterId === '__nostrat__') return !item.strategy_id;
+      return item.strategy_id === filterId;
+    };
+    d = Object.assign({}, d, {
+      positions: rawPositions.filter(matches),
+      history:   rawHistory.filter(matches),
+    });
+    // When filtering by a specific strategy, override the "balance start" so the
+    // KPI cards reflect the strategy's own budget rather than the global initial.
+    if(filterId !== '__nostrat__'){
+      var strat = (typeof _ppStrategyById === 'function') ? _ppStrategyById(filterId) : null;
+      if(strat && typeof strat.budget === 'number' && strat.budget > 0){
+        d.initial = strat.budget;
+        // Balance starts from budget; open+closed PnL gets added below in the
+        // existing render path that computes totalEquity = d.balance + pnlOpen.
+        // Replace d.balance with budget + closed PnL so card reads correctly.
+        var closedPnl = d.history.reduce(function(s,h){return s + (parseFloat(h.pnl)||0);}, 0);
+        d.balance = strat.budget + closedPnl;
+      }
+    }
+  }
+  // Show hint about active filter
+  try{
+    var hint = document.getElementById('pp-strategy-filter-hint');
+    if(hint){
+      if(filterId === '__nostrat__'){
+        hint.textContent = _t('Только сделки без привязки к стратегии','Trades without a strategy only');
+        hint.style.display = 'inline';
+      } else if(filterId){
+        var s = (typeof _ppStrategyById === 'function') ? _ppStrategyById(filterId) : null;
+        hint.textContent = s ? (_t('KPI и таблицы фильтруются по бюджету стратегии','KPIs and tables are scoped to this strategy budget')) : '';
+        hint.style.display = 'inline';
+      } else {
+        hint.textContent = '';
+        hint.style.display = 'none';
+      }
+    }
+  }catch(_){}
+
   function _set(id, val){ var el=document.getElementById(id); if(el) el.textContent = val; }
 
   var tb = document.getElementById('pp-positions-body');
