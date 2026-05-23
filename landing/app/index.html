@@ -3044,6 +3044,12 @@ html[data-app-runtime="electron"] #tb-back-btn{display:none !important;}
 
 /* Strategy card */
 .pp-str-card{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:border-color .15s,transform .15s;cursor:pointer;}
+/* Drag-and-drop reorder visuals — shared between strategy cards and position rows */
+.pp-dragging{opacity:0.4;transform:scale(0.98);}
+.pp-drop-target{border-top:2px solid var(--accent) !important;}
+tr.pp-drop-target{box-shadow:inset 0 2px 0 var(--accent);border-top:none !important;}
+[draggable="true"]{cursor:grab;}
+[draggable="true"]:active{cursor:grabbing;}
 .pp-str-card:hover{border-color:rgba(124,58,237,.4);transform:translateY(-1px);}
 .pp-str-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
 .pp-str-card-name{font-size:16px;font-weight:800;color:var(--text);line-height:1.2;letter-spacing:-.3px;flex:1;}
@@ -15976,6 +15982,47 @@ function _ppStrategyById(id){
   return _ppStrategiesLoad().find(function(s){ return s.id === id; }) || null;
 }
 
+// ── Drag-and-drop reorder helper ──────────────────────────────────────────
+// Generic HTML5-DnD wrapper. Pass the container element, a CSS selector for
+// the draggable items, a function that extracts an ID from an item, and an
+// applyReorder(srcId, tgtId) callback that mutates persistent storage and
+// re-renders. The helper handles dragstart/over/leave/end/drop and the
+// visual highlights (.pp-dragging / .pp-drop-target).
+function _ppEnableDragReorder(container, itemSelector, idGetter, applyReorder){
+  if(!container) return;
+  Array.prototype.forEach.call(container.querySelectorAll(itemSelector), function(item){
+    item.setAttribute('draggable', 'true');
+    item.addEventListener('dragstart', function(e){
+      try{ e.dataTransfer.setData('text/plain', idGetter(item) || ''); }catch(_){}
+      try{ e.dataTransfer.effectAllowed = 'move'; }catch(_){}
+      item.classList.add('pp-dragging');
+    });
+    item.addEventListener('dragend', function(){
+      item.classList.remove('pp-dragging');
+      Array.prototype.forEach.call(container.querySelectorAll('.pp-drop-target'), function(el){
+        el.classList.remove('pp-drop-target');
+      });
+    });
+    item.addEventListener('dragover', function(e){
+      e.preventDefault();
+      try{ e.dataTransfer.dropEffect = 'move'; }catch(_){}
+      if(!item.classList.contains('pp-dragging')) item.classList.add('pp-drop-target');
+    });
+    item.addEventListener('dragleave', function(){ item.classList.remove('pp-drop-target'); });
+    item.addEventListener('drop', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      item.classList.remove('pp-drop-target');
+      var srcId, tgtId;
+      try{ srcId = e.dataTransfer.getData('text/plain'); }catch(_){ srcId = ''; }
+      tgtId = idGetter(item) || '';
+      if(srcId && tgtId && srcId !== tgtId){
+        try{ applyReorder(srcId, tgtId); }catch(err){ console.error('reorder failed', err); }
+      }
+    });
+  });
+}
+
 // Все trades (open + closed history) — для аналитики по стратегиям
 function _ppAllTrades(){
   var d = _ppLoad() || { positions: [], history: [] };
@@ -16093,7 +16140,7 @@ function _ppRenderStrategies(){
         + '</div>'
       : '';
 
-    return '<div class="pp-str-card" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
+    return '<div class="pp-str-card" data-strat-id="' + s.id + '" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
       + '<div class="pp-str-card-head">'
       +   '<div class="pp-str-card-name">' + _esc2safe(s.name) + '</div>'
       +   '<div class="pp-str-card-status ' + s.status + '">' + statusLabel + '</div>'
@@ -16113,6 +16160,25 @@ function _ppRenderStrategies(){
       + '</div>'
       + '</div>';
   }).join('');
+
+  // Enable drag-to-reorder on the rendered cards. Note: even though _ppStrFilter
+  // can hide some strategies, we still reorder the full underlying array so the
+  // intent is preserved across filter switches.
+  try{
+    _ppEnableDragReorder(box, '.pp-str-card',
+      function(el){ return el.getAttribute('data-strat-id'); },
+      function(srcId, tgtId){
+        var arr = _ppStrategiesLoad();
+        var srcIdx = arr.findIndex(function(s){ return s.id === srcId; });
+        var tgtIdx = arr.findIndex(function(s){ return s.id === tgtId; });
+        if(srcIdx < 0 || tgtIdx < 0) return;
+        var moved = arr.splice(srcIdx, 1)[0];
+        arr.splice(tgtIdx, 0, moved);
+        _ppStrategiesSave(arr);
+        _ppRenderStrategies();
+      }
+    );
+  }catch(_){}
 }
 
 // Delete a strategy directly from the card (no need to open edit modal)
@@ -16766,7 +16832,7 @@ function _ppRender(){
           var stratRefOpen = (typeof _ppStrategyById === 'function') ? _ppStrategyById(p.strategy_id) : null;
           if(stratRefOpen) stratNameOpen = '<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:2px;line-height:1.2;" title="' + _t('Стратегия','Strategy') + '">🎯 ' + esc2(stratRefOpen.name) + '</div>';
         }
-        html += '<tr style="'+rowStyle+'">'
+        html += '<tr data-pos-id="'+esc2(p.id||'')+'" style="'+rowStyle+'">'
           +'<td style="padding:9px 6px;"><b>'+esc2(p.sym)+'</b>'+pendingBadge+stratNameOpen+'</td>'
           +'<td style="padding:9px 6px;"><span style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:'+dirBg+';">'+p.dir.toUpperCase()+'</span></td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(p.entry)+'</td>'
@@ -16783,6 +16849,26 @@ function _ppRender(){
           +'</tr>';
       });
       tb.innerHTML = html;
+      // Enable drag-to-reorder on position rows. We reorder against the FULL
+      // positions array in storage (not the filtered set rendered here) so the
+      // user's chosen order is preserved across strategy-filter changes.
+      try{
+        _ppEnableDragReorder(tb, 'tr',
+          function(el){ return el.getAttribute('data-pos-id'); },
+          function(srcId, tgtId){
+            var fresh = _ppLoad();
+            var arr = fresh.positions || [];
+            var srcIdx = arr.findIndex(function(p){ return p.id === srcId; });
+            var tgtIdx = arr.findIndex(function(p){ return p.id === tgtId; });
+            if(srcIdx < 0 || tgtIdx < 0) return;
+            var moved = arr.splice(srcIdx, 1)[0];
+            arr.splice(tgtIdx, 0, moved);
+            fresh.positions = arr;
+            _ppSave(fresh);
+            _ppRender();
+          }
+        );
+      }catch(_){}
     }
   }
 
