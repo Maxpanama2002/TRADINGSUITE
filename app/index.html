@@ -24102,6 +24102,11 @@ window._reconcileAuthUI = function(){
 };
 
 function _guestModeActivate(){
+  // Sync the html attribute that drives our CSS-based visibility rules with
+  // !important. Without this, after a successful sign-out the data-auth-state
+  // would stay "authed" and CSS would still hide the guest sign-in CTAs.
+  try{ document.documentElement.setAttribute('data-auth-state', 'guest'); }catch(_){}
+
   var l = typeof getLang==='function'?getLang():'ru';
   var tipText = l==='en'
     ? 'Sign in to unlock this feature and sync across devices'
@@ -24174,6 +24179,10 @@ function _guestModeActivate(){
 function _guestModeClear(){
   window._guestMode = false;
   try{ sessionStorage.removeItem('guestMode'); }catch(e){}
+  // Sync the html attribute that CSS rules with !important read from. Without
+  // this, after a successful login the data-auth-state would stay "guest" and
+  // the guest sign-in CTAs would keep showing despite the user being signed in.
+  try{ document.documentElement.setAttribute('data-auth-state', 'authed'); }catch(_){}
   // Remove lock badges
   document.querySelectorAll('.sb-lock-badge').forEach(function(b){ b.remove(); });
   var bar = document.getElementById('sb-guest-bar');
