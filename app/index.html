@@ -16665,8 +16665,14 @@ function _ppRender(){
           ? '<span style="color:var(--text3);font-size:11px;font-style:italic;">'+_t('ждём','waiting')+'</span>'
           : '<span style="color:'+pnlColor+';font-weight:700;">'+_ppFmt(pnl)+'</span>';
         var closeBtnLabel = isPending ? _t('Отменить','Cancel') : _t('Закрыть','Close');
+        // Strategy badge (under the coin) — empty string if no strategy linked
+        var stratNameOpen = '';
+        if(p.strategy_id){
+          var stratRefOpen = (typeof _ppStrategyById === 'function') ? _ppStrategyById(p.strategy_id) : null;
+          if(stratRefOpen) stratNameOpen = '<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:2px;line-height:1.2;" title="' + _t('Стратегия','Strategy') + '">🎯 ' + esc2(stratRefOpen.name) + '</div>';
+        }
         html += '<tr style="'+rowStyle+'">'
-          +'<td style="padding:9px 6px;"><b>'+esc2(p.sym)+'</b>'+pendingBadge+'</td>'
+          +'<td style="padding:9px 6px;"><b>'+esc2(p.sym)+'</b>'+pendingBadge+stratNameOpen+'</td>'
           +'<td style="padding:9px 6px;"><span style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:'+dirBg+';">'+p.dir.toUpperCase()+'</span></td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(p.entry)+'</td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(cur)+'</td>'
@@ -16721,9 +16727,15 @@ function _ppRender(){
         var tpNum = isTp ? rs.replace('take-profit-','').replace('take-profit','') : '';
         var reasonText = rs==='stop-loss' ? 'SL' : isTp ? ('TP'+(tpNum?tpNum:'')) : rs==='liquidation' ? 'Liq' : _t('Ручное','Manual');
         var delTitle = _t('Удалить из истории','Delete from history');
+        // Strategy badge under the coin (same as in Open Positions)
+        var stratNameH = '';
+        if(h.strategy_id){
+          var stratRefH = (typeof _ppStrategyById === 'function') ? _ppStrategyById(h.strategy_id) : null;
+          if(stratRefH) stratNameH = '<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:2px;line-height:1.2;" title="' + _t('Стратегия','Strategy') + '">🎯 ' + esc2(stratRefH.name) + '</div>';
+        }
         html2 += '<tr style="border-bottom:1px solid var(--border);">'
           +'<td style="padding:9px 6px;font-size:11px;color:var(--text3);">'+esc2(date)+'</td>'
-          +'<td style="padding:9px 6px;"><b>'+esc2(h.sym)+'</b></td>'
+          +'<td style="padding:9px 6px;"><b>'+esc2(h.sym)+'</b>'+stratNameH+'</td>'
           +'<td style="padding:9px 6px;"><span style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:'+dirBg+';">'+h.dir.toUpperCase()+'</span></td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(h.entry)+'</td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(h.exit)+'</td>'
