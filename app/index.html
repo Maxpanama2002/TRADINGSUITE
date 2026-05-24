@@ -10503,7 +10503,7 @@ function ntInitForm(){
 // ── Multiple TPs для new-trade формы ──
 var _ntTps = [{price:'', sizePct:100}];
 function _ntTpAdd(){
-  if(_ntTps.length>=5){ alert(_t('Максимум 5 тейк-профитов','Maximum 5 take-profits')); return; }
+  if(_ntTps.length>=10){ alert(_t('Максимум 10 тейк-профитов','Maximum 10 take-profits')); return; }
   var n = _ntTps.length + 1;
   var equal = Math.floor(100/n);
   _ntTps.forEach(function(tp){ tp.sizePct = equal; });
@@ -17301,7 +17301,7 @@ function _ppEditUpdateTpPreview(idx){
 }
 function _ppEditUpdateAllTpPreviews(){ _ppEditTps.forEach(function(_,i){ _ppEditUpdateTpPreview(i); }); }
 function _ppTpAdd(){
-  if(_ppNewTps.length>=5){ alert(_t('Максимум 5 тейк-профитов','Maximum 5 take-profits')); return; }
+  if(_ppNewTps.length>=10){ alert(_t('Максимум 10 тейк-профитов','Maximum 10 take-profits')); return; }
   // Распределим оставшийся % равномерно — если был один на 100%, при добавлении станет 50/50
   var n = _ppNewTps.length + 1;
   var equal = Math.floor(100/n);
@@ -17745,7 +17745,7 @@ function _ppEditPosition(id){
 }
 function _ppCloseEditModal(){ var m=document.getElementById('pp-edit-modal'); if(m) m.remove(); _ppEditId=null; _ppEditPos=null; }
 function _ppEditTpAdd(){
-  if(_ppEditTps.length>=5){ alert(_t('Максимум 5 тейк-профитов','Maximum 5 take-profits')); return; }
+  if(_ppEditTps.length>=10){ alert(_t('Максимум 10 тейк-профитов','Maximum 10 take-profits')); return; }
   // Перераспределим % только среди НЕ-hit TPs
   var notHit = _ppEditTps.filter(function(tp){return !tp.hit;});
   var hitSum = _ppEditTps.filter(function(tp){return tp.hit;}).reduce(function(s,tp){return s+(parseFloat(tp.sizePct)||0);}, 0);
