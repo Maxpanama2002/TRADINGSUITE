@@ -17116,7 +17116,7 @@ function _ppOpenNew(){
         +'<button id="ppm-margin-cross" onclick="_ppSetMargin(\'cross\')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">Cross</button>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'
-        +'<div><label style="'+lblStyle+'">'+L.sym+'</label><input id="ppm-sym" type="text" value="BTC" oninput="_ppPreview()" style="'+inputStyle+';text-transform:uppercase;"></div>'
+        +'<div><label style="'+lblStyle+'">'+L.sym+'</label><input id="ppm-sym" type="text" value="BTC" placeholder="BTC / ETH / SOL / ..." oninput="_ppPreview()" style="'+inputStyle+';text-transform:uppercase;"></div>'
         +'<div class="pp-futures-only"><label style="'+lblStyle+'">'+L.lev+'</label><input id="ppm-lev" type="number" value="10" min="1" oninput="_ppPreview()" style="'+inputStyle+'"></div>'
       +'</div>'
       +'<div style="margin-bottom:10px;">'
@@ -17446,19 +17446,23 @@ function _ppSetAssetClass(c){
       btn.style.fontWeight = '600';
     }
   });
-  // For non-crypto: clear the symbol field so user types stocks symbol (e.g. AAPL)
-  // or forex pair (e.g. EURUSD) themselves. Also clear the entry price so they
-  // type it in manually, and skip the live-price fetch.
+  // Reset symbol + entry fields to match the new asset class. Placeholders
+  // are kept in sync so the user never sees, e.g., "AAPL / TSLA" while
+  // Crypto is selected.
   var symEl = document.getElementById('ppm-sym');
   var entryEl = document.getElementById('ppm-entry');
   if(c === 'crypto'){
-    if(symEl && !symEl.value) symEl.value = 'BTC';
+    if(symEl){
+      symEl.placeholder = 'BTC / ETH / SOL / ...';
+      if(!symEl.value) symEl.value = 'BTC';
+    }
     if(entryEl) entryEl.placeholder = 'live';
     try{ _ppPullLivePrice(); }catch(_){}
   } else {
     if(entryEl) entryEl.placeholder = (c === 'stocks' ? 'e.g. 187.45' : 'e.g. 1.0856');
     if(symEl){
-      // Don't wipe what the user already typed; only clear default 'BTC'
+      // Wipe the default BTC seed so the user clearly sees the placeholder
+      // for stocks/forex. Custom values they typed are preserved.
       if(symEl.value === 'BTC') symEl.value = '';
       symEl.placeholder = (c === 'stocks' ? 'AAPL / TSLA / SPY ...' : 'EURUSD / GBPUSD ...');
     }
