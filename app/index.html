@@ -16600,6 +16600,9 @@ function _ppFetchPrices(showStatus){
   if(showStatus) _ppStatus(_t('Запрос цен с Binance…','Fetching prices from Binance…'));
   var syms = {};
   d.positions.forEach(function(p){
+    // Skip non-crypto positions — Binance doesn't have stocks/forex tickers.
+    // Current price for those stays at last entry; user can edit manually.
+    if(p.assetClass && p.assetClass !== 'crypto') return;
     var s = (p.sym||'').toUpperCase();
     if(!s.endsWith('USDT')) s = s+'USDT';
     syms[s] = true;
@@ -17078,12 +17081,29 @@ function _ppOpenNew(){
         +'#pp-new-modal[data-market="spot"] .pp-futures-only{display:none !important;}'
         +'#pp-new-modal[data-market="spot"] #ppm-dir-short{display:none;}'
         +'#pp-new-modal[data-market="spot"] #ppm-dir-long{flex:1;}'
+        // Asset-class scoping: non-crypto hides crypto-specific Spot/Futures + Leverage rows
+        +'#pp-new-modal[data-asset="stocks"] .pp-crypto-only{display:none !important;}'
+        +'#pp-new-modal[data-asset="forex"] .pp-crypto-only{display:none !important;}'
+        // Non-crypto also implies no live price feed — entry field becomes manual entry
+        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint::before{content:"— manual entry";}'
+        +'#pp-new-modal[data-asset="forex"] #ppm-entry-hint::before{content:"— manual entry";}'
+        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint{font-size:0;}'
+        +'#pp-new-modal[data-asset="forex"] #ppm-entry-hint{font-size:0;}'
+        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint::before,#pp-new-modal[data-asset="forex"] #ppm-entry-hint::before{font-size:10px;color:var(--text3);}'
       +'</style>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
         +'<div style="font-size:18px;font-weight:800;">'+L.title+'</div>'
         +'<button onclick="_ppCloseModal()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:28px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:16px;">×</button>'
       +'</div>'
+      // Asset class selector — crypto stays with live Binance prices and
+      // leverage; stocks/forex switch to manual entry (no live feed for now)
+      // and hide the leverage/spot/futures rows.
       +'<div style="display:flex;gap:6px;background:var(--card-bg2);padding:4px;border-radius:10px;margin-bottom:10px;">'
+        +'<button id="ppm-asset-crypto" onclick="_ppSetAssetClass(\'crypto\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">🪙 '+(isEn?'Crypto':'Крипта')+'</button>'
+        +'<button id="ppm-asset-stocks" onclick="_ppSetAssetClass(\'stocks\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">📈 '+(isEn?'Stocks':'Акции')+'</button>'
+        +'<button id="ppm-asset-forex" onclick="_ppSetAssetClass(\'forex\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">💱 '+(isEn?'Forex':'Форекс')+'</button>'
+      +'</div>'
+      +'<div class="pp-crypto-only" style="display:flex;gap:6px;background:var(--card-bg2);padding:4px;border-radius:10px;margin-bottom:10px;">'
         +'<button id="ppm-mkt-spot" onclick="_ppSetMarketType(\'spot\')" style="flex:1;padding:9px;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">⬡ '+L.spot+'</button>'
         +'<button id="ppm-mkt-fut" onclick="_ppSetMarketType(\'futures\')" style="flex:1;padding:9px;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">⚡ '+L.futures+'</button>'
       +'</div>'
@@ -17143,12 +17163,22 @@ function _ppOpenNew(){
         +'<button onclick="_ppExecute()" id="ppm-exec" style="flex:1;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:10px;padding:11px;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;">'+L.open+'</button>'
       +'</div>'
     +'</div>';
-  ov.onclick = function(e){ if(e.target===ov) _ppCloseModal(); };
+  // Backdrop click closes modal — but ONLY when the press actually started on
+  // the backdrop. Otherwise selecting text inside an input and dragging the
+  // mouse outside (while still holding) would dismiss the modal on mouseup.
+  var _ppMouseDownOnBackdrop = false;
+  ov.addEventListener('mousedown', function(e){ _ppMouseDownOnBackdrop = (e.target === ov); });
+  ov.addEventListener('click', function(e){
+    if(e.target === ov && _ppMouseDownOnBackdrop) _ppCloseModal();
+    _ppMouseDownOnBackdrop = false;
+  });
   document.body.appendChild(ov);
   _ppNewDir = 'long';
   _ppNewMargin = 'isolated';
   _ppMarketType = 'futures';
+  _ppNewAssetClass = 'crypto';
   ov.setAttribute('data-market','futures');
+  ov.setAttribute('data-asset','crypto');
   _ppSizeSource = 'qty';   // дефолт — qty (size=0.1)
   _ppNewTps = [{price:'', sizePct:100}];   // стартовая конфигурация — 1 TP на 100%
   _ppTpRender();
@@ -17393,7 +17423,51 @@ function _ppSetMarketType(t){
   }
   _ppPreview();
 }
+// Asset class state for the new-position modal. Only 'crypto' fetches live
+// prices from Binance; 'stocks' and 'forex' require the user to type the
+// entry price manually (no built-in feed yet).
+var _ppNewAssetClass = 'crypto';
+function _ppSetAssetClass(c){
+  if(c !== 'crypto' && c !== 'stocks' && c !== 'forex') return;
+  _ppNewAssetClass = c;
+  var ov = document.getElementById('pp-new-modal');
+  if(ov) ov.setAttribute('data-asset', c);
+  // Highlight the active button
+  ['crypto','stocks','forex'].forEach(function(k){
+    var btn = document.getElementById('ppm-asset-'+k);
+    if(!btn) return;
+    if(k === c){
+      btn.style.background = 'linear-gradient(135deg,#7c3aed,#ec4899)';
+      btn.style.color = '#fff';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.background = 'none';
+      btn.style.color = 'var(--text2)';
+      btn.style.fontWeight = '600';
+    }
+  });
+  // For non-crypto: clear the symbol field so user types stocks symbol (e.g. AAPL)
+  // or forex pair (e.g. EURUSD) themselves. Also clear the entry price so they
+  // type it in manually, and skip the live-price fetch.
+  var symEl = document.getElementById('ppm-sym');
+  var entryEl = document.getElementById('ppm-entry');
+  if(c === 'crypto'){
+    if(symEl && !symEl.value) symEl.value = 'BTC';
+    if(entryEl) entryEl.placeholder = 'live';
+    try{ _ppPullLivePrice(); }catch(_){}
+  } else {
+    if(entryEl) entryEl.placeholder = (c === 'stocks' ? 'e.g. 187.45' : 'e.g. 1.0856');
+    if(symEl){
+      // Don't wipe what the user already typed; only clear default 'BTC'
+      if(symEl.value === 'BTC') symEl.value = '';
+      symEl.placeholder = (c === 'stocks' ? 'AAPL / TSLA / SPY ...' : 'EURUSD / GBPUSD ...');
+    }
+  }
+  _ppPreview();
+}
 function _ppPullLivePrice(){
+  // Skip the Binance fetch entirely for non-crypto assets
+  if(_ppNewAssetClass && _ppNewAssetClass !== 'crypto') return;
   var symEl = document.getElementById('ppm-sym');
   if(!symEl) return;
   var sym = symEl.value.trim().toUpperCase();
@@ -17527,7 +17601,8 @@ function _ppExecute(){
     sl: sl, tps: tps,
     leverage: leverage, mmrPct: mmrPct,
     marginMode: isSpot ? 'isolated' : _ppNewMargin,
-    marketType: isSpot ? 'spot' : 'futures'
+    marketType: isSpot ? 'spot' : 'futures',
+    assetClass: _ppNewAssetClass || 'crypto'
   };
   var strategyEl = document.getElementById('ppm-strategy');
   if(strategyEl && strategyEl.value) pos.strategy_id = strategyEl.value;
@@ -17738,7 +17813,14 @@ function _ppEditPosition(id){
         +'<button onclick="_ppSaveEdit()" style="flex:1;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:10px;padding:11px;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;">'+EL.save+'</button>'
       +'</div>'
     +'</div>';
-  ov.onclick = function(e){ if(e.target===ov) _ppCloseEditModal(); };
+  // Same backdrop-press tracking as in _ppOpenNew — prevents the modal from
+  // closing when the user drags-to-select text from inside an input.
+  var _ppEditMouseDownOnBackdrop = false;
+  ov.addEventListener('mousedown', function(e){ _ppEditMouseDownOnBackdrop = (e.target === ov); });
+  ov.addEventListener('click', function(e){
+    if(e.target === ov && _ppEditMouseDownOnBackdrop) _ppCloseEditModal();
+    _ppEditMouseDownOnBackdrop = false;
+  });
   document.body.appendChild(ov);
   _ppEditTpRender();
   _ppEditUpdateSlPreview();
