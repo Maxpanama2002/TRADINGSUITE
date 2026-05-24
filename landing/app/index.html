@@ -17081,29 +17081,26 @@ function _ppOpenNew(){
         +'#pp-new-modal[data-market="spot"] .pp-futures-only{display:none !important;}'
         +'#pp-new-modal[data-market="spot"] #ppm-dir-short{display:none;}'
         +'#pp-new-modal[data-market="spot"] #ppm-dir-long{flex:1;}'
-        // Asset-class scoping: non-crypto hides crypto-specific Spot/Futures + Leverage rows
-        +'#pp-new-modal[data-asset="stocks"] .pp-crypto-only{display:none !important;}'
-        +'#pp-new-modal[data-asset="forex"] .pp-crypto-only{display:none !important;}'
-        // Non-crypto also implies no live price feed — entry field becomes manual entry
-        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint::before{content:"— manual entry";}'
-        +'#pp-new-modal[data-asset="forex"] #ppm-entry-hint::before{content:"— manual entry";}'
-        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint{font-size:0;}'
-        +'#pp-new-modal[data-asset="forex"] #ppm-entry-hint{font-size:0;}'
-        +'#pp-new-modal[data-asset="stocks"] #ppm-entry-hint::before,#pp-new-modal[data-asset="forex"] #ppm-entry-hint::before{font-size:10px;color:var(--text3);}'
+        // Symbol autocomplete dropdown
+        +'#ppm-sym-wrap{position:relative;}'
+        +'#ppm-sym-dropdown{position:absolute;top:100%;left:0;right:0;margin-top:2px;background:var(--card-bg);border:1px solid var(--border2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.18);max-height:240px;overflow-y:auto;z-index:100;display:none;}'
+        +'#ppm-sym-dropdown.show{display:block;}'
+        +'.ppm-sug{padding:8px 11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;border-bottom:1px solid var(--border);}'
+        +'.ppm-sug:last-child{border-bottom:none;}'
+        +'.ppm-sug:hover,.ppm-sug.ppm-sug-active{background:rgba(124,58,237,0.10);}'
+        +'.ppm-sug-sym{font-weight:700;color:var(--text);min-width:70px;}'
+        +'.ppm-sug-name{flex:1;font-size:11.5px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}'
+        +'.ppm-sug-type{font-size:11px;color:var(--text3);flex-shrink:0;}'
+        // Asset-class badge shown next to the symbol once detected (read-only hint)
+        +'#ppm-asset-badge{display:inline-block;margin-left:6px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:6px;vertical-align:middle;}'
       +'</style>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
         +'<div style="font-size:18px;font-weight:800;">'+L.title+'</div>'
         +'<button onclick="_ppCloseModal()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:28px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:16px;">×</button>'
       +'</div>'
-      // Asset class selector — crypto stays with live Binance prices and
-      // leverage; stocks/forex switch to manual entry (no live feed for now)
-      // and hide the leverage/spot/futures rows.
+      // Spot/Futures selector — asset class is now auto-detected from the
+      // symbol the user types (see _ppSymAutocomplete below).
       +'<div style="display:flex;gap:6px;background:var(--card-bg2);padding:4px;border-radius:10px;margin-bottom:10px;">'
-        +'<button id="ppm-asset-crypto" onclick="_ppSetAssetClass(\'crypto\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">🪙 '+(isEn?'Crypto':'Крипта')+'</button>'
-        +'<button id="ppm-asset-stocks" onclick="_ppSetAssetClass(\'stocks\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">📈 '+(isEn?'Stocks':'Акции')+'</button>'
-        +'<button id="ppm-asset-forex" onclick="_ppSetAssetClass(\'forex\')" style="flex:1;padding:8px 6px;border:none;border-radius:8px;font-weight:600;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">💱 '+(isEn?'Forex':'Форекс')+'</button>'
-      +'</div>'
-      +'<div class="pp-crypto-only" style="display:flex;gap:6px;background:var(--card-bg2);padding:4px;border-radius:10px;margin-bottom:10px;">'
         +'<button id="ppm-mkt-spot" onclick="_ppSetMarketType(\'spot\')" style="flex:1;padding:9px;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">⬡ '+L.spot+'</button>'
         +'<button id="ppm-mkt-fut" onclick="_ppSetMarketType(\'futures\')" style="flex:1;padding:9px;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">⚡ '+L.futures+'</button>'
       +'</div>'
@@ -17116,7 +17113,12 @@ function _ppOpenNew(){
         +'<button id="ppm-margin-cross" onclick="_ppSetMargin(\'cross\')" style="flex:1;padding:8px;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;background:none;color:var(--text2);">Cross</button>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'
-        +'<div><label style="'+lblStyle+'">'+L.sym+'</label><input id="ppm-sym" type="text" value="BTC" placeholder="BTC / ETH / SOL / ..." oninput="_ppPreview()" style="'+inputStyle+';text-transform:uppercase;"></div>'
+        +'<div><label style="'+lblStyle+'">'+L.sym+' <span id="ppm-asset-badge"></span></label>'
+          +'<div id="ppm-sym-wrap">'
+            +'<input id="ppm-sym" type="text" value="BTC" placeholder="'+(isEn?'BTC, AAPL, EURUSD, ...':'BTC, AAPL, EURUSD, ...')+'" autocomplete="off" style="'+inputStyle+';text-transform:uppercase;">'
+            +'<div id="ppm-sym-dropdown" role="listbox"></div>'
+          +'</div>'
+        +'</div>'
         +'<div class="pp-futures-only"><label style="'+lblStyle+'">'+L.lev+'</label><input id="ppm-lev" type="number" value="10" min="1" oninput="_ppPreview()" style="'+inputStyle+'"></div>'
       +'</div>'
       +'<div style="margin-bottom:10px;">'
@@ -17184,8 +17186,22 @@ function _ppOpenNew(){
   _ppTpRender();
   setTimeout(function(){
     var symEl = document.getElementById('ppm-sym');
+    var dd    = document.getElementById('ppm-sym-dropdown');
     if(symEl){
-      symEl.addEventListener('input', _ppPullLivePrice);
+      // Live-price + state refresh + dropdown update on every keystroke
+      symEl.addEventListener('input', function(){
+        _ppUpdateAssetState();
+        _ppSymAutocomplete();
+        _ppPullLivePrice();
+      });
+      symEl.addEventListener('focus', _ppSymAutocomplete);
+      symEl.addEventListener('keydown', _ppSymAutocompleteKeydown);
+      // Hide dropdown on blur (with a tiny delay so click on suggestion fires first)
+      symEl.addEventListener('blur', function(){
+        setTimeout(function(){ if(dd) dd.classList.remove('show'); }, 150);
+      });
+      // Initial state — BTC is the default value, so derive class and fetch price
+      _ppUpdateAssetState();
       _ppPullLivePrice();
     }
   }, 50);
@@ -17423,51 +17439,204 @@ function _ppSetMarketType(t){
   }
   _ppPreview();
 }
-// Asset class state for the new-position modal. Only 'crypto' fetches live
-// prices from Binance; 'stocks' and 'forex' require the user to type the
-// entry price manually (no built-in feed yet).
+// ── Symbol library + autocomplete ───────────────────────────────────────
+// Curated list of popular assets so the new-position symbol input can show
+// suggestions and auto-detect the asset class (crypto/stocks/forex). Symbols
+// not in this list still work — they're treated as crypto by default.
+var _PP_ASSET_LIBRARY = [
+  // Top crypto (covers ~95% of Binance USDT volume)
+  {s:'BTC',n:'Bitcoin',t:'crypto'},{s:'ETH',n:'Ethereum',t:'crypto'},{s:'SOL',n:'Solana',t:'crypto'},
+  {s:'BNB',n:'BNB',t:'crypto'},{s:'XRP',n:'XRP',t:'crypto'},{s:'ADA',n:'Cardano',t:'crypto'},
+  {s:'DOGE',n:'Dogecoin',t:'crypto'},{s:'TRX',n:'TRON',t:'crypto'},{s:'TON',n:'Toncoin',t:'crypto'},
+  {s:'MATIC',n:'Polygon',t:'crypto'},{s:'DOT',n:'Polkadot',t:'crypto'},{s:'AVAX',n:'Avalanche',t:'crypto'},
+  {s:'LINK',n:'Chainlink',t:'crypto'},{s:'LTC',n:'Litecoin',t:'crypto'},{s:'BCH',n:'Bitcoin Cash',t:'crypto'},
+  {s:'ATOM',n:'Cosmos',t:'crypto'},{s:'UNI',n:'Uniswap',t:'crypto'},{s:'NEAR',n:'NEAR Protocol',t:'crypto'},
+  {s:'APT',n:'Aptos',t:'crypto'},{s:'ARB',n:'Arbitrum',t:'crypto'},{s:'OP',n:'Optimism',t:'crypto'},
+  {s:'INJ',n:'Injective',t:'crypto'},{s:'SUI',n:'Sui',t:'crypto'},{s:'TIA',n:'Celestia',t:'crypto'},
+  {s:'SEI',n:'Sei',t:'crypto'},{s:'FIL',n:'Filecoin',t:'crypto'},{s:'IMX',n:'Immutable',t:'crypto'},
+  {s:'MKR',n:'Maker',t:'crypto'},{s:'AAVE',n:'Aave',t:'crypto'},{s:'RUNE',n:'THORChain',t:'crypto'},
+  {s:'FET',n:'Fetch.ai',t:'crypto'},{s:'GRT',n:'The Graph',t:'crypto'},{s:'SAND',n:'The Sandbox',t:'crypto'},
+  {s:'AXS',n:'Axie Infinity',t:'crypto'},{s:'MANA',n:'Decentraland',t:'crypto'},{s:'GALA',n:'Gala',t:'crypto'},
+  {s:'CRV',n:'Curve DAO',t:'crypto'},{s:'COMP',n:'Compound',t:'crypto'},{s:'SUSHI',n:'SushiSwap',t:'crypto'},
+  {s:'1INCH',n:'1inch',t:'crypto'},{s:'BAT',n:'Basic Attention',t:'crypto'},{s:'ETC',n:'Ethereum Classic',t:'crypto'},
+  {s:'XLM',n:'Stellar',t:'crypto'},{s:'VET',n:'VeChain',t:'crypto'},{s:'HBAR',n:'Hedera',t:'crypto'},
+  {s:'ALGO',n:'Algorand',t:'crypto'},{s:'FTM',n:'Fantom',t:'crypto'},{s:'EOS',n:'EOS',t:'crypto'},
+  {s:'XMR',n:'Monero',t:'crypto'},{s:'DASH',n:'Dash',t:'crypto'},{s:'ZEC',n:'Zcash',t:'crypto'},
+  {s:'NEO',n:'NEO',t:'crypto'},{s:'ICX',n:'ICON',t:'crypto'},{s:'RNDR',n:'Render',t:'crypto'},
+  {s:'PEPE',n:'Pepe',t:'crypto'},{s:'SHIB',n:'Shiba Inu',t:'crypto'},{s:'WIF',n:'dogwifhat',t:'crypto'},
+  {s:'BONK',n:'Bonk',t:'crypto'},{s:'FLOKI',n:'Floki',t:'crypto'},{s:'ORDI',n:'Ordinals',t:'crypto'},
+  // Major stocks (US)
+  {s:'AAPL',n:'Apple',t:'stocks'},{s:'MSFT',n:'Microsoft',t:'stocks'},{s:'GOOGL',n:'Alphabet',t:'stocks'},
+  {s:'AMZN',n:'Amazon',t:'stocks'},{s:'NVDA',n:'NVIDIA',t:'stocks'},{s:'META',n:'Meta Platforms',t:'stocks'},
+  {s:'TSLA',n:'Tesla',t:'stocks'},{s:'BRK.B',n:'Berkshire Hathaway',t:'stocks'},{s:'JPM',n:'JPMorgan Chase',t:'stocks'},
+  {s:'V',n:'Visa',t:'stocks'},{s:'MA',n:'Mastercard',t:'stocks'},{s:'JNJ',n:'Johnson & Johnson',t:'stocks'},
+  {s:'WMT',n:'Walmart',t:'stocks'},{s:'PG',n:'Procter & Gamble',t:'stocks'},{s:'HD',n:'Home Depot',t:'stocks'},
+  {s:'BAC',n:'Bank of America',t:'stocks'},{s:'KO',n:'Coca-Cola',t:'stocks'},{s:'DIS',n:'Disney',t:'stocks'},
+  {s:'PEP',n:'PepsiCo',t:'stocks'},{s:'CSCO',n:'Cisco',t:'stocks'},{s:'ADBE',n:'Adobe',t:'stocks'},
+  {s:'NFLX',n:'Netflix',t:'stocks'},{s:'CRM',n:'Salesforce',t:'stocks'},{s:'INTC',n:'Intel',t:'stocks'},
+  {s:'AMD',n:'AMD',t:'stocks'},{s:'ORCL',n:'Oracle',t:'stocks'},{s:'NKE',n:'Nike',t:'stocks'},
+  {s:'MCD',n:'McDonald\'s',t:'stocks'},{s:'SBUX',n:'Starbucks',t:'stocks'},{s:'BA',n:'Boeing',t:'stocks'},
+  {s:'GS',n:'Goldman Sachs',t:'stocks'},{s:'IBM',n:'IBM',t:'stocks'},{s:'COIN',n:'Coinbase',t:'stocks'},
+  {s:'PLTR',n:'Palantir',t:'stocks'},{s:'SOFI',n:'SoFi',t:'stocks'},{s:'RIVN',n:'Rivian',t:'stocks'},
+  {s:'NIO',n:'NIO',t:'stocks'},{s:'GME',n:'GameStop',t:'stocks'},{s:'AMC',n:'AMC',t:'stocks'},
+  {s:'PYPL',n:'PayPal',t:'stocks'},{s:'UBER',n:'Uber',t:'stocks'},{s:'ABNB',n:'Airbnb',t:'stocks'},
+  {s:'SHOP',n:'Shopify',t:'stocks'},{s:'SNAP',n:'Snap',t:'stocks'},{s:'CRWD',n:'CrowdStrike',t:'stocks'},
+  {s:'NET',n:'Cloudflare',t:'stocks'},{s:'DDOG',n:'Datadog',t:'stocks'},{s:'SNOW',n:'Snowflake',t:'stocks'},
+  // ETFs
+  {s:'SPY',n:'S&P 500 ETF',t:'stocks'},{s:'QQQ',n:'Nasdaq-100 ETF',t:'stocks'},{s:'IWM',n:'Russell 2000 ETF',t:'stocks'},
+  {s:'DIA',n:'Dow Jones ETF',t:'stocks'},{s:'VOO',n:'Vanguard S&P 500',t:'stocks'},{s:'GLD',n:'Gold ETF',t:'stocks'},
+  {s:'SLV',n:'Silver ETF',t:'stocks'},{s:'USO',n:'Oil ETF',t:'stocks'},{s:'TLT',n:'20+ Year Treasury',t:'stocks'},
+  {s:'ARKK',n:'ARK Innovation',t:'stocks'},{s:'TQQQ',n:'3x Nasdaq',t:'stocks'},{s:'SQQQ',n:'-3x Nasdaq',t:'stocks'},
+  // Forex pairs
+  {s:'EURUSD',n:'Euro / US Dollar',t:'forex'},{s:'GBPUSD',n:'British Pound / USD',t:'forex'},
+  {s:'USDJPY',n:'USD / Japanese Yen',t:'forex'},{s:'USDCHF',n:'USD / Swiss Franc',t:'forex'},
+  {s:'AUDUSD',n:'Aussie / USD',t:'forex'},{s:'USDCAD',n:'USD / Canadian Dollar',t:'forex'},
+  {s:'NZDUSD',n:'Kiwi / USD',t:'forex'},{s:'EURGBP',n:'Euro / Pound',t:'forex'},
+  {s:'EURJPY',n:'Euro / Yen',t:'forex'},{s:'GBPJPY',n:'Pound / Yen',t:'forex'},
+  {s:'AUDJPY',n:'Aussie / Yen',t:'forex'},{s:'EURCHF',n:'Euro / Franc',t:'forex'},
+  {s:'EURAUD',n:'Euro / Aussie',t:'forex'},{s:'EURCAD',n:'Euro / CAD',t:'forex'},
+  {s:'GBPCHF',n:'Pound / Franc',t:'forex'},{s:'GBPAUD',n:'Pound / Aussie',t:'forex'},
+  {s:'AUDCAD',n:'Aussie / CAD',t:'forex'},{s:'AUDCHF',n:'Aussie / Franc',t:'forex'},
+  {s:'AUDNZD',n:'Aussie / Kiwi',t:'forex'},{s:'NZDJPY',n:'Kiwi / Yen',t:'forex'},
+  {s:'CADJPY',n:'CAD / Yen',t:'forex'},{s:'CHFJPY',n:'Franc / Yen',t:'forex'},
+  {s:'USDTRY',n:'USD / Turkish Lira',t:'forex'},{s:'USDMXN',n:'USD / Mexican Peso',t:'forex'},
+  {s:'USDZAR',n:'USD / South Africa',t:'forex'},{s:'USDHKD',n:'USD / Hong Kong',t:'forex'},
+  {s:'USDSGD',n:'USD / Singapore',t:'forex'},{s:'XAUUSD',n:'Gold (spot)',t:'forex'},
+  {s:'XAGUSD',n:'Silver (spot)',t:'forex'}
+];
+
+// Asset class state for the new-position modal. Auto-detected from the symbol
+// the user types. Only 'crypto' fetches live prices from Binance; 'stocks'
+// and 'forex' require the user to type the entry price manually.
 var _ppNewAssetClass = 'crypto';
-function _ppSetAssetClass(c){
-  if(c !== 'crypto' && c !== 'stocks' && c !== 'forex') return;
-  _ppNewAssetClass = c;
-  var ov = document.getElementById('pp-new-modal');
-  if(ov) ov.setAttribute('data-asset', c);
-  // Highlight the active button
-  ['crypto','stocks','forex'].forEach(function(k){
-    var btn = document.getElementById('ppm-asset-'+k);
-    if(!btn) return;
-    if(k === c){
-      btn.style.background = 'linear-gradient(135deg,#7c3aed,#ec4899)';
-      btn.style.color = '#fff';
-      btn.style.fontWeight = '700';
-    } else {
-      btn.style.background = 'none';
-      btn.style.color = 'var(--text2)';
-      btn.style.fontWeight = '600';
-    }
-  });
-  // Reset symbol + entry fields to match the new asset class. Placeholders
-  // are kept in sync so the user never sees, e.g., "AAPL / TSLA" while
-  // Crypto is selected.
+
+// Internal: find a library entry by exact symbol (case-insensitive).
+function _ppFindAsset(sym){
+  if(!sym) return null;
+  var u = String(sym).trim().toUpperCase();
+  for(var i = 0; i < _PP_ASSET_LIBRARY.length; i++){
+    if(_PP_ASSET_LIBRARY[i].s === u) return _PP_ASSET_LIBRARY[i];
+  }
+  return null;
+}
+
+// Update the asset class badge next to the SYMBOL label + adjust placeholders.
+// Called both when the user types and when they pick from the suggestions.
+function _ppUpdateAssetState(){
   var symEl = document.getElementById('ppm-sym');
-  var entryEl = document.getElementById('ppm-entry');
-  if(c === 'crypto'){
-    if(symEl){
-      symEl.placeholder = 'BTC / ETH / SOL / ...';
-      if(!symEl.value) symEl.value = 'BTC';
-    }
-    if(entryEl) entryEl.placeholder = 'live';
-    try{ _ppPullLivePrice(); }catch(_){}
-  } else {
-    if(entryEl) entryEl.placeholder = (c === 'stocks' ? 'e.g. 187.45' : 'e.g. 1.0856');
-    if(symEl){
-      // Wipe the default BTC seed so the user clearly sees the placeholder
-      // for stocks/forex. Custom values they typed are preserved.
-      if(symEl.value === 'BTC') symEl.value = '';
-      symEl.placeholder = (c === 'stocks' ? 'AAPL / TSLA / SPY ...' : 'EURUSD / GBPUSD ...');
+  var sym = symEl ? symEl.value.trim().toUpperCase() : '';
+  var hit = _ppFindAsset(sym);
+  // Default to crypto for unknown symbols — Binance will be tried and fail
+  // silently if not a real ticker.
+  _ppNewAssetClass = hit ? hit.t : 'crypto';
+  var ov = document.getElementById('pp-new-modal');
+  if(ov) ov.setAttribute('data-asset', _ppNewAssetClass);
+  // Show a small badge
+  var badge = document.getElementById('ppm-asset-badge');
+  if(badge){
+    if(hit){
+      var bg = hit.t === 'crypto' ? 'rgba(124,58,237,0.15);color:#a855f7'
+            : hit.t === 'stocks' ? 'rgba(34,197,94,0.15);color:#22c55e'
+            : 'rgba(59,130,246,0.15);color:#3b82f6';
+      var label = hit.t === 'crypto' ? '🪙 Crypto' : hit.t === 'stocks' ? '📈 Stock' : '💱 Forex';
+      badge.setAttribute('style', 'display:inline-block;margin-left:6px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:6px;vertical-align:middle;background:'+bg);
+      badge.textContent = label + ' · ' + hit.n;
+    } else {
+      badge.textContent = '';
+      badge.setAttribute('style','display:none;');
     }
   }
-  _ppPreview();
+  // Entry-price placeholder hint
+  var entryEl = document.getElementById('ppm-entry');
+  if(entryEl){
+    if(_ppNewAssetClass === 'crypto') entryEl.placeholder = 'live';
+    else if(_ppNewAssetClass === 'stocks') entryEl.placeholder = 'manual (e.g. 187.45)';
+    else entryEl.placeholder = 'manual (e.g. 1.0856)';
+  }
+}
+
+// Render the autocomplete dropdown filtered by the current input value.
+function _ppSymAutocomplete(){
+  var symEl = document.getElementById('ppm-sym');
+  var dd    = document.getElementById('ppm-sym-dropdown');
+  if(!symEl || !dd) return;
+  var q = symEl.value.trim().toUpperCase();
+  // Empty query → top 6 most popular assets (BTC, ETH, etc.)
+  var matches;
+  if(!q){
+    matches = _PP_ASSET_LIBRARY.slice(0, 6);
+  } else {
+    matches = _PP_ASSET_LIBRARY.filter(function(a){
+      return a.s.indexOf(q) === 0 || a.s.indexOf(q) > -1 || a.n.toUpperCase().indexOf(q) > -1;
+    });
+    // Prioritise starts-with matches, then keep top 10
+    matches.sort(function(a, b){
+      var aStart = a.s.indexOf(q) === 0 ? 0 : 1;
+      var bStart = b.s.indexOf(q) === 0 ? 0 : 1;
+      return aStart - bStart;
+    });
+    matches = matches.slice(0, 10);
+  }
+  if(!matches.length){ dd.classList.remove('show'); dd.innerHTML = ''; return; }
+  dd.innerHTML = matches.map(function(a, i){
+    var icon = a.t === 'crypto' ? '🪙' : a.t === 'stocks' ? '📈' : '💱';
+    return '<div class="ppm-sug'+(i===0?' ppm-sug-active':'')+'" data-sym="'+a.s+'">'
+      + '<span class="ppm-sug-sym">'+a.s+'</span>'
+      + '<span class="ppm-sug-name">'+a.n+'</span>'
+      + '<span class="ppm-sug-type">'+icon+'</span>'
+      + '</div>';
+  }).join('');
+  dd.classList.add('show');
+  // Wire click on each suggestion
+  Array.prototype.forEach.call(dd.querySelectorAll('.ppm-sug'), function(row){
+    row.addEventListener('mousedown', function(e){
+      // mousedown (not click) so it fires before the input loses focus and we hide
+      e.preventDefault();
+      var sym = row.getAttribute('data-sym');
+      symEl.value = sym;
+      dd.classList.remove('show');
+      _ppUpdateAssetState();
+      try{ _ppSizeSync('entry'); }catch(_){}
+      try{ _ppPullLivePrice(); }catch(_){}
+      _ppPreview();
+    });
+  });
+}
+
+// Keyboard navigation inside the dropdown (↑/↓/Enter/Esc)
+function _ppSymAutocompleteKeydown(e){
+  var dd = document.getElementById('ppm-sym-dropdown');
+  if(!dd || !dd.classList.contains('show')) return;
+  var rows = dd.querySelectorAll('.ppm-sug');
+  if(!rows.length) return;
+  var curIdx = -1;
+  for(var i = 0; i < rows.length; i++) if(rows[i].classList.contains('ppm-sug-active')){ curIdx = i; break; }
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    var ni = Math.min(rows.length-1, curIdx + 1);
+    rows.forEach(function(r){ r.classList.remove('ppm-sug-active'); });
+    rows[ni].classList.add('ppm-sug-active');
+    rows[ni].scrollIntoView({block:'nearest'});
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    var pi = Math.max(0, curIdx - 1);
+    rows.forEach(function(r){ r.classList.remove('ppm-sug-active'); });
+    rows[pi].classList.add('ppm-sug-active');
+    rows[pi].scrollIntoView({block:'nearest'});
+  } else if(e.key === 'Enter'){
+    e.preventDefault();
+    var active = dd.querySelector('.ppm-sug-active') || rows[0];
+    if(active){
+      var symEl = document.getElementById('ppm-sym');
+      symEl.value = active.getAttribute('data-sym');
+      dd.classList.remove('show');
+      _ppUpdateAssetState();
+      try{ _ppPullLivePrice(); }catch(_){}
+      _ppPreview();
+    }
+  } else if(e.key === 'Escape'){
+    dd.classList.remove('show');
+  }
 }
 function _ppPullLivePrice(){
   // Skip the Binance fetch entirely for non-crypto assets
