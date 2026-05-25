@@ -16458,12 +16458,10 @@ function _ppRenderAnalytics(){
       + _esc2safe(r._strategy.name)
       + '</div>';
   }).join('');
-  // In equity mode, clicking a metric button auto-switches back to bar mode
-  var pnlClick  = '_ppAnMetric=\'pnl\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
-  var roiClick  = '_ppAnMetric=\'roi\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
-  var wrClick   = '_ppAnMetric=\'winrate\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
-  // In equity mode metric buttons are dimmed but still visible & clickable
-  var metricDim = _ppAnChartMode === 'equity' ? ';opacity:.45' : '';
+  // Metric buttons always active — clicking in equity mode auto-switches to bar
+  var pnlClick = '_ppAnMetric=\'pnl\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
+  var roiClick = '_ppAnMetric=\'roi\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
+  var wrClick  = '_ppAnMetric=\'winrate\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
   html += '<div class="pp-an-chart-section">'
     + '<div class="pp-an-chart-toolbar">'
     +   '<span class="pp-an-chart-title">' + _t('Сравнение стратегий','Strategy comparison') + '</span>'
@@ -16472,10 +16470,10 @@ function _ppRenderAnalytics(){
     +       '<button class="pp-an-toggle-btn' + cmAct + '" onclick="_ppAnSetChartMode(\'compare\')">' + _t('📊 Бары','📊 Bars') + '</button>'
     +       '<button class="pp-an-toggle-btn' + eqAct + '" onclick="_ppAnSetChartMode(\'equity\')">' + _t('📈 Кривая','📈 Equity') + '</button>'
     +     '</div>'
-    +     '<div class="pp-an-toggle-group" style="' + metricDim + '">'
-    +       '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="' + pnlClick + '" title="' + _t('Бар-чарт: сравнить по P&L','Bar chart: compare by P&L') + '">P&amp;L</button>'
-    +       '<button class="pp-an-toggle-btn' + roiAct + '" onclick="' + roiClick + '" title="' + _t('Бар-чарт: сравнить по ROI','Bar chart: compare by ROI') + '">ROI</button>'
-    +       '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="' + wrClick  + '" title="' + _t('Бар-чарт: сравнить по винрейту','Bar chart: compare by win-rate') + '">' + _t('Винрейт','Win-rate') + '</button>'
+    +     '<div class="pp-an-toggle-group">'
+    +       '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="' + pnlClick + '">P&amp;L</button>'
+    +       '<button class="pp-an-toggle-btn' + roiAct + '" onclick="' + roiClick + '">ROI</button>'
+    +       '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="' + wrClick  + '">' + _t('Винрейт','Win-rate') + '</button>'
     +     '</div>'
     +   '</div>'
     + '</div>'
