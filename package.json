@@ -1,6 +1,6 @@
 {
   "name": "trading-suite",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "Trading Suite — десктоп-приложение",
   "main": "main.js",
   "author": "maksymgorskyi",
@@ -36,6 +36,7 @@
       "app/**/*",
       "package.json"
     ],
+    
     
     
     
