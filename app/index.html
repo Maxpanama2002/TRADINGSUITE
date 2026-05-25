@@ -16458,6 +16458,7 @@ function _ppRenderAnalytics(){
       + _esc2safe(r._strategy.name)
       + '</div>';
   }).join('');
+  var metricVis = _ppAnChartMode === 'equity' ? 'visibility:hidden;' : '';
   html += '<div class="pp-an-chart-section">'
     + '<div class="pp-an-chart-toolbar">'
     +   '<span class="pp-an-chart-title">' + _t('Сравнение стратегий','Strategy comparison') + '</span>'
@@ -16466,13 +16467,11 @@ function _ppRenderAnalytics(){
     +       '<button class="pp-an-toggle-btn' + cmAct + '" onclick="_ppAnSetChartMode(\'compare\')">' + _t('📊 Бары','📊 Bars') + '</button>'
     +       '<button class="pp-an-toggle-btn' + eqAct + '" onclick="_ppAnSetChartMode(\'equity\')">' + _t('📈 Кривая','📈 Equity') + '</button>'
     +     '</div>'
-    +     (_ppAnChartMode === 'compare'
-    ?       '<div class="pp-an-toggle-group">'
-    +         '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="_ppAnSetMetric(\'pnl\')">P&amp;L</button>'
-    +         '<button class="pp-an-toggle-btn' + roiAct + '" onclick="_ppAnSetMetric(\'roi\')">ROI</button>'
-    +         '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="_ppAnSetMetric(\'winrate\')">' + _t('Винрейт','Win-rate') + '</button>'
-    +       '</div>'
-    :       '<span style="font-size:11px;color:var(--text3);padding:0 4px;">' + _t('Накопл. P&L','Cumul. P&L') + '</span>')
+    +     '<div class="pp-an-toggle-group" style="' + metricVis + '">'
+    +       '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="_ppAnSetMetric(\'pnl\')">P&amp;L</button>'
+    +       '<button class="pp-an-toggle-btn' + roiAct + '" onclick="_ppAnSetMetric(\'roi\')">ROI</button>'
+    +       '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="_ppAnSetMetric(\'winrate\')">' + _t('Винрейт','Win-rate') + '</button>'
+    +     '</div>'
     +   '</div>'
     + '</div>'
     + '<div class="pp-an-chart-canvas-wrap"><canvas id="pp-an-chart-canvas"></canvas></div>'
