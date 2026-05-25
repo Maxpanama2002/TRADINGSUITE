@@ -17737,12 +17737,16 @@ function _ppExecute(){
   var dir = isSpot ? 'long' : _ppNewDir;
 
   // v2.1.161 — Limit order: get current price to determine trigger side.
+  // v2.5.1 — Don't block when there's no live price (stocks/forex, slow
+  // Binance response, or unknown ticker). Fall back to a sensible default
+  // so the user can place the order regardless of feed availability.
   var bSym = sym; if(!bSym.endsWith('USDT')) bSym = bSym+'USDT';
   var curMkt = _PP_PRICES[bSym] || 0;
   var isLimit = (_ppOrderType === 'limit');
 
-  // For limit orders, entry must differ from current price (otherwise it'd insta-fill).
-  // Tolerance: 0.05% — closer than that the user probably meant Market.
+  // For limit orders with a known live price, sanity-check the entry isn't
+  // glued to current (would insta-fill). Skip the check entirely if we have
+  // no live price reference.
   if(isLimit && curMkt > 0){
     var diffPct = Math.abs(entry - curMkt) / curMkt * 100;
     if(diffPct < 0.05){
@@ -17752,15 +17756,16 @@ function _ppExecute(){
     }
   }
 
-  // Determine pendingTriggerSide based on entry vs current price at placement.
-  // 'below' = wait for price to drop to entry; 'above' = wait for rise to entry.
+  // Determine pendingTriggerSide based on entry vs current price.
+  // 'below' = wait for price to drop to entry; 'above' = wait for rise.
+  // If no live price is known (non-crypto / not yet fetched), default to
+  // 'above' — the user can manually convert/edit the position later if
+  // they wanted the other direction.
   var pendingTriggerSide = null;
   if(isLimit){
-    if(curMkt <= 0){
-      alert(_t('Жду цену с Binance — подожди 1-2 секунды и нажми снова.','Waiting for Binance price — wait 1-2 sec and retry.'));
-      return;
-    }
-    pendingTriggerSide = (entry < curMkt) ? 'below' : 'above';
+    pendingTriggerSide = (curMkt > 0)
+      ? ((entry < curMkt) ? 'below' : 'above')
+      : 'above';
   }
 
   // Очистим TPs от пустых
