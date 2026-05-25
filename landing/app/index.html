@@ -3102,6 +3102,20 @@ tr.pp-drop-target{box-shadow:inset 0 2px 0 var(--accent);border-top:none !import
 
 /* Analytics view */
 .pp-analytics-wrap{}
+/* ── Strategy comparison chart ── */
+.pp-an-chart-section{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;}
+.pp-an-chart-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.pp-an-chart-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;}
+.pp-an-chart-toggles{display:flex;gap:6px;}
+.pp-an-toggle-group{display:flex;background:var(--card-bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.pp-an-toggle-btn{padding:5px 11px;font-size:11px;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s,color .15s;}
+.pp-an-toggle-btn.active{background:var(--accent);color:#fff;}
+.pp-an-chart-canvas-wrap{position:relative;height:220px;}
+.pp-an-chart-canvas-wrap canvas{width:100%!important;}
+.pp-an-chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.pp-an-chart-legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.pp-an-chart-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* ── end chart ── */
 .pp-an-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
 .pp-an-kpi{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;}
 .pp-an-kpi-lbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
@@ -16379,6 +16393,22 @@ function _ppCloseStrategyDetail(){
 }
 
 // ── Analytics tab (cross-strategy overview) ────────────────────────────
+// Chart state
+var _ppAnChartMode = 'compare'; // 'compare' (bar) | 'equity' (cumulative P&L lines)
+var _ppAnMetric    = 'pnl';     // 'pnl' | 'roi' | 'winrate'  — bar chart only
+var _ppAnChart     = null;
+// Distinct palette that works on both dark and light backgrounds
+var _PP_PALETTE = ['#8b5cf6','#06b6d4','#f59e0b','#ec4899','#10b981','#3b82f6','#ef4444','#a3e635','#f97316','#14b8a6'];
+
+function _ppAnSetChartMode(mode){
+  _ppAnChartMode = mode;
+  _ppRenderAnalytics();
+}
+function _ppAnSetMetric(metric){
+  _ppAnMetric = metric;
+  _ppRenderAnalytics();
+}
+
 function _ppRenderAnalytics(){
   var wrap = document.getElementById('pp-analytics-wrap');
   if(!wrap) return;
@@ -16413,6 +16443,40 @@ function _ppRenderAnalytics(){
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Всего сделок','Total trades') + '</div><div class="pp-an-kpi-val">' + totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (totalClosed ? overallWR + '%' : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalClosed ? (totalPnl > 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(0) : '—') + '</div></div>'
+    + '</div>';
+
+  // ── Strategy comparison chart ──────────────────────────────────────────
+  var cmAct  = _ppAnChartMode === 'compare' ? ' active' : '';
+  var eqAct  = _ppAnChartMode === 'equity'  ? ' active' : '';
+  var pnlAct = _ppAnMetric    === 'pnl'     ? ' active' : '';
+  var roiAct = _ppAnMetric    === 'roi'     ? ' active' : '';
+  var wrAct  = _ppAnMetric    === 'winrate' ? ' active' : '';
+  var legendHtml = rows.map(function(r, i){
+    var col = _PP_PALETTE[i % _PP_PALETTE.length];
+    return '<div class="pp-an-chart-legend-item">'
+      + '<div class="pp-an-chart-legend-dot" style="background:' + col + ';"></div>'
+      + _esc2safe(r._strategy.name)
+      + '</div>';
+  }).join('');
+  html += '<div class="pp-an-chart-section">'
+    + '<div class="pp-an-chart-toolbar">'
+    +   '<span class="pp-an-chart-title">' + _t('Сравнение стратегий','Strategy comparison') + '</span>'
+    +   '<div class="pp-an-chart-toggles">'
+    +     '<div class="pp-an-toggle-group">'
+    +       '<button class="pp-an-toggle-btn' + cmAct + '" onclick="_ppAnSetChartMode(\'compare\')">' + _t('📊 Бары','📊 Bars') + '</button>'
+    +       '<button class="pp-an-toggle-btn' + eqAct + '" onclick="_ppAnSetChartMode(\'equity\')">' + _t('📈 Кривая','📈 Equity') + '</button>'
+    +     '</div>'
+    +     (_ppAnChartMode === 'compare'
+    ?       '<div class="pp-an-toggle-group">'
+    +         '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="_ppAnSetMetric(\'pnl\')">P&amp;L</button>'
+    +         '<button class="pp-an-toggle-btn' + roiAct + '" onclick="_ppAnSetMetric(\'roi\')">ROI</button>'
+    +         '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="_ppAnSetMetric(\'winrate\')">' + _t('Винрейт','Win-rate') + '</button>'
+    +       '</div>'
+    :       '')
+    +   '</div>'
+    + '</div>'
+    + '<div class="pp-an-chart-canvas-wrap"><canvas id="pp-an-chart-canvas"></canvas></div>'
+    + '<div class="pp-an-chart-legend">' + legendHtml + '</div>'
     + '</div>';
 
   // ROI column added — it's the fair comparator across strategies because
@@ -16488,10 +16552,159 @@ function _ppRenderAnalytics(){
   }catch(_){}
 
   wrap.innerHTML = html;
+  // Draw comparison chart after DOM is ready
+  setTimeout(function(){ try{ _ppDrawAnChart(rows); }catch(e){ console.warn('chart err',e); } }, 0);
   // After re-render, _ppDeleteHistory calls _ppRender() which won't refresh
   // this Analytics view — so we need an MutationObserver-free workaround:
   // _ppDeleteHistory is patched (below) to also call _ppRenderAnalytics
   // when the Analytics tab is currently visible.
+}
+
+// ── Strategy comparison chart renderer ────────────────────────────────────
+function _ppDrawAnChart(rows){
+  if(typeof Chart === 'undefined') return;
+  var canvas = document.getElementById('pp-an-chart-canvas');
+  if(!canvas) return;
+
+  // Destroy previous instance
+  if(_ppAnChart){ try{ _ppAnChart.destroy(); }catch(_){} _ppAnChart = null; }
+
+  var isDark = document.body.classList.contains('dark') || document.documentElement.getAttribute('data-theme') === 'dark';
+  var textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+  var gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+
+  if(_ppAnChartMode === 'compare'){
+    // ── Horizontal bar chart ──────────────────────────────────────────
+    var labels = rows.map(function(r){ return r._strategy.name; });
+    var vals   = rows.map(function(r, i){
+      if(_ppAnMetric === 'roi')     return (r.budget > 0 && r.closedTrades) ? parseFloat(r.roi.toFixed(2))     : 0;
+      if(_ppAnMetric === 'winrate') return r.closedTrades ? r.winRate : 0;
+      return parseFloat(r.totalPnl.toFixed(2)); // pnl
+    });
+    var colors = rows.map(function(r, i){
+      var v = vals[i];
+      // For P&L / ROI — green if positive, red if negative
+      if(_ppAnMetric === 'winrate') return _PP_PALETTE[i % _PP_PALETTE.length];
+      return v >= 0 ? '#22c55e' : '#ef4444';
+    });
+    var unitSuffix = _ppAnMetric === 'pnl' ? '$' : '%';
+    _ppAnChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: vals,
+          backgroundColor: colors.map(function(c){ return c + 'cc'; }),
+          borderColor:     colors,
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx){
+                var v = ctx.raw;
+                if(_ppAnMetric === 'pnl')     return (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(2);
+                if(_ppAnMetric === 'roi')     return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+                return v + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: gridColor },
+            ticks: { color: textColor, font: { size: 11 },
+              callback: function(v){ return (_ppAnMetric === 'pnl' ? '$' : '') + v + (_ppAnMetric !== 'pnl' ? '%' : ''); }
+            },
+            border: { color: gridColor }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: textColor, font: { size: 11 } },
+            border: { display: false }
+          }
+        }
+      }
+    });
+
+  } else {
+    // ── Equity curve (cumulative P&L over closed trades) ─────────────
+    // Flatten all closed trades across all strategies, sorted by closedAt timestamp
+    // Then compute running sum per strategy
+    var datasets = rows.map(function(r, i){
+      var closed = (r.closedList || []).slice().sort(function(a, b){
+        var ta = a.closedAt || a.closed_at || 0;
+        var tb = b.closedAt || b.closed_at || 0;
+        return ta - tb;
+      });
+      var running = 0;
+      var points = [{ x: 0, y: 0 }];
+      closed.forEach(function(t, idx){
+        running += parseFloat(t.pnl || t.realized_pnl || 0);
+        points.push({ x: idx + 1, y: parseFloat(running.toFixed(2)) });
+      });
+      var col = _PP_PALETTE[i % _PP_PALETTE.length];
+      return {
+        label: r._strategy.name,
+        data: points,
+        borderColor: col,
+        backgroundColor: col + '22',
+        borderWidth: 2,
+        pointRadius: function(ctx){ return ctx.dataIndex === 0 ? 0 : 3; },
+        pointHoverRadius: 5,
+        fill: false,
+        tension: 0.3,
+        parsing: false
+      };
+    });
+
+    _ppAnChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: { datasets: datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(items){
+                return _t('Сделка #','Trade #') + items[0].raw.x;
+              },
+              label: function(ctx){
+                var v = ctx.raw.y;
+                return ctx.dataset.label + ': ' + (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(2);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            grid: { color: gridColor },
+            ticks: { color: textColor, font: { size: 11 },
+              callback: function(v){ return v === 0 ? 'Старт' : '#' + v; }
+            },
+            border: { color: gridColor }
+          },
+          y: {
+            grid: { color: gridColor },
+            ticks: { color: textColor, font: { size: 11 },
+              callback: function(v){ return (v >= 0 ? '$' : '-$') + Math.abs(v); }
+            },
+            border: { color: gridColor }
+          }
+        }
+      }
+    });
+  }
 }
 
 // Initial tab count update when entering paper page
