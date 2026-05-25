@@ -17136,7 +17136,7 @@ function _ppOpenNew(){
       +'</div>'
       +'<div style="margin-bottom:10px;">'
         +'<label style="'+lblStyle+'"><span id="ppm-entry-label">'+L.entry+'</span> <span id="ppm-entry-hint" style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px;">— текущая цена</span></label>'
-        +'<input id="ppm-entry" type="number" step="any" oninput="_ppSizeSync(\'entry\');_ppPreview()" style="'+inputStyle+'" placeholder="live">'
+        +'<input id="ppm-entry" type="number" step="any" oninput="_ppEntryIsLive=false;_ppSizeSync(\'entry\');_ppPreview()" style="'+inputStyle+'" placeholder="live">'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'
         +'<div><label style="'+lblStyle+'">'+L.size+'</label><input id="ppm-size" type="number" step="any" value="0.1" oninput="_ppSizeSync(\'qty\');_ppPreview()" style="'+inputStyle+'"></div>'
@@ -17182,6 +17182,7 @@ function _ppOpenNew(){
   ov.setAttribute('data-market','futures');
   ov.setAttribute('data-asset','crypto');
   _ppSizeSource = 'qty';   // дефолт — qty (size=0.1)
+  _ppEntryIsLive = false;  // reset: next price fetch will be the first auto-fill
   _ppNewTps = [{price:'', sizePct:100}];   // стартовая конфигурация — 1 TP на 100%
   _ppTpRender();
   setTimeout(function(){
@@ -17240,6 +17241,7 @@ function _ppRenderPnlInline(elId, pnl, roi, lossLbl, profitLbl){
 // второе поле пересчитывается. При смене entry — пересчитываем то поле,
 // которое НЕ было последним отредактировано.
 var _ppSizeSource = 'qty';  // 'qty' | 'usdt' | 'entry'
+var _ppEntryIsLive = false; // true = entry was auto-filled from live price; false = user typed manually
 function _ppSizeSync(src){
   var entryEl = document.getElementById('ppm-entry');
   var qtyEl   = document.getElementById('ppm-size');
@@ -17596,6 +17598,11 @@ function _ppSymAutocomplete(){
       symEl.value = sym;
       dd.classList.remove('show');
       _ppUpdateAssetState();
+      // Reset live-price flag so the next fetch overwrites the stale price
+      _ppEntryIsLive = false;
+      // Clear entry so new symbol's price fills in cleanly
+      var entryEl = document.getElementById('ppm-entry');
+      if(entryEl) entryEl.value = '';
       try{ _ppSizeSync('entry'); }catch(_){}
       try{ _ppPullLivePrice(); }catch(_){}
       _ppPreview();
@@ -17631,6 +17638,10 @@ function _ppSymAutocompleteKeydown(e){
       symEl.value = active.getAttribute('data-sym');
       dd.classList.remove('show');
       _ppUpdateAssetState();
+      // Reset so the next price fetch overwrites any stale auto-fill
+      _ppEntryIsLive = false;
+      var entryElKb = document.getElementById('ppm-entry');
+      if(entryElKb) entryElKb.value = '';
       try{ _ppPullLivePrice(); }catch(_){}
       _ppPreview();
     }
@@ -17651,8 +17662,11 @@ function _ppPullLivePrice(){
     .then(function(j){
       if(j && j.price){
         var entryEl = document.getElementById('ppm-entry');
-        if(entryEl && !entryEl.value){
+        // Update entry if: field is empty OR it was previously auto-filled from live price
+        // (i.e. user hasn't manually typed a custom entry)
+        if(entryEl && (!entryEl.value || _ppEntryIsLive)){
           entryEl.value = parseFloat(j.price);
+          _ppEntryIsLive = true;
           try{ _ppSizeSync('entry'); }catch(e){}
         }
         _PP_PRICES[bSym] = parseFloat(j.price);
