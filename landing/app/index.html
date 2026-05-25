@@ -16458,6 +16458,12 @@ function _ppRenderAnalytics(){
       + _esc2safe(r._strategy.name)
       + '</div>';
   }).join('');
+  // In equity mode, clicking a metric button auto-switches back to bar mode
+  var pnlClick  = '_ppAnMetric=\'pnl\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
+  var roiClick  = '_ppAnMetric=\'roi\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
+  var wrClick   = '_ppAnMetric=\'winrate\';_ppAnChartMode=\'compare\';_ppRenderAnalytics()';
+  // In equity mode metric buttons are dimmed but still visible & clickable
+  var metricDim = _ppAnChartMode === 'equity' ? ';opacity:.45' : '';
   html += '<div class="pp-an-chart-section">'
     + '<div class="pp-an-chart-toolbar">'
     +   '<span class="pp-an-chart-title">' + _t('Сравнение стратегий','Strategy comparison') + '</span>'
@@ -16466,13 +16472,11 @@ function _ppRenderAnalytics(){
     +       '<button class="pp-an-toggle-btn' + cmAct + '" onclick="_ppAnSetChartMode(\'compare\')">' + _t('📊 Бары','📊 Bars') + '</button>'
     +       '<button class="pp-an-toggle-btn' + eqAct + '" onclick="_ppAnSetChartMode(\'equity\')">' + _t('📈 Кривая','📈 Equity') + '</button>'
     +     '</div>'
-    +     (_ppAnChartMode === 'compare'
-    ?       '<div class="pp-an-toggle-group">'
-    +         '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="_ppAnSetMetric(\'pnl\')">P&amp;L</button>'
-    +         '<button class="pp-an-toggle-btn' + roiAct + '" onclick="_ppAnSetMetric(\'roi\')">ROI</button>'
-    +         '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="_ppAnSetMetric(\'winrate\')">' + _t('Винрейт','Win-rate') + '</button>'
-    +       '</div>'
-    :       '')
+    +     '<div class="pp-an-toggle-group" style="' + metricDim + '">'
+    +       '<button class="pp-an-toggle-btn' + pnlAct + '" onclick="' + pnlClick + '" title="' + _t('Бар-чарт: сравнить по P&L','Bar chart: compare by P&L') + '">P&amp;L</button>'
+    +       '<button class="pp-an-toggle-btn' + roiAct + '" onclick="' + roiClick + '" title="' + _t('Бар-чарт: сравнить по ROI','Bar chart: compare by ROI') + '">ROI</button>'
+    +       '<button class="pp-an-toggle-btn' + wrAct  + '" onclick="' + wrClick  + '" title="' + _t('Бар-чарт: сравнить по винрейту','Bar chart: compare by win-rate') + '">' + _t('Винрейт','Win-rate') + '</button>'
+    +     '</div>'
     +   '</div>'
     + '</div>'
     + '<div class="pp-an-chart-canvas-wrap"><canvas id="pp-an-chart-canvas"></canvas></div>'
@@ -16638,12 +16642,14 @@ function _ppDrawAnChart(rows){
     // ── Equity curve (cumulative P&L over closed trades) ─────────────
     // Flatten all closed trades across all strategies, sorted by closedAt timestamp
     // Then compute running sum per strategy
+    var maxTrades = 0;
     var datasets = rows.map(function(r, i){
       var closed = (r.closedList || []).slice().sort(function(a, b){
         var ta = a.closedAt || a.closed_at || 0;
         var tb = b.closedAt || b.closed_at || 0;
         return ta - tb;
       });
+      if(closed.length > maxTrades) maxTrades = closed.length;
       var running = 0;
       var points = [{ x: 0, y: 0 }];
       closed.forEach(function(t, idx){
@@ -16657,13 +16663,24 @@ function _ppDrawAnChart(rows){
         borderColor: col,
         backgroundColor: col + '22',
         borderWidth: 2,
-        pointRadius: function(ctx){ return ctx.dataIndex === 0 ? 0 : 3; },
+        pointRadius: 3,
         pointHoverRadius: 5,
         fill: false,
         tension: 0.3,
         parsing: false
       };
     });
+
+    // No closed trades across all strategies — show placeholder
+    if(maxTrades === 0){
+      var wrap2 = canvas.parentNode;
+      if(wrap2){
+        wrap2.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;">'
+          + _t('Нет закрытых сделок — кривые появятся после первого закрытия позиции','No closed trades yet — curves will appear after the first closed position')
+          + '</div>';
+      }
+      return;
+    }
 
     _ppAnChart = new Chart(canvas.getContext('2d'), {
       type: 'line',
@@ -16676,7 +16693,8 @@ function _ppDrawAnChart(rows){
           tooltip: {
             callbacks: {
               title: function(items){
-                return _t('Сделка #','Trade #') + items[0].raw.x;
+                var x = items[0].raw.x;
+                return x === 0 ? _t('Старт','Start') : _t('Сделка','Trade') + ' #' + x;
               },
               label: function(ctx){
                 var v = ctx.raw.y;
@@ -16688,16 +16706,28 @@ function _ppDrawAnChart(rows){
         scales: {
           x: {
             type: 'linear',
+            min: 0,
+            max: Math.max(maxTrades, 1),
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { size: 11 },
-              callback: function(v){ return v === 0 ? 'Старт' : '#' + v; }
+            ticks: {
+              color: textColor,
+              font: { size: 11 },
+              stepSize: 1,
+              callback: function(v){
+                if(v < 0 || !Number.isInteger(v)) return '';
+                return v === 0 ? _t('Старт','Start') : '#' + v;
+              }
             },
             border: { color: gridColor }
           },
           y: {
             grid: { color: gridColor },
-            ticks: { color: textColor, font: { size: 11 },
-              callback: function(v){ return (v >= 0 ? '$' : '-$') + Math.abs(v); }
+            ticks: {
+              color: textColor,
+              font: { size: 11 },
+              callback: function(v){
+                return (v >= 0 ? '$' : '-$') + Math.abs(v).toFixed(0);
+              }
             },
             border: { color: gridColor }
           }
