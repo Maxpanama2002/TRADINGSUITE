@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.8';
+window._APP_VERSION = '2.5.9';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -16051,6 +16051,7 @@ function _ppAllTrades(){
 function _ppStrategyStats(strategyId){
   var trades = _ppAllTrades().filter(function(t){ return t.strategy_id === strategyId; });
   var closed = trades.filter(function(t){ return t._state === 'closed'; });
+  var openActive = trades.filter(function(t){ return t._state === 'open' && t.status !== 'pending'; });
   var openCount = trades.length - closed.length;
   var wins = 0, totalPnl = 0, grossWin = 0, grossLoss = 0, best = 0, worst = 0;
   closed.forEach(function(t){
@@ -16059,14 +16060,23 @@ function _ppStrategyStats(strategyId){
     if(pnl > 0){ wins++; grossWin += pnl; if(pnl > best) best = pnl; }
     else if(pnl < 0){ grossLoss += Math.abs(pnl); if(pnl < worst) worst = pnl; }
   });
+  // Unrealized P&L from open non-pending positions (uses live _PP_PRICES cache)
+  var unrealizedPnl = 0;
+  openActive.forEach(function(p){
+    var bSym = (p.sym||'').toUpperCase();
+    if(!bSym.endsWith('USDT')) bSym += 'USDT';
+    var cur = (typeof _PP_PRICES !== 'undefined' ? (_PP_PRICES[bSym] || 0) : 0) || parseFloat(p.entry) || 0;
+    unrealizedPnl += p.dir === 'long' ? (cur - p.entry) * p.size : (p.entry - cur) * p.size;
+  });
+  var combinedPnl = totalPnl + unrealizedPnl; // realized + floating
   var winRate = closed.length ? Math.round((wins / closed.length) * 100) : 0;
   var profitFactor = grossLoss > 0 ? (grossWin / grossLoss) : (grossWin > 0 ? Infinity : 0);
   // Per-strategy budget — read from the strategy record. Older strategies
   // without a budget field default to 0, which means we show "—" for ROI.
   var strategy = _ppStrategyById(strategyId) || {};
   var budget = parseFloat(strategy.budget) || 0;
-  var currentBalance = budget + totalPnl;
-  var roi = budget > 0 ? (totalPnl / budget) * 100 : 0;
+  var currentBalance = budget + combinedPnl;
+  var roi = budget > 0 ? (combinedPnl / budget) * 100 : 0;
   return {
     totalTrades: trades.length,
     closedTrades: closed.length,
@@ -16074,12 +16084,13 @@ function _ppStrategyStats(strategyId){
     wins: wins,
     losses: closed.length - wins,
     winRate: winRate,
-    totalPnl: totalPnl,
+    totalPnl: totalPnl,          // realized (closed trades only)
+    unrealizedPnl: unrealizedPnl,// floating (open positions)
+    combinedPnl: combinedPnl,    // realized + floating — use this for display
     profitFactor: profitFactor,
     best: best,
     worst: worst,
     closedList: closed,
-    // New: per-strategy budget tracking
     budget: budget,
     currentBalance: currentBalance,
     roi: roi
@@ -16135,7 +16146,7 @@ function _ppRenderStrategies(){
 
   box.innerHTML = list.map(function(s){
     var st = _ppStrategyStats(s.id);
-    var pnlClass = st.totalPnl > 0 ? 'pos' : (st.totalPnl < 0 ? 'neg' : '');
+    var pnlClass = st.combinedPnl > 0 ? 'pos' : (st.combinedPnl < 0 ? 'neg' : '');
     var pfStr = st.profitFactor === Infinity ? '∞' : (st.profitFactor ? st.profitFactor.toFixed(2) : '—');
     var statusLabel = s.status === 'testing' ? _t('🧪 Тестируется','🧪 Testing')
                     : s.status === 'validated' ? _t('✅ Подтверждена','✅ Validated')
@@ -16151,7 +16162,7 @@ function _ppRenderStrategies(){
     var budgetRow = st.budget > 0
       ? '<div class="pp-str-card-budget" style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:8px 12px;background:var(--card-bg);border-radius:8px;margin-bottom:10px;border:1px dashed var(--border);">'
         + '<span style="color:var(--text3);">' + _t('Бюджет','Budget') + ' <strong style="color:var(--text);font-size:13px;">$' + st.budget.toFixed(0) + '</strong> → <strong style="color:var(--text);font-size:13px;">$' + st.currentBalance.toFixed(0) + '</strong></span>'
-        + '<span class="' + roiClass + '" style="font-weight:700;font-size:13px;">' + (st.closedTrades ? (roiSign + st.roi.toFixed(1) + '%') : '—') + '</span>'
+        + '<span class="' + roiClass + '" style="font-weight:700;font-size:13px;">' + (st.totalTrades ? (roiSign + st.roi.toFixed(1) + '%') : '—') + '</span>'
         + '</div>'
       : '';
 
@@ -16165,8 +16176,8 @@ function _ppRenderStrategies(){
       + '<div class="pp-str-card-stats">'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-str-stat-val">' + st.totalTrades + (st.openTrades ? ' <span style="font-size:10px;color:#f59e0b;">(' + st.openTrades + ' ' + _t('откр.','open') + ')</span>' : '') + '</div></div>'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-str-stat-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
-      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">P&amp;L</div><div class="pp-str-stat-val ' + pnlClass + '">' + (st.closedTrades ? (st.totalPnl > 0 ? '+' : '') + '$' + Math.abs(st.totalPnl).toFixed(0) : '—') + '</div></div>'
-      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Profit factor</div><div class="pp-str-stat-val">' + pfStr + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">P&amp;L' + (st.openTrades && !st.closedTrades ? ' <span style="font-size:9px;color:#f59e0b;font-weight:400;">' + _t('float','float') + '</span>' : '') + '</div><div class="pp-str-stat-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(st.combinedPnl).toFixed(0) : '—') + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Profit factor</div><div class="pp-str-stat-val">' + (st.closedTrades ? pfStr : '—') + '</div></div>'
       + '</div>'
       + (tfHtml || sideHtml || tagsHtml ? '<div class="pp-str-card-meta">' + tfHtml + sideHtml + tagsHtml + '</div>' : '')
       + '<div class="pp-str-card-actions">'
@@ -16316,7 +16327,7 @@ function _ppOpenStrategyDetail(id){
   document.getElementById('pp-str-det-status').textContent = statusLabel + (s.timeframe ? ' · ' + s.timeframe : '');
 
   var st = _ppStrategyStats(id);
-  var pnlClass = st.totalPnl > 0 ? 'pos' : (st.totalPnl < 0 ? 'neg' : '');
+  var pnlClass = st.combinedPnl > 0 ? 'pos' : (st.combinedPnl < 0 ? 'neg' : '');
   var pfStr = st.profitFactor === Infinity ? '∞' : (st.profitFactor ? st.profitFactor.toFixed(2) : '—');
 
   var body = document.getElementById('pp-str-detail-body');
@@ -16342,12 +16353,12 @@ function _ppOpenStrategyDetail(id){
     + '<div class="pp-an-summary">'
     + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Бюджет','Budget') + '</div><div class="pp-an-kpi-val">$' + st.budget.toFixed(0) + '</div></div>' : '')
     + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Сейчас','Current') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">$' + st.currentBalance.toFixed(0) + '</div></div>' : '')
-    + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">ROI</div><div class="pp-an-kpi-val ' + roiClassDet + '">' + (st.closedTrades ? (roiSignDet + st.roi.toFixed(1) + '%') : '—') + '</div></div>' : '')
+    + (st.budget > 0 ? '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">ROI</div><div class="pp-an-kpi-val ' + roiClassDet + '">' + (st.totalTrades ? (roiSignDet + st.roi.toFixed(1) + '%') : '—') + '</div></div>' : '')
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-an-kpi-val">' + st.totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Закрытых','Closed') + '</div><div class="pp-an-kpi-val">' + st.closedTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
-    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (st.closedTrades ? (st.totalPnl > 0 ? '+' : '') + '$' + Math.abs(st.totalPnl).toFixed(2) : '—') + '</div></div>'
-    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Profit factor</div><div class="pp-an-kpi-val">' + pfStr + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(st.combinedPnl).toFixed(2) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Profit factor</div><div class="pp-an-kpi-val">' + (st.closedTrades ? pfStr : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Лучшая','Best') + '</div><div class="pp-an-kpi-val pos">' + (st.best > 0 ? '+$' + st.best.toFixed(0) : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Худшая','Worst') + '</div><div class="pp-an-kpi-val neg">' + (st.worst < 0 ? '−$' + Math.abs(st.worst).toFixed(0) : '—') + '</div></div>'
     + '</div></div>';
@@ -16429,21 +16440,21 @@ function _ppRenderAnalytics(){
   rows.sort(function(a,b){ return b.totalPnl - a.totalPnl; });
 
   // Aggregate KPIs
-  var totalTrades = 0, totalClosed = 0, totalWins = 0, totalPnl = 0;
+  var totalTrades = 0, totalClosed = 0, totalWins = 0, totalCombinedPnl = 0;
   rows.forEach(function(r){
     totalTrades += r.totalTrades;
     totalClosed += r.closedTrades;
     totalWins   += r.wins;
-    totalPnl    += r.totalPnl;
+    totalCombinedPnl += r.combinedPnl; // realized + unrealized
   });
   var overallWR = totalClosed ? Math.round((totalWins/totalClosed)*100) : 0;
-  var pnlClass = totalPnl > 0 ? 'pos' : (totalPnl < 0 ? 'neg' : '');
+  var pnlClass = totalCombinedPnl > 0 ? 'pos' : (totalCombinedPnl < 0 ? 'neg' : '');
 
   var html = '<div class="pp-an-summary">'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Стратегий','Strategies') + '</div><div class="pp-an-kpi-val">' + strategies.length + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Всего сделок','Total trades') + '</div><div class="pp-an-kpi-val">' + totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (totalClosed ? overallWR + '%' : '—') + '</div></div>'
-    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalClosed ? (totalPnl > 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(0) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalTrades ? (totalCombinedPnl > 0 ? '+' : '') + '$' + Math.abs(totalCombinedPnl).toFixed(0) : '—') + '</div></div>'
     + '</div>';
 
   // ── Strategy comparison chart ──────────────────────────────────────────
@@ -16487,21 +16498,21 @@ function _ppRenderAnalytics(){
     + '</tr></thead><tbody>'
     + rows.map(function(r){
         var s = r._strategy;
-        var pnlCls = r.totalPnl > 0 ? 'pos' : (r.totalPnl < 0 ? 'neg' : '');
+        var pnlCls = r.combinedPnl > 0 ? 'pos' : (r.combinedPnl < 0 ? 'neg' : '');
         var roiCls = r.roi > 0 ? 'pos' : (r.roi < 0 ? 'neg' : '');
         var pf = r.profitFactor === Infinity ? '∞' : (r.profitFactor ? r.profitFactor.toFixed(2) : '—');
         var statusLabel = s.status === 'testing' ? '🧪' : s.status === 'validated' ? '✅' : '🗑';
         var budgetTxt = r.budget > 0 ? ('$' + r.budget.toFixed(0)) : '—';
-        var roiTxt = (r.budget > 0 && r.closedTrades) ? ((r.roi >= 0 ? '+' : '') + r.roi.toFixed(1) + '%') : '—';
+        var roiTxt = (r.budget > 0 && r.totalTrades) ? ((r.roi >= 0 ? '+' : '') + r.roi.toFixed(1) + '%') : '—';
         return '<tr style="cursor:pointer;" onclick="_ppOpenStrategyDetail(\'' + s.id + '\')">'
           + '<td><strong style="color:var(--text);">' + _esc2safe(s.name) + '</strong></td>'
           + '<td>' + statusLabel + '</td>'
           + '<td style="color:var(--text3);">' + budgetTxt + '</td>'
           + '<td>' + r.totalTrades + '</td>'
           + '<td>' + (r.closedTrades ? r.winRate + '%' : '—') + '</td>'
-          + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.closedTrades ? (r.totalPnl > 0 ? '+' : '') + '$' + Math.abs(r.totalPnl).toFixed(0) : '—') + '</td>'
+          + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.totalTrades ? (r.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(r.combinedPnl).toFixed(0) : '—') + '</td>'
           + '<td class="' + roiCls + '" style="font-weight:700;">' + roiTxt + '</td>'
-          + '<td>' + pf + '</td>'
+          + '<td>' + (r.closedTrades ? pf : '—') + '</td>'
           + '</tr>';
       }).join('')
     + '</tbody></table>';
@@ -16577,9 +16588,9 @@ function _ppDrawAnChart(rows){
     // ── Horizontal bar chart ──────────────────────────────────────────
     var labels = rows.map(function(r){ return r._strategy.name; });
     var vals   = rows.map(function(r, i){
-      if(_ppAnMetric === 'roi')     return (r.budget > 0 && r.closedTrades) ? parseFloat(r.roi.toFixed(2))     : 0;
+      if(_ppAnMetric === 'roi')     return (r.budget > 0 && r.totalTrades) ? parseFloat(r.roi.toFixed(2))     : 0;
       if(_ppAnMetric === 'winrate') return r.closedTrades ? r.winRate : 0;
-      return parseFloat(r.totalPnl.toFixed(2)); // pnl
+      return parseFloat(r.combinedPnl.toFixed(2)); // realized + unrealized P&L
     });
     var colors = rows.map(function(r, i){
       var v = vals[i];
