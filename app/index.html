@@ -4691,12 +4691,13 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
             <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
               <table style="width:100%;border-collapse:collapse;font-size:13px;">
                 <thead><tr style="border-bottom:1px solid var(--border);">
-                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Закрыто</th>
-                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Монета</th>
-                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Сторона</th>
-                  <th style="text-align:right;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Вход</th>
-                  <th style="text-align:right;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Выход</th>
-                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">Причина</th>
+                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Закрыто">Закрыто</th>
+                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Монета">Монета</th>
+                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Стратегия">Стратегия</th>
+                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Сторона">Сторона</th>
+                  <th style="text-align:right;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Вход">Вход</th>
+                  <th style="text-align:right;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Выход">Выход</th>
+                  <th style="text-align:left;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;" data-i18n="Причина">Причина</th>
                   <th style="text-align:right;padding:8px 6px;font-size:10px;color:var(--text3);text-transform:uppercase;">P&L</th>
                   <th style="width:36px;"></th>
                 </tr></thead>
@@ -5839,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.7';
+window._APP_VERSION = '2.5.8';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -17205,15 +17206,19 @@ function _ppRender(){
         var tpNum = isTp ? rs.replace('take-profit-','').replace('take-profit','') : '';
         var reasonText = rs==='stop-loss' ? 'SL' : isTp ? ('TP'+(tpNum?tpNum:'')) : rs==='liquidation' ? 'Liq' : _t('Ручное','Manual');
         var delTitle = _t('Удалить из истории','Delete from history');
-        // Strategy badge under the coin (same as in Open Positions)
-        var stratNameH = '';
+        // Strategy column for history row
+        var stratNameText = '';
         if(h.strategy_id){
           var stratRefH = (typeof _ppStrategyById === 'function') ? _ppStrategyById(h.strategy_id) : null;
-          if(stratRefH) stratNameH = '<div style="font-size:10px;color:var(--accent);font-weight:600;margin-top:2px;line-height:1.2;" title="' + _t('Стратегия','Strategy') + '">🎯 ' + esc2(stratRefH.name) + '</div>';
+          if(stratRefH) stratNameText = stratRefH.name;
         }
+        var stratCellH = stratNameText
+          ? '<span style="font-size:11px;font-weight:600;color:var(--accent);">🎯 '+esc2(stratNameText)+'</span>'
+          : '<span style="font-size:11px;color:var(--text3);">—</span>';
         html2 += '<tr style="border-bottom:1px solid var(--border);">'
           +'<td style="padding:9px 6px;font-size:11px;color:var(--text3);">'+esc2(date)+'</td>'
-          +'<td style="padding:9px 6px;"><b>'+esc2(h.sym)+'</b>'+stratNameH+'</td>'
+          +'<td style="padding:9px 6px;"><b>'+esc2(h.sym)+'</b></td>'
+          +'<td style="padding:9px 6px;">'+stratCellH+'</td>'
           +'<td style="padding:9px 6px;"><span style="padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;background:'+dirBg+';">'+h.dir.toUpperCase()+'</span></td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(h.entry)+'</td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+_ppFmtPrice(h.exit)+'</td>'
