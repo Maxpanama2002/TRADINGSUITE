@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.11';
+window._APP_VERSION = '2.5.12';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -16463,7 +16463,8 @@ function _ppRenderAnalytics(){
   var pnlAct = _ppAnMetric    === 'pnl'     ? ' active' : '';
   var roiAct = _ppAnMetric    === 'roi'     ? ' active' : '';
   var wrAct  = _ppAnMetric    === 'winrate' ? ' active' : '';
-  var legendHtml = rows.map(function(r, i){
+  // Legend: only show strategies that have at least one trade
+  var legendHtml = rows.filter(function(r){ return r.totalTrades > 0; }).map(function(r, i){
     var col = _PP_PALETTE[i % _PP_PALETTE.length];
     return '<div class="pp-an-chart-legend-item">'
       + '<div class="pp-an-chart-legend-dot" style="background:' + col + ';"></div>'
@@ -16585,14 +16586,15 @@ function _ppDrawAnChart(rows){
   var gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 
   if(_ppAnChartMode === 'compare'){
-    // ── Horizontal bar chart ──────────────────────────────────────────
-    var labels = rows.map(function(r){ return r._strategy.name; });
-    var vals   = rows.map(function(r, i){
+    // ── Horizontal bar chart — only strategies with ≥1 trade ─────────
+    var activeRows = rows.filter(function(r){ return r.totalTrades > 0; });
+    var labels = activeRows.map(function(r){ return r._strategy.name; });
+    var vals   = activeRows.map(function(r, i){
       if(_ppAnMetric === 'roi')     return (r.budget > 0 && r.totalTrades) ? parseFloat(r.roi.toFixed(2))     : 0;
       if(_ppAnMetric === 'winrate') return r.closedTrades ? r.winRate : 0;
       return parseFloat(r.combinedPnl.toFixed(2)); // realized + unrealized P&L
     });
-    var colors = rows.map(function(r, i){
+    var colors = activeRows.map(function(r, i){
       var v = vals[i];
       // For P&L / ROI — green if positive, red if negative
       if(_ppAnMetric === 'winrate') return _PP_PALETTE[i % _PP_PALETTE.length];
@@ -16646,44 +16648,62 @@ function _ppDrawAnChart(rows){
     });
 
   } else {
-    // ── Equity curve (cumulative P&L over closed trades) ─────────────
-    // Flatten all closed trades across all strategies, sorted by closedAt timestamp
-    // Then compute running sum per strategy
-    var maxTrades = 0;
-    var datasets = rows.map(function(r, i){
+    // ── Equity curve (cumulative P&L over closed + floating for open) ──
+    // Each strategy: closed trades sorted by time, then optionally a
+    // "current" floating endpoint if the strategy has open positions.
+    var maxPoints = 0;
+    var datasets = [];
+    rows.forEach(function(r, i){
+      // Skip strategies with zero trades entirely (no line to draw)
+      if(r.totalTrades === 0) return;
       var closed = (r.closedList || []).slice().sort(function(a, b){
         var ta = a.closedAt || a.closed_at || 0;
         var tb = b.closedAt || b.closed_at || 0;
         return ta - tb;
       });
-      if(closed.length > maxTrades) maxTrades = closed.length;
       var running = 0;
       var points = [{ x: 0, y: 0 }];
       closed.forEach(function(t, idx){
         running += parseFloat(t.pnl || t.realized_pnl || 0);
         points.push({ x: idx + 1, y: parseFloat(running.toFixed(2)) });
       });
+      // Add floating endpoint if there are open positions with unrealized P&L
+      var unr = r.unrealizedPnl || 0;
+      if(unr !== 0){
+        points.push({ x: points.length, y: parseFloat((running + unr).toFixed(2)), _floating: true });
+      }
+      if(points.length > maxPoints) maxPoints = points.length;
       var col = _PP_PALETTE[i % _PP_PALETTE.length];
-      return {
+      // Last segment dashed when it includes unrealized (floating) P&L
+      var hasDash = (unr !== 0);
+      datasets.push({
         label: r._strategy.name,
         data: points,
         borderColor: col,
         backgroundColor: col + '22',
         borderWidth: 2,
-        pointRadius: 3,
-        pointHoverRadius: 5,
+        borderDash: hasDash ? [5, 4] : [],
+        pointRadius: function(ctx){
+          var pt = ctx.dataset.data[ctx.dataIndex];
+          return (pt && pt._floating) ? 5 : 3;
+        },
+        pointStyle: function(ctx){
+          var pt = ctx.dataset.data[ctx.dataIndex];
+          return (pt && pt._floating) ? 'triangle' : 'circle';
+        },
+        pointHoverRadius: 6,
         fill: false,
         tension: 0.3,
         parsing: false
-      };
+      });
     });
 
-    // No closed trades across all strategies — show placeholder
-    if(maxTrades === 0){
+    // No strategies with any trades — show placeholder
+    if(maxPoints <= 1 || datasets.length === 0){
       var wrap2 = canvas.parentNode;
       if(wrap2){
         wrap2.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;">'
-          + _t('Нет закрытых сделок — кривые появятся после первого закрытия позиции','No closed trades yet — curves will appear after the first closed position')
+          + _t('Нет сделок для отображения кривой','No trades to display equity curve')
           + '</div>';
       }
       return;
@@ -16714,7 +16734,7 @@ function _ppDrawAnChart(rows){
           x: {
             type: 'linear',
             min: 0,
-            max: Math.max(maxTrades, 1),
+            max: Math.max(maxPoints - 1, 1),
             grid: { color: gridColor },
             ticks: {
               color: textColor,
