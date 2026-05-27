@@ -36,11 +36,6 @@
       "app/**/*",
       "package.json"
     ],
-    
-    
-    
-    
-    
     "electronDist": "node_modules/electron/dist",
     "mac": {
       "category": "public.app-category.finance",
