@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.10';
+window._APP_VERSION = '2.5.11';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -16176,7 +16176,7 @@ function _ppRenderStrategies(){
       + '<div class="pp-str-card-stats">'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-str-stat-val">' + st.totalTrades + (st.openTrades ? ' <span style="font-size:10px;color:#f59e0b;">(' + st.openTrades + ' ' + _t('откр.','open') + ')</span>' : '') + '</div></div>'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-str-stat-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
-      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">P&amp;L' + (st.openTrades && !st.closedTrades ? ' <span style="font-size:9px;color:#f59e0b;font-weight:400;">' + _t('float','float') + '</span>' : '') + '</div><div class="pp-str-stat-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(st.combinedPnl).toFixed(0) : '—') + '</div></div>'
+      +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">P&amp;L' + (st.openTrades && !st.closedTrades ? ' <span style="font-size:9px;color:#f59e0b;font-weight:400;">' + _t('float','float') + '</span>' : '') + '</div><div class="pp-str-stat-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl >= 0 ? '+' : '-') + '$' + Math.abs(st.combinedPnl).toFixed(0) : '—') + '</div></div>'
       +   '<div class="pp-str-stat"><div class="pp-str-stat-lbl">Profit factor</div><div class="pp-str-stat-val">' + (st.closedTrades ? pfStr : '—') + '</div></div>'
       + '</div>'
       + (tfHtml || sideHtml || tagsHtml ? '<div class="pp-str-card-meta">' + tfHtml + sideHtml + tagsHtml + '</div>' : '')
@@ -16357,7 +16357,7 @@ function _ppOpenStrategyDetail(id){
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Сделок','Trades') + '</div><div class="pp-an-kpi-val">' + st.totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Закрытых','Closed') + '</div><div class="pp-an-kpi-val">' + st.closedTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (st.closedTrades ? st.winRate + '%' : '—') + '</div></div>'
-    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(st.combinedPnl).toFixed(2) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">P&amp;L</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (st.totalTrades ? (st.combinedPnl >= 0 ? '+' : '-') + '$' + Math.abs(st.combinedPnl).toFixed(2) : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">Profit factor</div><div class="pp-an-kpi-val">' + (st.closedTrades ? pfStr : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Лучшая','Best') + '</div><div class="pp-an-kpi-val pos">' + (st.best > 0 ? '+$' + st.best.toFixed(0) : '—') + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Худшая','Worst') + '</div><div class="pp-an-kpi-val neg">' + (st.worst < 0 ? '−$' + Math.abs(st.worst).toFixed(0) : '—') + '</div></div>'
@@ -16454,7 +16454,7 @@ function _ppRenderAnalytics(){
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Стратегий','Strategies') + '</div><div class="pp-an-kpi-val">' + strategies.length + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Всего сделок','Total trades') + '</div><div class="pp-an-kpi-val">' + totalTrades + '</div></div>'
     + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Винрейт','Win-rate') + '</div><div class="pp-an-kpi-val">' + (totalClosed ? overallWR + '%' : '—') + '</div></div>'
-    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalTrades ? (totalCombinedPnl > 0 ? '+' : '') + '$' + Math.abs(totalCombinedPnl).toFixed(0) : '—') + '</div></div>'
+    + '<div class="pp-an-kpi"><div class="pp-an-kpi-lbl">' + _t('Общий P&L','Total P&L') + '</div><div class="pp-an-kpi-val ' + pnlClass + '">' + (totalTrades ? (totalCombinedPnl >= 0 ? '+' : '-') + '$' + Math.abs(totalCombinedPnl).toFixed(0) : '—') + '</div></div>'
     + '</div>';
 
   // ── Strategy comparison chart ──────────────────────────────────────────
@@ -16510,7 +16510,7 @@ function _ppRenderAnalytics(){
           + '<td style="color:var(--text3);">' + budgetTxt + '</td>'
           + '<td>' + r.totalTrades + '</td>'
           + '<td>' + (r.closedTrades ? r.winRate + '%' : '—') + '</td>'
-          + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.totalTrades ? (r.combinedPnl > 0 ? '+' : '') + '$' + Math.abs(r.combinedPnl).toFixed(0) : '—') + '</td>'
+          + '<td class="' + pnlCls + '" style="font-weight:700;">' + (r.totalTrades ? (r.combinedPnl >= 0 ? '+' : '-') + '$' + Math.abs(r.combinedPnl).toFixed(0) : '—') + '</td>'
           + '<td class="' + roiCls + '" style="font-weight:700;">' + roiTxt + '</td>'
           + '<td>' + (r.closedTrades ? pf : '—') + '</td>'
           + '</tr>';
