@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.9';
+window._APP_VERSION = '2.5.10';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -16945,14 +16945,16 @@ function _ppCheckSLTP(){
     }
     if(fullClose){
       var pnl = p.dir==='long' ? (fullClose.price - p.entry) * p.size : (p.entry - fullClose.price) * p.size;
-      d.history.push({
+      var hRec1 = {
         id: 'h-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
         sym:p.sym, dir:p.dir, size:p.size, leverage:p.leverage, marginMode:p.marginMode,
         marketType: p.marketType || 'futures',
         entry:p.entry, exit:fullClose.price, sl:p.sl, tp:(p.tps&&p.tps.length?p.tps[0].price:0),
         pnl: pnl, reason: fullClose.reason,
         openedAt:p.openedAt, closedAt:Date.now()
-      });
+      };
+      if(p.strategy_id) hRec1.strategy_id = p.strategy_id;
+      d.history.push(hRec1);
       d.balance += pnl;
       d.positions.splice(idx, 1);
       try{ showToast2('🔔 '+p.sym+' '+fullClose.reason+': '+_ppFmt(pnl)); }catch(e){}
@@ -16973,14 +16975,16 @@ function _ppCheckSLTP(){
         if(closeQty > p.size) closeQty = p.size;
         if(closeQty<=0){ tp.hit=true; continue; }
         var partialPnl = p.dir==='long' ? (price - p.entry) * closeQty : (p.entry - price) * closeQty;
-        d.history.push({
+        var hRec2 = {
           id: 'h-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
           sym:p.sym, dir:p.dir, size:closeQty, leverage:p.leverage, marginMode:p.marginMode,
           marketType: p.marketType || 'futures',
           entry:p.entry, exit:price, sl:p.sl, tp:price,
           pnl: partialPnl, reason: 'take-profit-'+(ti+1),
           openedAt:p.openedAt, closedAt:Date.now()
-        });
+        };
+        if(p.strategy_id) hRec2.strategy_id = p.strategy_id;
+        d.history.push(hRec2);
         d.balance += partialPnl;
         p.size -= closeQty;
         tp.hit = true;
@@ -17217,15 +17221,18 @@ function _ppRender(){
         var tpNum = isTp ? rs.replace('take-profit-','').replace('take-profit','') : '';
         var reasonText = rs==='stop-loss' ? 'SL' : isTp ? ('TP'+(tpNum?tpNum:'')) : rs==='liquidation' ? 'Liq' : _t('Ручное','Manual');
         var delTitle = _t('Удалить из истории','Delete from history');
-        // Strategy column for history row
+        // Strategy column for history row — shows name if assigned, or a picker to assign
         var stratNameText = '';
-        if(h.strategy_id){
-          var stratRefH = (typeof _ppStrategyById === 'function') ? _ppStrategyById(h.strategy_id) : null;
+        var stratRefH = null;
+        if(h.strategy_id && typeof _ppStrategyById === 'function'){
+          stratRefH = _ppStrategyById(h.strategy_id);
           if(stratRefH) stratNameText = stratRefH.name;
         }
-        var stratCellH = stratNameText
-          ? '<span style="font-size:11px;font-weight:600;color:var(--accent);">🎯 '+esc2(stratNameText)+'</span>'
-          : '<span style="font-size:11px;color:var(--text3);">—</span>';
+        var allStrats2 = (typeof _ppStrategiesLoad === 'function') ? _ppStrategiesLoad() : [];
+        var stratOpts = '<option value="">— ' + _t('нет стратегии','no strategy') + ' —</option>'
+          + allStrats2.map(function(sx){ return '<option value="'+esc2(sx.id)+'"'+(h.strategy_id===sx.id?' selected':'')+'>'+esc2(sx.name)+'</option>'; }).join('');
+        var stratCellH = '<select onchange="_ppAssignHistStrategry(\''+esc2(h.id||'')+'\',this.value)" title="'+_t('Назначить стратегию','Assign strategy')+'" style="font-size:11px;border:none;background:transparent;color:'+(stratNameText?'var(--accent)':'var(--text3)')+';cursor:pointer;max-width:110px;font-family:inherit;padding:0;outline:none;">'
+          + stratOpts + '</select>';
         html2 += '<tr style="border-bottom:1px solid var(--border);">'
           +'<td style="padding:9px 6px;font-size:11px;color:var(--text3);">'+esc2(date)+'</td>'
           +'<td style="padding:9px 6px;"><b>'+esc2(h.sym)+'</b></td>'
@@ -17264,6 +17271,24 @@ function _ppDeleteHistory(id){
     if(anWrap && anWrap.offsetParent !== null) _ppRenderAnalytics();
   }catch(_){}
   try{ showToast2(_t('Запись удалена','Entry deleted')); }catch(e){}
+}
+
+// Assign (or clear) a strategy on a closed history trade.
+// Called from the <select> in each history row.
+function _ppAssignHistStrategry(histId, stratId){
+  if(!histId) return;
+  var d = _ppLoad();
+  var rec = d.history.find(function(h){ return h.id === histId; });
+  if(!rec) return;
+  if(stratId) rec.strategy_id = stratId;
+  else delete rec.strategy_id;
+  _ppSave(d);
+  // Refresh analytics without full re-render (keeps scroll position)
+  try{ _ppRenderStrategies(); }catch(_){}
+  try{
+    var anWrap = document.getElementById('pp-analytics-wrap');
+    if(anWrap && anWrap.offsetParent !== null) _ppRenderAnalytics();
+  }catch(_){}
 }
 
 // Delete a trade from inside the strategy detail modal. Same as
@@ -18098,7 +18123,7 @@ function _ppClosePosition(id){
     .then(function(j){
       var exitPrice = (j && j.price) ? parseFloat(j.price) : (_PP_PRICES[bSym] || p.entry);
       var pnl = p.dir==='long' ? (exitPrice - p.entry) * p.size : (p.entry - exitPrice) * p.size;
-      d.history.push({
+      var hRec3 = {
         id: 'h-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
         sym:p.sym, dir:p.dir, size:p.size, leverage:p.leverage, marginMode:p.marginMode,
         marketType: p.marketType || 'futures',
@@ -18106,7 +18131,9 @@ function _ppClosePosition(id){
         tps: (p.tps||(p.tp?[{price:p.tp,sizePct:100,hit:false}]:[])),
         pnl: pnl, reason: 'manual',
         openedAt:p.openedAt, closedAt:Date.now()
-      });
+      };
+      if(p.strategy_id) hRec3.strategy_id = p.strategy_id;
+      d.history.push(hRec3);
       d.balance += pnl;
       d.positions.splice(idx,1);
       _ppSave(d);
