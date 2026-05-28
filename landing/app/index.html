@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.12';
+window._APP_VERSION = '2.5.13';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -15643,23 +15643,44 @@ function _dvRender(){
     _dvUpdateLsKpi(prefix, sym+'USDT');
   });
 
-  // "Перегретые лонги" — пара с самым высоким funding → RED (risk for price)
-  var topPos=rows.slice().sort(function(a,b){return b.fundingAvg-a.fundingAvg;})[0];
+  // "Перегретые лонги/шорты" — only show pairs that actually cross the HIGH funding threshold
+  // (same threshold used by _dvAnalyzeSignal for "Crowded longs/shorts" — keeps the
+  // widget and the table-row signal consistent).
+  var _DV_FUND_HIGH = 0.0005; // 0.05% per 8h ≈ 55%/year
+  var isEnKpi = (typeof getLang==='function'&&getLang()==='en');
+  // Перегретые лонги — максимальный funding выше порога
+  var posCandidates = rows.filter(function(r){ return (r.fundingAvg||0) >= _DV_FUND_HIGH; })
+                          .sort(function(a,b){ return b.fundingAvg - a.fundingAvg; });
+  var topPos = posCandidates[0];
   var topPosEl=document.getElementById('dv-kpi-top-pos');
   var topPosSubEl=document.getElementById('dv-kpi-top-pos-sub');
-  if(topPos && topPosEl){
-    topPosEl.textContent=topPos.base;
-    topPosEl.className='dv-kpi-val '+(topPos.fundingAvg>0?'neg':'muted');
-    if(topPosSubEl) topPosSubEl.textContent=_dvFundDisp(topPos.fundingAvg)+' / '+_dvFundPeriodLabel().toLowerCase();
+  if(topPosEl){
+    if(topPos){
+      topPosEl.textContent=topPos.base;
+      topPosEl.className='dv-kpi-val neg';
+      if(topPosSubEl) topPosSubEl.textContent=_dvFundDisp(topPos.fundingAvg)+' / '+_dvFundPeriodLabel().toLowerCase();
+    } else {
+      topPosEl.textContent = isEnKpi ? 'Calm' : 'Спокойно';
+      topPosEl.className='dv-kpi-val muted';
+      if(topPosSubEl) topPosSubEl.textContent = isEnKpi ? 'no overheat' : 'нет перегрева';
+    }
   }
-  // "Перегретые шорты" — пара с самым низким funding → GREEN (squeeze potential = up)
-  var topNeg=rows.slice().sort(function(a,b){return a.fundingAvg-b.fundingAvg;})[0];
+  // Перегретые шорты — минимальный funding ниже -порога
+  var negCandidates = rows.filter(function(r){ return (r.fundingAvg||0) <= -_DV_FUND_HIGH; })
+                          .sort(function(a,b){ return a.fundingAvg - b.fundingAvg; });
+  var topNeg = negCandidates[0];
   var topNegEl=document.getElementById('dv-kpi-top-neg');
   var topNegSubEl=document.getElementById('dv-kpi-top-neg-sub');
-  if(topNeg && topNegEl){
-    topNegEl.textContent=topNeg.base;
-    topNegEl.className='dv-kpi-val '+(topNeg.fundingAvg<0?'pos':'muted');
-    if(topNegSubEl) topNegSubEl.textContent=_dvFundDisp(topNeg.fundingAvg)+' / '+_dvFundPeriodLabel().toLowerCase();
+  if(topNegEl){
+    if(topNeg){
+      topNegEl.textContent=topNeg.base;
+      topNegEl.className='dv-kpi-val pos';
+      if(topNegSubEl) topNegSubEl.textContent=_dvFundDisp(topNeg.fundingAvg)+' / '+_dvFundPeriodLabel().toLowerCase();
+    } else {
+      topNegEl.textContent = isEnKpi ? 'Calm' : 'Спокойно';
+      topNegEl.className='dv-kpi-val muted';
+      if(topNegSubEl) topNegSubEl.textContent = isEnKpi ? 'no overheat' : 'нет перегрева';
+    }
   }
 
   // ── Extreme funding signals — show only values that ACTUALLY cross the "high" threshold
