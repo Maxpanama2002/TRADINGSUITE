@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.14';
+window._APP_VERSION = '2.5.15';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -18375,10 +18375,10 @@ function _ppAveragePosition(id){
         +'</div>'
         +'<button onclick="_ppCloseAvgModal()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:28px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:16px;">×</button>'
       +'</div>'
-      // Add qty
+      // Add amount in USD (qty derived automatically from price)
       +'<div style="margin-bottom:12px;">'
-        +'<label style="'+lblStyle+'">'+(isEn?'Add qty (same asset units)':'Добавить объём (в единицах актива)')+'</label>'
-        +'<input id="ppavg-qty" type="number" step="any" min="0.000001" placeholder="0" oninput="_ppAvgPreview()" style="'+inputStyle+'">'
+        +'<label style="'+lblStyle+'">'+(isEn?'Add amount ($USD)':'Добавить на сумму ($USD)')+'</label>'
+        +'<input id="ppavg-usd" type="number" step="any" min="0.01" placeholder="0" oninput="_ppAvgPreview()" style="'+inputStyle+'">'
       +'</div>'
       // Add price
       +'<div style="margin-bottom:12px;">'
@@ -18417,27 +18417,31 @@ function _ppAvgPreview(){
   var isEn = ov._isEn;
   var lev = ov._lev;
   var isSpot = ov._isSpot;
-  var addQty = parseFloat(document.getElementById('ppavg-qty').value) || 0;
+  var addUsd = parseFloat(document.getElementById('ppavg-usd').value) || 0;
   var addPrice = parseFloat(document.getElementById('ppavg-price').value) || curPrice;
   var prev = document.getElementById('ppavg-preview');
   if(!prev) return;
-  if(addQty <= 0){
-    prev.innerHTML = '<span style="color:var(--text3);">'+(isEn?'Fill in qty to see preview':'Введите объём для предпросмотра')+'</span>';
+  if(addUsd <= 0 || addPrice <= 0){
+    prev.innerHTML = '<span style="color:var(--text3);">'+(isEn?'Fill in amount to see preview':'Введите сумму для предпросмотра')+'</span>';
     return;
   }
+  // qty derived from USD amount: for futures the notional is addUsd, so qty = addUsd / addPrice
+  // For spot same logic — user pays addUsd to get addUsd/addPrice units
+  var addQty = addUsd / addPrice;
+  var margin = isSpot ? addUsd : (addUsd / lev);
   var oldSize = parseFloat(p.size) || 0;
   var oldEntry = parseFloat(p.entry) || 0;
   var newSize = oldSize + addQty;
   var newEntry = (oldSize * oldEntry + addQty * addPrice) / newSize;
-  var cost = isSpot ? (addQty * addPrice) : (addQty * addPrice / lev);
   var sign = function(v){ return v >= 0 ? '+' : ''; };
   prev.innerHTML =
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">'
       +'<div style="color:var(--text3);">'+(isEn?'Add price':'Цена добавления')+'</div><div><b>'+_ppFmtPrice(addPrice)+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?'Qty added':'Добавляется кол-во')+'</div><div><b>'+addQty.toFixed(6).replace(/\.?0+$/,'')+'</b></div>'
       +'<div style="color:var(--text3);">'+(isEn?'New avg entry':'Новый avg вход')+'</div><div><b style="color:var(--accent);">'+_ppFmtPrice(newEntry)+'</b></div>'
-      +'<div style="color:var(--text3);">'+(isEn?'New total size':'Новый объём')+'</div><div><b>'+newSize.toFixed(4).replace(/\.?0+$/,'')+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?'New total size':'Новый объём')+'</div><div><b>'+newSize.toFixed(6).replace(/\.?0+$/,'')+'</b></div>'
       +'<div style="color:var(--text3);">'+(isEn?'Avg entry change':'Изменение avg')+'</div><div style="color:'+(newEntry < oldEntry ? '#22c55e' : newEntry > oldEntry ? '#ef4444' : 'var(--text)')+';font-weight:700;">'+sign(newEntry - oldEntry)+_ppFmtPrice(newEntry - oldEntry)+'</div>'
-      +'<div style="color:var(--text3);">'+(isEn?(isSpot?'Cost':'Required margin'):(isSpot?'Стоимость':'Требуется маржа'))+'</div><div><b>$'+cost.toFixed(2)+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?(isSpot?'Cost':'Required margin'):(isSpot?'Стоимость':'Требуется маржа'))+'</div><div><b>$'+margin.toFixed(2)+'</b></div>'
     +'</div>';
 }
 
@@ -18449,11 +18453,12 @@ function _ppSaveAverage(id){
   var isEn = ov._isEn;
   var lev = ov._lev;
   var isSpot = ov._isSpot;
-  var addQty = parseFloat(document.getElementById('ppavg-qty').value) || 0;
+  var addUsd = parseFloat(document.getElementById('ppavg-usd').value) || 0;
   var addPrice = parseFloat(document.getElementById('ppavg-price').value) || curPrice;
-  if(addQty <= 0){ alert(isEn ? 'Enter qty > 0' : 'Введите объём > 0'); return; }
+  if(addUsd <= 0){ alert(isEn ? 'Enter amount > 0' : 'Введите сумму > 0'); return; }
   if(addPrice <= 0){ alert(isEn ? 'Enter a valid price' : 'Введите корректную цену'); return; }
-  var cost = isSpot ? (addQty * addPrice) : (addQty * addPrice / lev);
+  var addQty = addUsd / addPrice;
+  var cost = isSpot ? addUsd : (addUsd / lev);
   var d = _ppLoad();
   if(cost > d.balance){
     alert(isEn ? 'Insufficient balance (need $'+cost.toFixed(2)+')' : 'Недостаточно баланса (нужно $'+cost.toFixed(2)+')');
