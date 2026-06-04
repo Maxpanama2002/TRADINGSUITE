@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.13';
+window._APP_VERSION = '2.5.14';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -17197,6 +17197,7 @@ function _ppRender(){
           +'<td style="padding:9px 6px;text-align:right;font-size:11px;color:var(--text2);">'+leverageBadge+'</td>'
           +'<td style="padding:9px 6px;text-align:right;font-variant-numeric:tabular-nums;">'+pnlCellHtml+'</td>'
           +'<td style="padding:9px 6px;text-align:right;white-space:nowrap;">'
+            +(isPending ? '' : '<button onclick="_ppAveragePosition(\''+p.id+'\')" title="'+_t('Усреднить / добавить объём','Average in / add volume')+'" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.35);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;color:#22c55e;font-family:inherit;margin-right:5px;">＋</button>')
             +'<button onclick="_ppEditPosition(\''+p.id+'\')" title="' + (isPending ? _t('Изменить цену входа / SL / TP','Edit entry / SL / TP') : _t('Изменить SL/TP','Edit SL/TP')) + '" style="background:rgba(124,58,237,0.13);border:1px solid rgba(124,58,237,0.35);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;color:var(--accent);font-family:inherit;margin-right:5px;">✏</button>'
             +'<button onclick="_ppClosePosition(\''+p.id+'\')" style="background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;">'+closeBtnLabel+'</button>'
           +'</td>'
@@ -18340,6 +18341,142 @@ function _ppEditPosition(id){
   _ppEditUpdateSlPreview();
 }
 function _ppCloseEditModal(){ var m=document.getElementById('pp-edit-modal'); if(m) m.remove(); _ppEditId=null; _ppEditPos=null; }
+
+// ── Average-in / Add volume to an open position ───────────────────────────
+// Opens a compact modal. User inputs extra qty + price → new avg entry is shown.
+// On save: position.entry = weighted avg, position.size += addQty,
+// position.initialSize += addQty (keeps TP % correct), balance -= margin.
+function _ppAveragePosition(id){
+  var d = _ppLoad();
+  var p = d.positions.find(function(x){ return x.id === id; });
+  if(!p || p.status === 'pending') return;
+  var isEn = (typeof getLang === 'function') && getLang() === 'en';
+  var bSym = (p.sym||'').toUpperCase();
+  if(!bSym.endsWith('USDT')) bSym += 'USDT';
+  var curPrice = _PP_PRICES[bSym] || p.entry;
+  var isSpot = (p.marketType === 'spot');
+  var lev = parseFloat(p.leverage) || 1;
+  var inputStyle = 'width:100%;padding:9px 11px;background:var(--card-bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;outline:none;font-size:13px;box-sizing:border-box;';
+  var lblStyle = 'font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block;';
+  var dirBg = p.dir==='long' ? 'rgba(34,197,94,0.13);color:#22c55e' : 'rgba(239,68,68,0.13);color:#ef4444';
+
+  var ov = document.createElement('div');
+  ov.id = 'pp-avg-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100060;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML =
+    '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+        +'<div>'
+          +'<div style="font-size:17px;font-weight:800;">'+(isEn?'Average in / Add volume':'Усреднить / добавить объём')+'</div>'
+          +'<div style="font-size:12px;color:var(--text3);margin-top:3px;"><b>'+esc2(p.sym)+'</b> <span style="padding:1px 7px;border-radius:7px;font-size:10px;font-weight:700;background:'+dirBg+';margin-left:5px;">'+p.dir.toUpperCase()+'</span>'
+            +' · '+(isEn?'Current avg entry':'Текущий avg вход')+': <b>'+_ppFmtPrice(p.entry)+'</b>'
+            +' · '+(isEn?'Size':'Объём')+': <b>'+p.size+'</b>'
+          +'</div>'
+        +'</div>'
+        +'<button onclick="_ppCloseAvgModal()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:28px;cursor:pointer;color:var(--text3);font-family:inherit;font-size:16px;">×</button>'
+      +'</div>'
+      // Add qty
+      +'<div style="margin-bottom:12px;">'
+        +'<label style="'+lblStyle+'">'+(isEn?'Add qty (same asset units)':'Добавить объём (в единицах актива)')+'</label>'
+        +'<input id="ppavg-qty" type="number" step="any" min="0.000001" placeholder="0" oninput="_ppAvgPreview()" style="'+inputStyle+'">'
+      +'</div>'
+      // Add price
+      +'<div style="margin-bottom:12px;">'
+        +'<label style="'+lblStyle+'">'+(isEn?'Add price (leave blank = current market)':'Цена добавления (пусто = текущая рыночная)')+'</label>'
+        +'<input id="ppavg-price" type="number" step="any" placeholder="'+_ppFmtPrice(curPrice)+'" oninput="_ppAvgPreview()" style="'+inputStyle+'">'
+      +'</div>'
+      // Preview
+      +'<div id="ppavg-preview" style="background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;line-height:1.9;">'
+        +'<span style="color:var(--text3);">'+(isEn?'Fill in qty to see preview':'Введите объём для предпросмотра')+'</span>'
+      +'</div>'
+      +'<div style="display:flex;gap:10px;">'
+        +'<button onclick="_ppCloseAvgModal()" style="flex:0 0 auto;background:none;border:1px solid var(--border);color:var(--text3);border-radius:10px;padding:11px 18px;cursor:pointer;font-family:inherit;font-weight:600;">'+(isEn?'Cancel':'Отмена')+'</button>'
+        +'<button onclick="_ppSaveAverage(\''+id+'\')" style="flex:1;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:10px;padding:11px;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;">'+(isEn?'Add to position':'Добавить к позиции')+'</button>'
+      +'</div>'
+    +'</div>';
+
+  var _avgBdDown = false;
+  ov.addEventListener('mousedown', function(e){ _avgBdDown = (e.target === ov); });
+  ov.addEventListener('click', function(e){ if(e.target === ov && _avgBdDown) _ppCloseAvgModal(); _avgBdDown = false; });
+  document.body.appendChild(ov);
+  // Store original position data for preview calculations
+  ov._pos = p;
+  ov._curPrice = curPrice;
+  ov._isEn = isEn;
+  ov._lev = lev;
+  ov._isSpot = isSpot;
+}
+
+function _ppCloseAvgModal(){ var m=document.getElementById('pp-avg-modal'); if(m) m.remove(); }
+
+function _ppAvgPreview(){
+  var ov = document.getElementById('pp-avg-modal');
+  if(!ov) return;
+  var p = ov._pos;
+  var curPrice = ov._curPrice;
+  var isEn = ov._isEn;
+  var lev = ov._lev;
+  var isSpot = ov._isSpot;
+  var addQty = parseFloat(document.getElementById('ppavg-qty').value) || 0;
+  var addPrice = parseFloat(document.getElementById('ppavg-price').value) || curPrice;
+  var prev = document.getElementById('ppavg-preview');
+  if(!prev) return;
+  if(addQty <= 0){
+    prev.innerHTML = '<span style="color:var(--text3);">'+(isEn?'Fill in qty to see preview':'Введите объём для предпросмотра')+'</span>';
+    return;
+  }
+  var oldSize = parseFloat(p.size) || 0;
+  var oldEntry = parseFloat(p.entry) || 0;
+  var newSize = oldSize + addQty;
+  var newEntry = (oldSize * oldEntry + addQty * addPrice) / newSize;
+  var cost = isSpot ? (addQty * addPrice) : (addQty * addPrice / lev);
+  var sign = function(v){ return v >= 0 ? '+' : ''; };
+  prev.innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">'
+      +'<div style="color:var(--text3);">'+(isEn?'Add price':'Цена добавления')+'</div><div><b>'+_ppFmtPrice(addPrice)+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?'New avg entry':'Новый avg вход')+'</div><div><b style="color:var(--accent);">'+_ppFmtPrice(newEntry)+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?'New total size':'Новый объём')+'</div><div><b>'+newSize.toFixed(4).replace(/\.?0+$/,'')+'</b></div>'
+      +'<div style="color:var(--text3);">'+(isEn?'Avg entry change':'Изменение avg')+'</div><div style="color:'+(newEntry < oldEntry ? '#22c55e' : newEntry > oldEntry ? '#ef4444' : 'var(--text)')+';font-weight:700;">'+sign(newEntry - oldEntry)+_ppFmtPrice(newEntry - oldEntry)+'</div>'
+      +'<div style="color:var(--text3);">'+(isEn?(isSpot?'Cost':'Required margin'):(isSpot?'Стоимость':'Требуется маржа'))+'</div><div><b>$'+cost.toFixed(2)+'</b></div>'
+    +'</div>';
+}
+
+function _ppSaveAverage(id){
+  var ov = document.getElementById('pp-avg-modal');
+  if(!ov) return;
+  var p = ov._pos;
+  var curPrice = ov._curPrice;
+  var isEn = ov._isEn;
+  var lev = ov._lev;
+  var isSpot = ov._isSpot;
+  var addQty = parseFloat(document.getElementById('ppavg-qty').value) || 0;
+  var addPrice = parseFloat(document.getElementById('ppavg-price').value) || curPrice;
+  if(addQty <= 0){ alert(isEn ? 'Enter qty > 0' : 'Введите объём > 0'); return; }
+  if(addPrice <= 0){ alert(isEn ? 'Enter a valid price' : 'Введите корректную цену'); return; }
+  var cost = isSpot ? (addQty * addPrice) : (addQty * addPrice / lev);
+  var d = _ppLoad();
+  if(cost > d.balance){
+    alert(isEn ? 'Insufficient balance (need $'+cost.toFixed(2)+')' : 'Недостаточно баланса (нужно $'+cost.toFixed(2)+')');
+    return;
+  }
+  // Find position in live data (ov._pos is a reference to the ORIGINAL load — re-fetch)
+  var pos = d.positions.find(function(x){ return x.id === id; });
+  if(!pos){ alert(isEn ? 'Position not found' : 'Позиция не найдена'); return; }
+  var oldSize = parseFloat(pos.size) || 0;
+  var oldEntry = parseFloat(pos.entry) || 0;
+  var newSize = oldSize + addQty;
+  var newEntry = (oldSize * oldEntry + addQty * addPrice) / newSize;
+  pos.entry = parseFloat(newEntry.toFixed(8));
+  pos.size = parseFloat(newSize.toFixed(8));
+  if(!pos.initialSize) pos.initialSize = oldSize;
+  pos.initialSize = parseFloat((pos.initialSize + addQty).toFixed(8));
+  d.balance -= cost;
+  _ppSave(d);
+  _ppCloseAvgModal();
+  _ppRender();
+  try{ showToast2('📊 '+esc2(pos.sym)+' — '+(isEn?'avg entry updated: ':'avg вход обновлён: ')+_ppFmtPrice(pos.entry)); }catch(e){}
+}
+
 function _ppEditTpAdd(){
   if(_ppEditTps.length>=10){ alert(_t('Максимум 10 тейк-профитов','Maximum 10 take-profits')); return; }
   // Перераспределим % только среди НЕ-hit TPs
