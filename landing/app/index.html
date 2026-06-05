@@ -5840,7 +5840,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.15';
+window._APP_VERSION = '2.5.16';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -15214,7 +15214,7 @@ function _dvFetch(){
         if(c && c.symbol){
           var s = String(c.symbol).toUpperCase();
           // Handle CoinGecko symbol mismatches with Binance Futures listing
-          var BIN_ALIAS = {RENDER:'RNDR', WBTC:null};  // map CG symbol → Binance symbol
+          var BIN_ALIAS = {WBTC:null};  // map CG symbol → Binance symbol (RENDER now IS the Binance ticker)
           if(BIN_ALIAS.hasOwnProperty(s)){
             if(BIN_ALIAS[s]===null) return;  // skip
             s = BIN_ALIAS[s];
@@ -23029,6 +23029,12 @@ function _todayKey(){
   var d = new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+// Ticker renames on Binance — maps the OLD/user-facing symbol to the current
+// Binance base symbol. Add entries here whenever Binance renames a token.
+var _BINANCE_TICKER_ALIASES = {
+  'RNDR':   'RENDER', // Render Token rebranded: RNDRUSDT delisted, now RENDERUSDT
+  'IOTA':   'IOTA',   // kept same, placeholder to document it was checked
+};
 function _toBinanceSym(name){
   var s = String(name||'').toUpperCase().replace(/[\s\/\-:\.]/g,'');
   if(!s) return null;
@@ -23037,6 +23043,8 @@ function _toBinanceSym(name){
   if(s.endsWith('USDT')) return s;
   if(s.endsWith('USDC')) return s.slice(0,-4)+'USDT';
   if(s.endsWith('USD'))  return s+'T';
+  // Apply rename aliases before appending USDT
+  if(_BINANCE_TICKER_ALIASES[s]) s = _BINANCE_TICKER_ALIASES[s];
   return s+'USDT';
 }
 function _fmtMoney(n){
