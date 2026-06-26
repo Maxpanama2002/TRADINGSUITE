@@ -24,6 +24,8 @@
     https://api.bybit.com
     https://www.okx.com
     https://api.coingecko.com
+    https://api.fxratesapi.com
+    https://api.frankfurter.dev
     https://api.alternative.me
     https://coin-images.coingecko.com
     https://assets.coingecko.com
@@ -1031,6 +1033,81 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .pf-table tbody tr[draggable]{cursor:default;}
 .pf-table tbody tr.pf-drag-over td{background:rgba(124,58,237,0.08)!important;border-top:2px solid var(--accent);}
 .pf-table tbody tr.pf-dragging td{opacity:0.35;}
+
+
+/* ══ CAPITAL PAGE CSS (ca-) ═══════════════════════════════════════════ */
+#page-capital.page-view{padding:20px 24px;max-width:1200px;margin:0 auto;}
+.ca-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+.ca-title{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.35px;}
+.ca-subtitle{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.45;}
+.ca-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ca-add-btn{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c3aed,#ec4899);border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .14s,transform .12s;}
+.ca-add-btn:hover{opacity:.92;transform:translateY(-1px);}
+.ca-filter{display:flex;gap:3px;background:var(--card-bg);border:1px solid var(--border);border-radius:9px;padding:3px;}
+.ca-filter-btn{background:none;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:650;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .14s;}
+.ca-filter-btn:hover{color:var(--text);}
+.ca-filter-btn.active{background:var(--accent);color:#fff;}
+.ca-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.ca-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.ca-stat-label{font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--text3);margin-bottom:8px;text-transform:uppercase;}
+.ca-stat-value{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;font-variant-numeric:tabular-nums;}
+.ca-stat-value.pos{color:var(--pos,#22c55e);}
+.ca-stat-value.neg{color:var(--neg,#ef4444);}
+.ca-stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.ca-alloc-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);gap:14px;margin-bottom:14px;}
+.ca-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.ca-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;}
+.ca-card-title{font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.06em;}
+.ca-card-sub{font-size:11px;color:var(--text3);}
+.ca-donut-row{display:flex;align-items:center;gap:18px;}
+.ca-donut-wrap{position:relative;width:150px;height:150px;flex-shrink:0;}
+.ca-donut-svg{width:150px;height:150px;transform:rotate(-90deg);}
+.ca-donut-track{stroke:var(--card-bg2);}
+.ca-donut-seg{transition:stroke-dasharray .4s ease;}
+.ca-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ca-donut-total{font-size:18px;font-weight:850;color:var(--text);font-variant-numeric:tabular-nums;}
+.ca-donut-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.ca-legend{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+.ca-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;min-width:0;}
+.ca-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.ca-legend-name{font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ca-legend-pct{margin-left:auto;color:var(--text3);font-variant-numeric:tabular-nums;}
+.ca-bar-list{display:flex;flex-direction:column;gap:13px;}
+.ca-bar-row{display:grid;grid-template-columns:88px 1fr 92px;gap:10px;align-items:center;}
+.ca-bar-label{font-size:12px;font-weight:800;color:var(--text);}
+.ca-bar-track{height:12px;background:var(--card-bg2);border-radius:999px;overflow:hidden;}
+.ca-bar-fill{height:100%;border-radius:999px;transition:width .28s;}
+.ca-bar-val{text-align:right;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;}
+.ca-hint{font-size:11px;color:var(--text3);line-height:1.5;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.ca-table-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.ca-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;}
+.ca-table th{padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+.ca-table th.ca-r,.ca-table td.ca-r{text-align:right;}
+.ca-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.ca-table tbody tr:last-child td{border-bottom:none;}
+.ca-table tbody tr:hover td{background:var(--card-bg2);}
+.ca-name{font-size:12px;font-weight:800;color:var(--text);}
+.ca-note{font-size:10px;color:var(--text3);margin-top:2px;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ca-class-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;background:var(--card-bg2);color:var(--text2);font-size:11px;font-weight:750;}
+.ca-class-dot{width:7px;height:7px;border-radius:50%;}
+.ca-kind-pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:800;}
+.ca-kind-pill.asset{background:rgba(34,197,94,.12);color:var(--pos,#22c55e);}
+.ca-kind-pill.liability{background:rgba(239,68,68,.12);color:var(--neg,#ef4444);}
+.ca-row-actions{display:flex;justify-content:flex-end;gap:4px;}
+.ca-icon-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;line-height:1;padding:4px;border-radius:6px;opacity:.7;transition:all .12s;}
+.ca-icon-btn:hover{opacity:1;color:var(--text);background:var(--card-bg2);}
+.ca-icon-btn.danger:hover{color:var(--neg,#ef4444);}
+.ca-empty{text-align:center;padding:44px 20px;color:var(--text3);font-size:13px;}
+.ca-kind-toggle{display:flex;gap:6px;background:var(--card-bg2);border-radius:9px;padding:4px;}
+.ca-kind-btn{flex:1;border:none;border-radius:7px;padding:9px 10px;background:transparent;color:var(--text2);font-size:12px;font-weight:750;cursor:pointer;font-family:inherit;}
+.ca-kind-btn.active.asset{background:rgba(34,197,94,.14);color:var(--pos,#22c55e);}
+.ca-kind-btn.active.liability{background:rgba(239,68,68,.14);color:var(--neg,#ef4444);}
+@media(max-width:900px){
+  #page-capital.page-view{padding:16px 14px;}
+  .ca-stats-row,.ca-alloc-wrap{grid-template-columns:1fr;}
+  .ca-donut-row{align-items:flex-start;flex-direction:column;}
+  .ca-bar-row{grid-template-columns:76px 1fr 78px;}
+}
 
 /* ══ NEW TRADE PAGE CSS (nt-) ══ */
 .nt-breadcrumb{font-size:11px;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:4px;}
@@ -3178,6 +3255,97 @@ tr.pp-drop-target{box-shadow:inset 0 2px 0 var(--accent);border-top:none !import
 }
 .tb-back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent);box-shadow:0 4px 12px rgba(124,58,237,.18);}
 .tb-back-btn:active{transform:translateY(0);}
+
+/* ══ Metals Calculator native page ════════════════════════════════════ */
+#page-goldcalc.page-view{padding:20px 24px;max-width:1200px;margin:0 auto;}
+.gld-shell{max-width:980px;margin:0 auto;}
+.gld-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.gld-kicker{font-size:11px;font-weight:800;color:#c9a227;text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px;}
+.gld-title{font-size:22px;font-weight:850;color:var(--text);letter-spacing:-.45px;}
+.gld-sub{font-size:12px;color:var(--text3);margin-top:4px;}
+.gld-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.gld-metal-tabs{display:flex;gap:3px;background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:3px;}
+.gld-metal-btn{background:transparent;border:none;color:var(--text3);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:850;font-family:inherit;letter-spacing:.04em;transition:all .14s;}
+.gld-metal-btn:hover{color:var(--text);}
+.gld-metal-btn.active{background:linear-gradient(135deg,#c9a227,#f0d060);color:#111;box-shadow:0 4px 14px rgba(201,162,39,.22);}
+.gld-currency{display:flex;gap:3px;background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:3px;}
+.gld-cur-btn{background:transparent;border:none;color:var(--text3);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:800;font-family:inherit;letter-spacing:.04em;transition:all .14s;}
+.gld-cur-btn:hover{color:var(--text);}
+.gld-cur-btn.active{background:linear-gradient(135deg,#c9a227,#f0d060);color:#111;box-shadow:0 4px 14px rgba(201,162,39,.22);}
+.gld-refresh{display:inline-flex;align-items:center;gap:7px;background:var(--card-bg);border:1px solid rgba(201,162,39,.38);color:#d9b84b;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .14s;}
+.gld-refresh:hover{border-color:#d9b84b;background:rgba(201,162,39,.10);color:#f0d060;}
+.gld-refresh:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.gld-spin{display:inline-block;font-size:14px;line-height:1;}
+.gld-spin.go{animation:gldSpin .75s linear infinite;}
+@keyframes gldSpin{to{transform:rotate(360deg);}}
+.gld-ticker{background:linear-gradient(135deg,rgba(201,162,39,.16),rgba(124,58,237,.08));border:1px solid rgba(201,162,39,.30);border-radius:16px;padding:20px 22px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:18px;position:relative;overflow:hidden;}
+.gld-ticker::before{content:'';position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(240,208,96,.75),transparent);pointer-events:none;}
+.gld-ticker-left{display:flex;align-items:center;gap:15px;min-width:0;}
+.gld-medal{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#8d6908,#f0d060 48%,#a77b09);display:flex;align-items:center;justify-content:center;color:#171103;font-size:24px;font-weight:900;box-shadow:0 10px 30px rgba(201,162,39,.22);flex-shrink:0;}
+.gld-ticker-label{font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px;}
+.gld-price{font-size:34px;font-weight:900;color:#f0d060;letter-spacing:-1.1px;font-variant-numeric:tabular-nums;line-height:1;transition:opacity .18s;}
+[data-theme="light"] .gld-price,[data-theme="sepia"] .gld-price{color:#8a6508;}
+#page-goldcalc[data-metal="silver"] .gld-kicker{color:#cbd5e1;}
+#page-goldcalc[data-metal="silver"] .gld-medal{background:linear-gradient(135deg,#64748b,#f8fafc 48%,#94a3b8);color:#0f172a;box-shadow:0 10px 30px rgba(148,163,184,.22);}
+#page-goldcalc[data-metal="silver"] .gld-price,#page-goldcalc[data-metal="silver"] .gld-result-main,#page-goldcalc[data-metal="silver"] .gld-table .gld-price-cell{color:#e2e8f0;}
+[data-theme="light"] #page-goldcalc[data-metal="silver"] .gld-price,[data-theme="sepia"] #page-goldcalc[data-metal="silver"] .gld-price,[data-theme="light"] #page-goldcalc[data-metal="silver"] .gld-result-main,[data-theme="sepia"] #page-goldcalc[data-metal="silver"] .gld-result-main,[data-theme="light"] #page-goldcalc[data-metal="silver"] .gld-table .gld-price-cell,[data-theme="sepia"] #page-goldcalc[data-metal="silver"] .gld-table .gld-price-cell{color:#475569;}
+.gld-gram{font-size:12px;color:var(--text3);margin-top:7px;font-variant-numeric:tabular-nums;}
+.gld-live{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text3);white-space:nowrap;}
+.gld-dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;}
+.gld-dot.green{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.45);animation:gldPulse 2s ease-in-out infinite;}
+.gld-dot.orange{background:#f59e0b;}
+.gld-dot.red{background:#ef4444;}
+@keyframes gldPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.gld-error{display:none;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.28);color:#f87171;border-radius:11px;padding:12px 14px;font-size:13px;line-height:1.45;margin-bottom:14px;}
+.gld-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr);gap:14px;margin-bottom:14px;}
+.gld-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:0 2px 20px rgba(0,0,0,.18);}
+[data-theme="light"] .gld-card,[data-theme="sepia"] .gld-card{box-shadow:0 2px 16px rgba(0,0,0,.05);}
+.gld-card-title{font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.gld-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.gld-field label{display:block;font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+.gld-input-wrap{position:relative;}
+.gld-input-wrap input,.gld-input-wrap select{width:100%;background:var(--card-bg2);border:1px solid var(--border);border-radius:10px;padding:12px 42px 12px 13px;color:var(--text);font-size:15px;font-weight:700;font-family:inherit;outline:none;font-variant-numeric:tabular-nums;transition:border-color .14s,background .14s;}
+.gld-input-wrap input:focus,.gld-input-wrap select:focus{border-color:rgba(201,162,39,.75);}
+.gld-suffix{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:800;color:var(--text3);pointer-events:none;}
+.gld-preset-label{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;}
+.gld-presets{display:flex;gap:7px;flex-wrap:wrap;}
+.gld-preset{background:var(--card-bg2);border:1px solid var(--border);border-radius:18px;color:var(--text2);padding:7px 12px;font-size:12px;font-weight:750;cursor:pointer;font-family:inherit;transition:all .14s;}
+.gld-preset:hover{color:#d9b84b;border-color:rgba(201,162,39,.55);}
+.gld-preset.active{background:rgba(201,162,39,.18);border-color:rgba(201,162,39,.62);color:#f0d060;}
+[data-theme="light"] .gld-preset.active,[data-theme="sepia"] .gld-preset.active{color:#8a6508;}
+#page-goldcalc[data-metal="silver"] .gld-metal-btn.active,#page-goldcalc[data-metal="silver"] .gld-cur-btn.active{background:linear-gradient(135deg,#94a3b8,#f8fafc);color:#0f172a;box-shadow:0 4px 14px rgba(148,163,184,.22);}
+#page-goldcalc[data-metal="silver"] .gld-refresh{border-color:rgba(148,163,184,.42);color:#cbd5e1;}
+#page-goldcalc[data-metal="silver"] .gld-refresh:hover{border-color:#cbd5e1;background:rgba(148,163,184,.10);color:#f8fafc;}
+#page-goldcalc[data-metal="silver"] .gld-preset:hover{color:#cbd5e1;border-color:rgba(148,163,184,.58);}
+#page-goldcalc[data-metal="silver"] .gld-preset.active{background:rgba(148,163,184,.16);border-color:rgba(148,163,184,.62);color:#e2e8f0;}
+[data-theme="light"] #page-goldcalc[data-metal="silver"] .gld-preset.active,[data-theme="sepia"] #page-goldcalc[data-metal="silver"] .gld-preset.active{color:#475569;}
+.gld-result-card{background:linear-gradient(135deg,rgba(201,162,39,.16),rgba(201,162,39,.06));border-color:rgba(201,162,39,.28);display:flex;flex-direction:column;justify-content:center;min-height:246px;}
+.gld-result-label{font-size:11px;font-weight:850;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.gld-result-main{font-size:44px;font-weight:950;color:#f0d060;letter-spacing:-1.4px;line-height:1;font-variant-numeric:tabular-nums;word-break:break-word;}
+[data-theme="light"] .gld-result-main,[data-theme="sepia"] .gld-result-main{color:#8a6508;}
+.gld-result-secondary{font-size:21px;font-weight:800;color:var(--text2);font-variant-numeric:tabular-nums;margin-top:10px;}
+.gld-result-detail{font-size:12px;color:var(--text3);line-height:1.7;margin-top:12px;font-variant-numeric:tabular-nums;white-space:pre-line;}
+.gld-table-wrap{overflow-x:auto;}
+.gld-table{width:100%;border-collapse:collapse;font-size:13px;}
+.gld-table th{text-align:left;padding:0 0 10px;font-size:10px;font-weight:850;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);}
+.gld-table th:last-child,.gld-table td:last-child{text-align:right;}
+.gld-table td{padding:12px 0;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;color:var(--text2);}
+.gld-table tr:last-child td{border-bottom:none;}
+.gld-table tr:hover td{color:var(--text);}
+.gld-table .gld-bar-name{font-weight:800;color:var(--text);}
+.gld-table .gld-oz{font-size:12px;color:var(--text3);}
+.gld-table .gld-price-cell{font-weight:900;color:#f0d060;}
+[data-theme="light"] .gld-table .gld-price-cell,[data-theme="sepia"] .gld-table .gld-price-cell{color:#8a6508;}
+.gld-foot{font-size:11px;color:var(--text3);line-height:1.5;text-align:center;margin-top:12px;}
+@media(max-width:820px){
+  #page-goldcalc.page-view{padding:16px 14px;}
+  .gld-grid{grid-template-columns:1fr;}
+  .gld-ticker{align-items:flex-start;flex-direction:column;}
+  .gld-live{align-self:flex-start;}
+  .gld-row{grid-template-columns:1fr;}
+  .gld-result-main{font-size:36px;}
+}
+
 </style>
 <style id="theme-style">
 :root{--bg:#f0efe9;--text:#1a1a18;--sub:#6b6b67;--muted:#9a9a96;--card-bg:#fff;--border:rgba(0,0,0,.17);--topbar:#1a1a18;--input-bg:#fff;--shadow:rgba(0,0,0,.08);}
@@ -3280,7 +3448,11 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
       </a>
       <a class="sb-item" data-page="portfolio" onclick="navigateTo('portfolio')">
         <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        <span>Портфель</span>
+        <span data-ru="Портфель Криптовалюты" data-en="Crypto Portfolio">Портфель Криптовалюты</span>
+      </a>
+      <a class="sb-item" data-page="capital" onclick="navigateTo('capital')">
+        <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
+        <span data-ru="Капитал" data-en="Capital">Капитал</span>
       </a>
       <div class="sb-section" onclick="sbToggleSection('trading')">
         <span class="sb-section-dot" style="background:#22c55e"></span>ТОРГОВЛЯ
@@ -3330,6 +3502,10 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
         <a class="sb-item" data-page="derivatives" onclick="navigateTo('derivatives')">
           <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-7"/><circle cx="20" cy="7" r="1.5" fill="currentColor"/></svg>
           <span>Funding + OI</span>
+        </a>
+        <a class="sb-item" data-page="goldcalc" onclick="navigateTo('goldcalc')">
+          <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M10 16h4"/></svg>
+          <span data-ru="Калькулятор металлов" data-en="Metals Calculator">Калькулятор металлов</span>
         </a>
         <a class="sb-item" data-page="diary" onclick="navigateTo('diary')">
           <svg class="sb-item-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
@@ -3520,7 +3696,7 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
         <div class="ds-stats-row">
           <div class="ds-card ds-alloc-card" onclick="navigateTo('portfolio')" style="cursor:pointer">
             <div class="ds-card-head">
-              <span class="ds-card-title">Портфель</span>
+              <span class="ds-card-title" data-ru="Портфель Криптовалюты" data-en="Crypto Portfolio">Портфель Криптовалюты</span>
             </div>
             <div class="ds-alloc-bar" id="ds-alloc-bar" style="display:none"></div>
             <div class="ds-alloc-empty" id="ds-alloc-empty-msg">нет позиций</div>
@@ -4064,7 +4240,7 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
         <div class="pf-header">
           <div class="pf-subtitle" id="pf-subtitle" style="font-size:11px;color:var(--text3)">Крипто-активы с автообновлением</div>
           <div class="pf-tabs">
-            <button class="pf-tab active" onclick="pfSetTab('portfolio')">Портфель</button>
+            <button class="pf-tab active" onclick="pfSetTab('portfolio')" data-ru="Криптопортфель" data-en="Crypto Portfolio">Криптопортфель</button>
             <button class="pf-tab" onclick="pfSetTab('archive')">Архив операций</button>
           </div>
         </div>
@@ -4207,6 +4383,124 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
           <div class="pf-modal-footer">
             <button class="pf-modal-cancel" onclick="pfCloseSell()">Отмена</button>
             <button class="pf-modal-save" onclick="pfSaveSell()">Продать</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- CAPITAL — assets and liabilities across all wealth classes -->
+      <div id="page-capital" class="page-view" style="display:none">
+        <div class="ca-header">
+          <div>
+            <div class="ca-title" data-ru="Капитал" data-en="Capital">Капитал</div>
+            <div class="ca-subtitle" id="cap-subtitle" data-ru="Все классы имущества: активы, пассивы и структура капитала" data-en="All wealth classes: assets, liabilities and capital structure">Все классы имущества: активы, пассивы и структура капитала</div>
+          </div>
+          <div class="ca-actions">
+            <div class="ca-filter" id="cap-filter">
+              <button class="ca-filter-btn active" data-kind="all" onclick="capSetFilter('all')" data-ru="Все" data-en="All">Все</button>
+              <button class="ca-filter-btn" data-kind="asset" onclick="capSetFilter('asset')" data-ru="Активы" data-en="Assets">Активы</button>
+              <button class="ca-filter-btn" data-kind="liability" onclick="capSetFilter('liability')" data-ru="Пассивы" data-en="Liabilities">Пассивы</button>
+            </div>
+            <button class="ca-add-btn" onclick="capOpenAdd()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span data-ru="Добавить объект" data-en="Add item">Добавить объект</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ca-stats-row">
+          <div class="ca-stat"><div class="ca-stat-label" data-ru="Активы" data-en="Assets">Активы</div><div class="ca-stat-value pos" id="cap-assets">$0</div><div class="ca-stat-sub" id="cap-assets-sub">0 объектов</div></div>
+          <div class="ca-stat"><div class="ca-stat-label" data-ru="Пассивы" data-en="Liabilities">Пассивы</div><div class="ca-stat-value neg" id="cap-liabilities">$0</div><div class="ca-stat-sub" id="cap-liabilities-sub">0 объектов</div></div>
+          <div class="ca-stat"><div class="ca-stat-label" data-ru="Чистый капитал" data-en="Net worth">Чистый капитал</div><div class="ca-stat-value" id="cap-net">$0</div><div class="ca-stat-sub" data-ru="активы минус пассивы" data-en="assets minus liabilities">активы минус пассивы</div></div>
+          <div class="ca-stat"><div class="ca-stat-label" data-ru="Классы" data-en="Classes">Классы</div><div class="ca-stat-value" id="cap-classes">0</div><div class="ca-stat-sub" data-ru="типов имущества" data-en="wealth classes">типов имущества</div></div>
+        </div>
+
+        <div class="ca-alloc-wrap">
+          <div class="ca-card">
+            <div class="ca-card-head">
+              <span class="ca-card-title" data-ru="Структура активов" data-en="Asset structure">Структура активов</span>
+              <span class="ca-card-sub" id="cap-alloc-sub">—</span>
+            </div>
+            <div class="ca-donut-row">
+              <div class="ca-donut-wrap">
+                <svg class="ca-donut-svg" viewBox="0 0 100 100" id="cap-donut-svg"></svg>
+                <div class="ca-donut-center">
+                  <div class="ca-donut-total" id="cap-donut-total">$0</div>
+                  <div class="ca-donut-sub" id="cap-donut-sub">0%</div>
+                </div>
+              </div>
+              <div class="ca-legend" id="cap-legend"></div>
+            </div>
+          </div>
+          <div class="ca-card">
+            <div class="ca-card-head">
+              <span class="ca-card-title" data-ru="Активы vs Пассивы" data-en="Assets vs Liabilities">Активы vs Пассивы</span>
+              <span class="ca-card-sub" id="cap-balance-sub">—</span>
+            </div>
+            <div class="ca-bar-list" id="cap-bars"></div>
+            <div class="ca-hint" data-ru="Пассивы не попадают в donut как отрицательная доля, но уменьшают чистый капитал." data-en="Liabilities are not shown in the donut as negative share, but they reduce net worth.">Пассивы не попадают в donut как отрицательная доля, но уменьшают чистый капитал.</div>
+          </div>
+        </div>
+
+        <div class="ca-table-wrap">
+          <table class="ca-table">
+            <thead><tr>
+              <th data-ru="Название" data-en="Name">Название</th>
+              <th data-ru="Класс" data-en="Class">Класс</th>
+              <th data-ru="Тип" data-en="Type">Тип</th>
+              <th class="ca-r" data-ru="Стоимость" data-en="Value">Стоимость</th>
+              <th class="ca-r" data-ru="Доля" data-en="Share">Доля</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="cap-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Capital add/edit modal -->
+      <div id="cap-modal" class="pf-modal-overlay" style="display:none" onclick="if(event.target===this)capCloseModal()">
+        <div class="pf-modal" onclick="event.stopPropagation()">
+          <div class="pf-modal-title" id="cap-modal-title">Добавить объект капитала</div>
+          <div class="pf-modal-field">
+            <label class="pf-modal-label" data-ru="Тип" data-en="Type">Тип</label>
+            <div class="ca-kind-toggle">
+              <button type="button" class="ca-kind-btn active asset" id="cap-kind-asset" onclick="capSetKind('asset')" data-ru="Актив" data-en="Asset">Актив</button>
+              <button type="button" class="ca-kind-btn liability" id="cap-kind-liability" onclick="capSetKind('liability')" data-ru="Пассив" data-en="Liability">Пассив</button>
+            </div>
+          </div>
+          <div class="pf-modal-field">
+            <label class="pf-modal-label" data-ru="Полное название" data-en="Full name">Полное название *</label>
+            <input class="pf-modal-inp" id="cap-name" placeholder="Квартира в Мадриде, Tesla Model Y, Apple shares..." autocomplete="off">
+          </div>
+          <div class="pf-modal-field">
+            <label class="pf-modal-label" data-ru="Класс актива" data-en="Asset class">Класс актива *</label>
+            <input class="pf-modal-inp" id="cap-class" list="cap-class-options" placeholder="Недвижимость, акции, облигации, золото..." autocomplete="off">
+            <datalist id="cap-class-options">
+              <option value="Недвижимость"></option>
+              <option value="Акции"></option>
+              <option value="Облигации"></option>
+              <option value="Золото"></option>
+              <option value="Серебро"></option>
+              <option value="Авто"></option>
+              <option value="Криптовалюта"></option>
+              <option value="Наличные"></option>
+              <option value="Бизнес"></option>
+              <option value="Кредит"></option>
+              <option value="Ипотека"></option>
+              <option value="Другое"></option>
+            </datalist>
+          </div>
+          <div class="pf-modal-field">
+            <label class="pf-modal-label" data-ru="Стоимость ($)" data-en="Value ($)">Стоимость ($) *</label>
+            <input class="pf-modal-inp" type="number" id="cap-value" placeholder="10000" step="any" min="0">
+          </div>
+          <div class="pf-modal-field">
+            <label class="pf-modal-label" data-ru="Заметка" data-en="Note">Заметка</label>
+            <input class="pf-modal-inp" id="cap-note" placeholder="Адрес, брокер, условия кредита, комментарий...">
+          </div>
+          <div class="pf-modal-footer">
+            <button class="pf-modal-cancel" onclick="capCloseModal()" data-ru="Отмена" data-en="Cancel">Отмена</button>
+            <button class="pf-modal-save" onclick="capSaveItem()" data-ru="Сохранить" data-en="Save">Сохранить</button>
           </div>
         </div>
       </div>
@@ -4606,6 +4900,106 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
             </table>
           </div>
           <div class="dv-hint" id="dv-hint"><!-- filled by _dvRender for current language --></div>
+        </div>
+      </div>
+
+
+      <!-- METALS CALCULATOR — live XAU/XAG price + bullion value calculator -->
+      <div id="page-goldcalc" class="page-view" style="display:none" data-metal="gold">
+        <div class="gld-shell">
+          <div class="gld-top">
+            <div>
+              <div class="gld-kicker" id="gld-kicker">XAU · Bullion</div>
+              <div class="gld-title" data-ru="Калькулятор металлов" data-en="Metals Calculator">Калькулятор металлов</div>
+              <div class="gld-sub" data-ru="Золото и серебро: спот-цена, стоимость слитка и стандартные веса" data-en="Gold and silver: spot price, bullion value and standard bar sizes">Золото и серебро: спот-цена, стоимость слитка и стандартные веса</div>
+            </div>
+            <div class="gld-actions">
+              <div class="gld-metal-tabs">
+                <button class="gld-metal-btn active" id="gld-metal-gold" onclick="_goldSetMetal('gold')">Gold</button>
+                <button class="gld-metal-btn" id="gld-metal-silver" onclick="_goldSetMetal('silver')">Silver</button>
+              </div>
+              <div class="gld-currency">
+                <button class="gld-cur-btn active" id="gld-cur-usd" onclick="_goldSetCurrency('USD')">$ USD</button>
+                <button class="gld-cur-btn" id="gld-cur-eur" onclick="_goldSetCurrency('EUR')">€ EUR</button>
+              </div>
+              <button class="gld-refresh" id="gld-refresh" onclick="_goldLoadPrice(true)">
+                <span class="gld-spin" id="gld-spin">↻</span>
+                <span data-ru="Обновить" data-en="Refresh">Обновить</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="gld-ticker">
+            <div class="gld-ticker-left">
+              <div class="gld-medal" id="gld-metal-symbol">Au</div>
+              <div style="min-width:0;">
+                <div class="gld-ticker-label" id="gld-ticker-label">XAU/USD · Золото спот</div>
+                <div class="gld-price" id="gld-price">Загрузка...</div>
+                <div class="gld-gram" id="gld-gram">— / грамм</div>
+              </div>
+            </div>
+            <div class="gld-live">
+              <span class="gld-dot orange" id="gld-dot"></span>
+              <span id="gld-time">Инициализация...</span>
+            </div>
+          </div>
+
+          <div class="gld-error" id="gld-error"></div>
+
+          <div class="gld-grid">
+            <div class="gld-card">
+              <div class="gld-card-title" id="gld-calc-title" data-ru="Калькулятор слитка" data-en="Bullion calculator">Калькулятор слитка</div>
+              <div class="gld-row">
+                <div class="gld-field">
+                  <label data-ru="Вес слитка" data-en="Bar weight">Вес слитка</label>
+                  <div class="gld-input-wrap">
+                    <input type="number" id="gld-weight" value="100" min="0.001" step="any" oninput="_goldCalc()">
+                    <span class="gld-suffix" id="gld-suffix">г</span>
+                  </div>
+                </div>
+                <div class="gld-field">
+                  <label data-ru="Единица измерения" data-en="Unit">Единица измерения</label>
+                  <div class="gld-input-wrap">
+                    <select id="gld-unit" onchange="_goldUnitChange()">
+                      <option value="g" data-ru="Граммы (г)" data-en="Grams (g)">Граммы (г)</option>
+                      <option value="oz" data-ru="Тройские унции (oz)" data-en="Troy ounces (oz)">Тройские унции (oz)</option>
+                      <option value="kg" data-ru="Килограммы (кг)" data-en="Kilograms (kg)">Килограммы (кг)</option>
+                    </select>
+                    <span class="gld-suffix">▾</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gld-preset-label" data-ru="Быстрый выбор" data-en="Quick presets">Быстрый выбор</div>
+              <div class="gld-presets" id="gld-presets"></div>
+            </div>
+
+            <div class="gld-card gld-result-card">
+              <div class="gld-result-label" id="gld-result-label" data-ru="Стоимость слитка" data-en="Bar value">Стоимость слитка</div>
+              <div class="gld-result-main" id="gld-result-main">—</div>
+              <div class="gld-result-secondary" id="gld-result-secondary">—</div>
+              <div class="gld-result-detail" id="gld-result-detail" data-ru="Ожидание данных..." data-en="Waiting for data...">Ожидание данных...</div>
+            </div>
+          </div>
+
+          <div class="gld-card">
+            <div class="gld-card-title" id="gld-table-title" data-ru="Стандартные слитки — актуальные цены" data-en="Standard bars — live prices">Стандартные слитки — актуальные цены</div>
+            <div class="gld-table-wrap">
+              <table class="gld-table">
+                <thead>
+                  <tr>
+                    <th data-ru="Слиток" data-en="Bar">Слиток</th>
+                    <th data-ru="Унций (oz)" data-en="Ounces (oz)">Унций (oz)</th>
+                    <th id="gld-table-head">Цена USD</th>
+                  </tr>
+                </thead>
+                <tbody id="gld-table-body">
+                  <tr><td colspan="3" style="color:var(--text3);text-align:center;padding:20px" data-ru="Загрузка..." data-en="Loading...">Загрузка...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="gld-foot" data-ru="Источник: fxratesapi.com · CoinGecko PAXG/KAG (резерв) · Frankfurter EUR · автообновление каждые 60 сек" data-en="Sources: fxratesapi.com · CoinGecko PAXG/KAG fallback · Frankfurter EUR · auto-refresh every 60 sec">Источник: fxratesapi.com · CoinGecko PAXG/KAG (резерв) · Frankfurter EUR · автообновление каждые 60 сек</div>
         </div>
       </div>
 
@@ -5840,7 +6234,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.18';
+window._APP_VERSION = '2.5.21';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -5849,7 +6243,7 @@ var _equityChart = null;
 window._VALID_PAGES = {
   'dashboard':1,'profile':1,'new-trade':1,'tool':1,'admin':1,
   'portfolio':1,'journal':1,'paper':1,'strategy':1,'futures':1,'options':1,'riskmanager':1,
-  'derivatives':1,'diary':1,'psycho':1,'watchlist':1,'stats':1,
+  'derivatives':1,'goldcalc':1,'capital':1,'diary':1,'psycho':1,'watchlist':1,'stats':1,
   'myday':1,'goalchart':1,'weekplan':1,'ideas':1,'ai':1
 };
 
@@ -5894,6 +6288,7 @@ function navigateTo(page, toolIdx){
       if(pg==='tool-'+toolIdx || pg==='tool-'+toolIdx+'b') el.classList.add('active');
     }
     else if(page==='portfolio' && pg==='portfolio') el.classList.add('active');
+    else if(page==='capital' && pg==='capital') el.classList.add('active');
     else if(page==='new-trade' && (pg==='journal'||pg==='new-trade')) el.classList.add('active');
     else if(page==='journal' && pg==='journal') el.classList.add('active');
     else if(page==='strategy' && pg==='strategy') el.classList.add('active');
@@ -5902,6 +6297,7 @@ function navigateTo(page, toolIdx){
     else if(page==='psycho' && pg==='psycho') el.classList.add('active');
     else if(page==='stats' && pg==='stats') el.classList.add('active');
     else if(page==='derivatives' && pg==='derivatives') el.classList.add('active');
+    else if(page==='goldcalc' && pg==='goldcalc') el.classList.add('active');
     else if(page==='goalchart' && pg==='goalchart') el.classList.add('active');
     else if(page==='weekplan' && pg==='weekplan') el.classList.add('active');
     else if(page==='riskmanager' && pg==='riskmanager') el.classList.add('active');
@@ -5918,7 +6314,7 @@ function navigateTo(page, toolIdx){
   var viewer = document.getElementById('viewer');
   var tbTitle = document.getElementById('tb-page-title');
   function _hideAllPages(){
-    var ids=['page-dashboard','page-ai','page-portfolio','page-new-trade','page-diary','page-watchlist','page-psycho','page-stats','page-goalchart','page-weekplan','page-journal','page-riskmanager','page-options','page-myday','page-strategy','page-futures','page-ideas','page-profile','page-derivatives','page-paper','page-admin'];
+    var ids=['page-dashboard','page-ai','page-portfolio','page-capital','page-new-trade','page-diary','page-watchlist','page-psycho','page-stats','page-goalchart','page-weekplan','page-journal','page-riskmanager','page-options','page-myday','page-strategy','page-futures','page-ideas','page-profile','page-derivatives','page-goldcalc','page-paper','page-admin'];
     ids.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     if(viewer){viewer.style.display='none';viewer.classList.remove('open');}
   }
@@ -5966,8 +6362,14 @@ function navigateTo(page, toolIdx){
     _hideAllPages();
     var pfPg=document.getElementById('page-portfolio');
     if(pfPg) pfPg.style.display='';
-    _setTbTitle(null,_t('Портфель','Portfolio'));
+    _setTbTitle(null,_t('Портфель Криптовалюты','Crypto Portfolio'));
     try{ renderPortfolio(); }catch(e){}
+  } else if(page==='capital'){
+    _hideAllPages();
+    var capPg=document.getElementById('page-capital');
+    if(capPg) capPg.style.display='';
+    _setTbTitle(null,_t('Капитал','Capital'));
+    try{ renderCapital(); }catch(e){}
   } else if(page==='new-trade'){
     // Cooling-off guard: 3 убытка подряд блокирует на N часов (но юзер может подтвердить и продолжить)
     try{
@@ -6012,6 +6414,12 @@ function navigateTo(page, toolIdx){
     if(dvPg) dvPg.style.display='';
     _setTbTitle(_t('Анализ','Analysis'),'Funding + OI');
     try{ renderDerivatives(); }catch(e){}
+  } else if(page==='goldcalc'){
+    _hideAllPages();
+    var glPg=document.getElementById('page-goldcalc');
+    if(glPg) glPg.style.display='';
+    _setTbTitle(_t('Анализ','Analysis'),_t('Калькулятор металлов','Metals Calculator'));
+    try{ renderGoldCalculator(); }catch(e){}
   } else if(page==='paper'){
     _hideAllPages();
     var pPg=document.getElementById('page-paper');
@@ -6500,6 +6908,7 @@ window._isPro = function(){
 window.PAGE_FEATURE_MAP = {
   // Trading
   'portfolio':    'portfolio',
+  'capital':      'capital',
   'journal':      'journal',
   'paper':        'paper_trading',
   'strategy':     'strategy',
@@ -6508,6 +6917,7 @@ window.PAGE_FEATURE_MAP = {
   'riskmanager':  'risk_manager',
   // Analysis
   'derivatives':  'funding_oi',
+  'goldcalc':     'metals_calculator',
   'diary':        'diary',
   'psycho':       'psycho_journal',
   'watchlist':    'watchlist',
@@ -10145,6 +10555,218 @@ function pfSaveAdd(){
   try{ renderNewDashboard(); }catch(e){}
 }
 
+
+// ══ CAPITAL PAGE JS ══
+var _CAP_KEY='capital_v1';
+var _capFilter='all';
+var _capEditId=null;
+var _capKind='asset';
+var CAPITAL_COLORS=['#7c3aed','#ec4899','#22c55e','#f59e0b','#3b82f6','#14b8a6','#f97316','#8b5cf6','#ef4444','#06b6d4','#84cc16','#64748b'];
+
+function _capRead(){
+  var list=[];
+  try{list=JSON.parse(localStorage.getItem(_CAP_KEY)||'[]')||[];}catch(e){list=[];}
+  if(!Array.isArray(list)) list=[];
+  return list.map(function(x){
+    x.kind = x.kind === 'liability' ? 'liability' : 'asset';
+    x.value = Math.max(0, parseFloat(x.value)||0);
+    x.name = String(x.name||'').trim();
+    x.category = String(x.category||x.className||'Другое').trim() || 'Другое';
+    x.note = String(x.note||'').trim();
+    if(!x.id) x.id = Date.now() + Math.random();
+    return x;
+  });
+}
+function _capWrite(list){try{localStorage.setItem(_CAP_KEY,JSON.stringify(list||[]));}catch(e){}}
+function _capFmt(v){
+  v=parseFloat(v)||0;
+  return '$'+v.toLocaleString('en-US',{minimumFractionDigits:v<1000?2:0,maximumFractionDigits:v<1000?2:0});
+}
+function _capCountWord(n){
+  return n+' '+(n===1?'объект':(n>=2&&n<=4?'объекта':'объектов'));
+}
+function _capClassColor(cls,idx){
+  var s=String(cls||'');
+  var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
+  return CAPITAL_COLORS[(isFinite(idx)?idx:h)%CAPITAL_COLORS.length];
+}
+function capSetFilter(kind){
+  _capFilter=kind||'all';
+  document.querySelectorAll('#cap-filter .ca-filter-btn').forEach(function(b){
+    b.classList.toggle('active',(b.getAttribute('data-kind')||'all')===_capFilter);
+  });
+  renderCapital();
+}
+function capSetKind(kind){
+  _capKind=kind==='liability'?'liability':'asset';
+  var a=document.getElementById('cap-kind-asset'), l=document.getElementById('cap-kind-liability');
+  if(a) a.classList.toggle('active',_capKind==='asset');
+  if(l) l.classList.toggle('active',_capKind==='liability');
+}
+function capOpenAdd(){
+  _capEditId=null;
+  var title=document.getElementById('cap-modal-title'); if(title) title.textContent=_t('Добавить объект капитала','Add capital item');
+  ['cap-name','cap-class','cap-value','cap-note'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  capSetKind('asset');
+  var m=document.getElementById('cap-modal'); if(m)m.style.display='flex';
+  setTimeout(function(){var n=document.getElementById('cap-name');if(n)n.focus();},50);
+}
+function capOpenEdit(id){
+  var list=_capRead();
+  var item=list.find(function(x){return String(x.id)===String(id);});
+  if(!item) return;
+  _capEditId=item.id;
+  var title=document.getElementById('cap-modal-title'); if(title) title.textContent=_t('Редактировать объект','Edit capital item');
+  var name=document.getElementById('cap-name'), cls=document.getElementById('cap-class'), val=document.getElementById('cap-value'), note=document.getElementById('cap-note');
+  if(name) name.value=item.name||'';
+  if(cls) cls.value=item.category||'';
+  if(val) val.value=item.value||'';
+  if(note) note.value=item.note||'';
+  capSetKind(item.kind);
+  var m=document.getElementById('cap-modal'); if(m)m.style.display='flex';
+  setTimeout(function(){if(name)name.focus();},50);
+}
+function capCloseModal(){var m=document.getElementById('cap-modal');if(m)m.style.display='none';_capEditId=null;}
+function capSaveItem(){
+  var name=(document.getElementById('cap-name')||{}).value||'';
+  var cls=(document.getElementById('cap-class')||{}).value||'';
+  var val=parseFloat((document.getElementById('cap-value')||{}).value);
+  var note=(document.getElementById('cap-note')||{}).value||'';
+  name=name.trim(); cls=cls.trim();
+  if(!name||!cls||!isFinite(val)||val<0){
+    try{showToast2(_t('Заполни название, класс и стоимость','Enter name, class and value'));}catch(e){}
+    return;
+  }
+  var list=_capRead();
+  var item={id:_capEditId||Date.now(),name:name,category:cls,kind:_capKind,value:val,note:note.trim(),updatedAt:new Date().toISOString()};
+  if(_capEditId){
+    var idx=list.findIndex(function(x){return String(x.id)===String(_capEditId);});
+    if(idx>=0) list[idx]=Object.assign({},list[idx],item);
+    else list.push(item);
+  } else {
+    list.push(item);
+  }
+  _capWrite(list);
+  capCloseModal();
+  try{showToast2(_t('Капитал обновлён','Capital updated'));}catch(e){}
+  renderCapital();
+}
+function capDeleteItem(id){
+  var list=_capRead();
+  var item=list.find(function(x){return String(x.id)===String(id);});
+  if(!item) return;
+  if(!confirm(_t('Удалить объект капитала: ','Delete capital item: ')+(item.name||'?')+'?')) return;
+  list=list.filter(function(x){return String(x.id)!==String(id);});
+  _capWrite(list);
+  renderCapital();
+}
+function _capGroupAssets(list){
+  var groups={};
+  list.filter(function(x){return x.kind==='asset';}).forEach(function(x){
+    var k=x.category||'Другое';
+    if(!groups[k]) groups[k]={name:k,value:0,count:0};
+    groups[k].value += parseFloat(x.value)||0;
+    groups[k].count++;
+  });
+  return Object.keys(groups).map(function(k){return groups[k];}).sort(function(a,b){return b.value-a.value;});
+}
+function _capRenderDonut(groups,totalAssets){
+  var svg=document.getElementById('cap-donut-svg'), legend=document.getElementById('cap-legend');
+  var tot=document.getElementById('cap-donut-total'), sub=document.getElementById('cap-donut-sub');
+  if(!svg) return;
+  var R=40,C=2*Math.PI*R,SW=12;
+  var html='<circle class="ca-donut-track" cx="50" cy="50" r="'+R+'" fill="none" stroke-width="'+SW+'"/>';
+  if(totalAssets>0){
+    var offset=0;
+    groups.forEach(function(g,i){
+      var pct=g.value/totalAssets;
+      if(pct<=0) return;
+      var len=pct*C, color=_capClassColor(g.name,i);
+      html+='<circle class="ca-donut-seg" cx="50" cy="50" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="'+SW+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'"/>';
+      offset+=len;
+    });
+  }
+  svg.innerHTML=html;
+  if(tot) tot.textContent=_capFmt(totalAssets);
+  if(sub) sub.textContent=groups.length+' '+_t('классов','classes');
+  if(legend){
+    if(!groups.length){
+      legend.innerHTML='<div style="font-size:12px;color:var(--text3)">'+_t('Добавь первый актив, чтобы увидеть структуру','Add your first asset to see the structure')+'</div>';
+    } else {
+      legend.innerHTML=groups.map(function(g,i){
+        var pct=totalAssets>0?(g.value/totalAssets*100):0;
+        var color=_capClassColor(g.name,i);
+        return '<div class="ca-legend-item">'
+          +'<span class="ca-legend-dot" style="background:'+color+'"></span>'
+          +'<span class="ca-legend-name">'+esc2(g.name)+'</span>'
+          +'<span class="ca-legend-pct">'+pct.toFixed(1)+'%</span>'
+          +'</div>';
+      }).join('');
+    }
+  }
+}
+function _capRenderBars(totalAssets,totalLiabilities,net){
+  var el=document.getElementById('cap-bars');
+  if(!el) return;
+  var max=Math.max(totalAssets,totalLiabilities,1);
+  var assetPct=totalAssets/max*100;
+  var liabPct=totalLiabilities/max*100;
+  el.innerHTML='<div class="ca-bar-row"><div class="ca-bar-label">'+_t('Активы','Assets')+'</div><div class="ca-bar-track"><div class="ca-bar-fill" style="width:'+assetPct+'%;background:#22c55e"></div></div><div class="ca-bar-val">'+_capFmt(totalAssets)+'</div></div>'
+    +'<div class="ca-bar-row"><div class="ca-bar-label">'+_t('Пассивы','Liabilities')+'</div><div class="ca-bar-track"><div class="ca-bar-fill" style="width:'+liabPct+'%;background:#ef4444"></div></div><div class="ca-bar-val">'+_capFmt(totalLiabilities)+'</div></div>'
+    +'<div class="ca-bar-row"><div class="ca-bar-label">'+_t('Итого','Net')+'</div><div class="ca-bar-track"><div class="ca-bar-fill" style="width:'+(Math.min(100,Math.abs(net)/max*100))+'%;background:'+((net>=0)?'#7c3aed':'#ef4444')+'"></div></div><div class="ca-bar-val">'+(net<0?'−':'')+_capFmt(Math.abs(net))+'</div></div>';
+}
+function renderCapital(){
+  var list=_capRead();
+  _capWrite(list);
+  var assets=list.filter(function(x){return x.kind==='asset';});
+  var liabilities=list.filter(function(x){return x.kind==='liability';});
+  var totalAssets=assets.reduce(function(s,x){return s+(parseFloat(x.value)||0);},0);
+  var totalLiabilities=liabilities.reduce(function(s,x){return s+(parseFloat(x.value)||0);},0);
+  var net=totalAssets-totalLiabilities;
+  var classes={}; list.forEach(function(x){classes[x.category||'Другое']=1;});
+  var ae=document.getElementById('cap-assets'), le=document.getElementById('cap-liabilities'), ne=document.getElementById('cap-net'), ce=document.getElementById('cap-classes');
+  if(ae) ae.textContent=_capFmt(totalAssets);
+  if(le) le.textContent=_capFmt(totalLiabilities);
+  if(ne){ne.textContent=(net<0?'−':'')+_capFmt(Math.abs(net));ne.className='ca-stat-value '+(net<0?'neg':'pos');}
+  if(ce) ce.textContent=String(Object.keys(classes).length);
+  var asub=document.getElementById('cap-assets-sub'), lsub=document.getElementById('cap-liabilities-sub');
+  if(asub) asub.textContent=_capCountWord(assets.length);
+  if(lsub) lsub.textContent=_capCountWord(liabilities.length);
+  var sub=document.getElementById('cap-subtitle');
+  if(sub) sub.textContent=_t('Все классы имущества: ','All wealth classes: ')+_capCountWord(list.length)+_t(' · чистый капитал ',' · net worth ')+(net<0?'−':'')+_capFmt(Math.abs(net));
+  var groups=_capGroupAssets(list);
+  _capRenderDonut(groups,totalAssets);
+  _capRenderBars(totalAssets,totalLiabilities,net);
+  var allocSub=document.getElementById('cap-alloc-sub');
+  if(allocSub) allocSub.textContent=assets.length+' '+_t('активов','assets')+' · '+_capFmt(totalAssets);
+  var balSub=document.getElementById('cap-balance-sub');
+  if(balSub) balSub.textContent=_t('чистый капитал ','net worth ')+(net<0?'−':'')+_capFmt(Math.abs(net));
+  var tbody=document.getElementById('cap-tbody');
+  if(!tbody) return;
+  var rows=list.filter(function(x){return _capFilter==='all' || x.kind===_capFilter;}).sort(function(a,b){
+    if(a.kind!==b.kind) return a.kind==='asset'?-1:1;
+    return (parseFloat(b.value)||0)-(parseFloat(a.value)||0);
+  });
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="6" class="ca-empty">'+(_capFilter==='all'?_t('Добавь недвижимость, акции, облигации, золото, авто или любой другой объект капитала.','Add real estate, stocks, bonds, gold, cars or any other capital item.'):_t('Нет объектов в этом фильтре','No items in this filter'))+'</td></tr>';
+    return;
+  }
+  tbody.innerHTML=rows.map(function(x,idx){
+    var base=x.kind==='asset'?totalAssets:totalLiabilities;
+    var share=base>0?(x.value/base*100):0;
+    var color=_capClassColor(x.category,idx);
+    var val=(x.kind==='liability'?'−':'')+_capFmt(x.value);
+    return '<tr>'
+      +'<td><div class="ca-name">'+esc2(x.name||'?')+'</div>'+(x.note?'<div class="ca-note">'+esc2(x.note)+'</div>':'')+'</td>'
+      +'<td><span class="ca-class-pill"><span class="ca-class-dot" style="background:'+color+'"></span>'+esc2(x.category||'Другое')+'</span></td>'
+      +'<td><span class="ca-kind-pill '+x.kind+'">'+(x.kind==='asset'?_t('Актив','Asset'):_t('Пассив','Liability'))+'</span></td>'
+      +'<td class="ca-r '+(x.kind==='liability'?'pf-neg':'pf-pos')+'">'+val+'</td>'
+      +'<td class="ca-r">'+share.toFixed(1)+'%</td>'
+      +'<td class="ca-r"><div class="ca-row-actions"><button class="ca-icon-btn" onclick="capOpenEdit(\''+String(x.id).replace(/'/g,'')+'\')" title="'+_t('Редактировать','Edit')+'">✎</button><button class="ca-icon-btn danger" onclick="capDeleteItem(\''+String(x.id).replace(/'/g,'')+'\')" title="'+_t('Удалить','Delete')+'">×</button></div></td>'
+      +'</tr>';
+  }).join('');
+}
+
 // ══ NEW TRADE PAGE JS ══
 var _ntDirection='long', _ntEmotion='calm', _ntComply='full';
 
@@ -13032,6 +13654,318 @@ function showToast2(msg,dur){
   t.classList.add('show');
   clearTimeout(showToast2._tid);
   showToast2._tid=setTimeout(function(){t.classList.remove('show');},dur||2200);
+}
+
+
+// ── METALS CALCULATOR PAGE ─────────────────────────────────────────────
+var _GOLD_OZ = 31.1034768;
+var _METAL_CONFIG = {
+  gold: {
+    code:'XAU', symbol:'Au', cgId:'pax-gold', minSpot:1500, fallbackSpot:4210,
+    name:{ru:'Золото',en:'Gold'}, spot:{ru:'Золото спот',en:'Spot gold'},
+    calcTitle:{ru:'Калькулятор золотого слитка',en:'Gold bullion calculator'},
+    resultLabel:{ru:'Стоимость золотого слитка',en:'Gold bar value'},
+    tableTitle:{ru:'Золотые слитки — актуальные цены',en:'Gold bars — live prices'},
+    defaultPreset:{v:100,u:'g'},
+    presets:[
+      {l:'1 г',v:1,u:'g'},{l:'5 г',v:5,u:'g'},{l:'10 г',v:10,u:'g'},
+      {l:'1 oz',v:31.1034768,u:'g'},{l:'100 г',v:100,u:'g'},
+      {l:'250 г',v:250,u:'g'},{l:'500 г',v:500,u:'g'},{l:'1 кг',v:1000,u:'g'}
+    ],
+    bars:[
+      {l:'1 г',g:1},{l:'5 г',g:5},{l:'10 г',g:10},{l:'20 г',g:20},
+      {l:'1 oz',g:31.1034768},{l:'50 г',g:50},{l:'100 г',g:100},
+      {l:'250 г',g:250},{l:'500 г',g:500},{l:'1 кг',g:1000}
+    ]
+  },
+  silver: {
+    code:'XAG', symbol:'Ag', cgId:'kinesis-silver', minSpot:5, fallbackSpot:58,
+    name:{ru:'Серебро',en:'Silver'}, spot:{ru:'Серебро спот',en:'Spot silver'},
+    calcTitle:{ru:'Калькулятор серебряного слитка',en:'Silver bullion calculator'},
+    resultLabel:{ru:'Стоимость серебряного слитка',en:'Silver bar value'},
+    tableTitle:{ru:'Серебряные слитки — актуальные цены',en:'Silver bars — live prices'},
+    defaultPreset:{v:1000,u:'g'},
+    presets:[
+      {l:'1 oz',v:31.1034768,u:'g'},{l:'5 oz',v:155.517384,u:'g'},
+      {l:'10 oz',v:311.034768,u:'g'},{l:'100 г',v:100,u:'g'},
+      {l:'250 г',v:250,u:'g'},{l:'500 г',v:500,u:'g'},
+      {l:'1 кг',v:1000,u:'g'},{l:'100 oz',v:3110.34768,u:'g'}
+    ],
+    bars:[
+      {l:'1 oz',g:31.1034768},{l:'5 oz',g:155.517384},{l:'10 oz',g:311.034768},
+      {l:'100 г',g:100},{l:'250 г',g:250},{l:'500 г',g:500},
+      {l:'1 кг',g:1000},{l:'100 oz',g:3110.34768},{l:'1000 oz',g:31103.4768}
+    ]
+  }
+};
+var _goldState = {
+  metal:'gold', spot:null, prices:{gold:null,silver:null}, eurRate:0.87,
+  currency:'USD', timer:null, loaded:{gold:false,silver:false}, fetching:false, source:''
+};
+
+function _goldEl(id){ return document.getElementById(id); }
+function _goldCfg(){ return _METAL_CONFIG[_goldState.metal] || _METAL_CONFIG.gold; }
+function _goldLang(v){ var l=(typeof getLang==='function')?getLang():'ru'; return (v && (v[l] || v.ru)) || ''; }
+function _goldFmt(n,d){
+  n = Number(n);
+  if(!isFinite(n)) n = 0;
+  if(d===undefined) d = 2;
+  return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function _goldSym(){ return _goldState.currency === 'EUR' ? '€' : '$'; }
+function _goldFmtCur(usdVal){
+  return _goldState.currency === 'EUR'
+    ? '€' + _goldFmt(usdVal * _goldState.eurRate)
+    : '$' + _goldFmt(usdVal);
+}
+function _goldFmtAlt(usdVal){
+  return _goldState.currency === 'EUR'
+    ? '≈ $' + _goldFmt(usdVal)
+    : '≈ €' + _goldFmt(usdVal * _goldState.eurRate);
+}
+function _goldInitPrefs(){
+  try{
+    var c = localStorage.getItem('gold_calc_currency_v1') || 'USD';
+    _goldState.currency = (c === 'EUR') ? 'EUR' : 'USD';
+    var m = localStorage.getItem('metals_calc_metal_v1') || localStorage.getItem('gold_calc_metal_v1') || 'gold';
+    _goldState.metal = _METAL_CONFIG[m] ? m : 'gold';
+  }catch(e){ _goldState.currency = 'USD'; _goldState.metal = 'gold'; }
+  _goldUpdateChrome();
+}
+function _goldSetMetal(m){
+  if(!_METAL_CONFIG[m]) m = 'gold';
+  if(_goldState.metal === m) return;
+  _goldState.metal = m;
+  _goldState.spot = _goldState.prices[m] || null;
+  try{ localStorage.setItem('metals_calc_metal_v1', m); }catch(e){}
+  _goldApplyDefaultPreset();
+  _goldUpdateChrome();
+  _goldRenderAll();
+  if(!_goldState.loaded[m]) _goldLoadPrice(true);
+}
+function _goldUpdateCurrencyButtons(){
+  var usd=_goldEl('gld-cur-usd'), eur=_goldEl('gld-cur-eur');
+  if(usd) usd.classList.toggle('active', _goldState.currency === 'USD');
+  if(eur) eur.classList.toggle('active', _goldState.currency === 'EUR');
+}
+function _goldUpdateMetalButtons(){
+  var gold=_goldEl('gld-metal-gold'), silver=_goldEl('gld-metal-silver');
+  if(gold) gold.classList.toggle('active', _goldState.metal === 'gold');
+  if(silver) silver.classList.toggle('active', _goldState.metal === 'silver');
+  var pg=_goldEl('page-goldcalc');
+  if(pg) pg.setAttribute('data-metal', _goldState.metal);
+}
+function _goldUpdateChrome(){
+  var cfg=_goldCfg();
+  _goldUpdateCurrencyButtons();
+  _goldUpdateMetalButtons();
+  var k=_goldEl('gld-kicker'), sym=_goldEl('gld-metal-symbol'), ct=_goldEl('gld-calc-title'), rl=_goldEl('gld-result-label'), tt=_goldEl('gld-table-title');
+  if(k) k.textContent = cfg.code + ' · Bullion';
+  if(sym) sym.textContent = cfg.symbol;
+  if(ct) ct.textContent = _goldLang(cfg.calcTitle);
+  if(rl) rl.textContent = _goldLang(cfg.resultLabel);
+  if(tt) tt.textContent = _goldLang(cfg.tableTitle);
+  _goldRenderPresets();
+}
+function _goldSetCurrency(c){
+  _goldState.currency = (c === 'EUR') ? 'EUR' : 'USD';
+  try{ localStorage.setItem('gold_calc_currency_v1', _goldState.currency); }catch(e){}
+  _goldUpdateCurrencyButtons();
+  _goldRenderAll();
+}
+function _goldStatus(cls,msg){
+  var dot=_goldEl('gld-dot'), time=_goldEl('gld-time');
+  if(dot) dot.className = 'gld-dot ' + (cls || 'orange');
+  if(time) time.textContent = msg || '';
+}
+function _goldShowErr(msg){
+  var e=_goldEl('gld-error');
+  if(!e) return;
+  e.textContent = msg || '';
+  e.style.display = msg ? 'block' : 'none';
+}
+async function _goldFetchJson(url,timeoutMs){
+  var opts={};
+  try{
+    if(window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(timeoutMs || 7000);
+  }catch(e){}
+  var r = await fetch(url, opts);
+  if(!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json();
+}
+async function _goldLoadPrice(force){
+  if(_goldState.fetching) return;
+  var metal = _goldState.metal;
+  var cfg = _METAL_CONFIG[metal] || _METAL_CONFIG.gold;
+  _goldState.fetching = true;
+  var btn=_goldEl('gld-refresh'), spin=_goldEl('gld-spin');
+  if(btn) btn.disabled = true;
+  if(spin) spin.classList.add('go');
+  _goldStatus('orange', _t('Обновление...','Updating...'));
+
+  var newSpot=null, newEur=null, source='';
+  try{
+    var d = await _goldFetchJson('https://api.fxratesapi.com/latest?base=' + cfg.code + '&currencies=USD,EUR',7000);
+    if(d && d.rates && d.rates.USD > cfg.minSpot){
+      newSpot = d.rates.USD;
+      source = 'fxratesapi.com';
+      if(d.rates.EUR > cfg.minSpot * 0.5) newEur = d.rates.EUR / d.rates.USD;
+    }
+  }catch(e){ try{ console.warn('metals fxratesapi:', e && e.message ? e.message : e); }catch(_){} }
+
+  if(!newSpot && cfg.cgId){
+    try{
+      var cg = await _goldFetchJson('https://api.coingecko.com/api/v3/simple/price?ids=' + cfg.cgId + '&vs_currencies=usd,eur',7000);
+      if(cg && cg[cfg.cgId] && cg[cfg.cgId].usd > cfg.minSpot){
+        newSpot = cg[cfg.cgId].usd;
+        source = cfg.cgId === 'pax-gold' ? 'CoinGecko PAXG' : 'CoinGecko KAG';
+        if(cg[cfg.cgId].eur > cfg.minSpot * 0.5) newEur = cg[cfg.cgId].eur / cg[cfg.cgId].usd;
+      }
+    }catch(e2){ try{ console.warn('metals coingecko:', e2 && e2.message ? e2.message : e2); }catch(_){} }
+  }
+
+  if(!newEur){
+    try{
+      var fx = await _goldFetchJson('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR',5000);
+      if(fx && fx.rates && fx.rates.EUR > 0.5) newEur = fx.rates.EUR;
+    }catch(e3){}
+  }
+
+  if(spin) spin.classList.remove('go');
+  if(btn) btn.disabled = false;
+  _goldState.fetching = false;
+  _goldState.loaded[metal] = true;
+
+  if(newSpot){
+    _goldState.prices[metal] = newSpot;
+    if(_goldState.metal === metal) _goldState.spot = newSpot;
+    if(newEur) _goldState.eurRate = newEur;
+    _goldState.source = source || 'live';
+    _goldShowErr('');
+    var now = new Date();
+    _goldStatus('green', _t('Обновлено ','Updated ') + now.toLocaleTimeString(getLang()==='en'?'en-US':'ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+  }else{
+    if(!_goldState.prices[metal]) _goldState.prices[metal] = cfg.fallbackSpot;
+    if(_goldState.metal === metal) _goldState.spot = _goldState.prices[metal];
+    _goldStatus('red', _t('Нет live-данных','No live data'));
+    _goldShowErr(_t('⚠️ Не удалось загрузить актуальную цену. Нажми «Обновить» для повтора.','⚠️ Could not load the live price. Press Refresh to try again.'));
+    _goldState.source = 'fallback';
+  }
+
+  _goldRenderAll();
+  clearInterval(_goldState.timer);
+  _goldState.timer = setInterval(function(){ _goldLoadPrice(false); }, 60000);
+}
+function _goldUpdateTicker(){
+  var cfg=_goldCfg();
+  var spot = _goldState.spot;
+  var label=_goldEl('gld-ticker-label'), price=_goldEl('gld-price'), gram=_goldEl('gld-gram');
+  if(label) label.textContent = cfg.code + '/' + _goldState.currency + ' · ' + _goldLang(cfg.spot);
+  if(!spot){
+    if(price) price.textContent = _t('Загрузка...','Loading...');
+    if(gram) gram.textContent = '— / ' + _t('грамм','gram');
+    return;
+  }
+  var mainOz = _goldState.currency === 'EUR' ? spot * _goldState.eurRate : spot;
+  if(price) price.textContent = _goldSym() + _goldFmt(mainOz);
+  var gpg = spot / _GOLD_OZ;
+  if(gram) gram.textContent = '$' + _goldFmt(gpg) + ' / г  ·  €' + _goldFmt(gpg * _goldState.eurRate) + ' / г';
+}
+function _goldCalc(){
+  var spot = _goldState.spot;
+  var main=_goldEl('gld-result-main'), sec=_goldEl('gld-result-secondary'), det=_goldEl('gld-result-detail');
+  if(!spot) return;
+  var wEl=_goldEl('gld-weight'), uEl=_goldEl('gld-unit');
+  var w = parseFloat(wEl && wEl.value);
+  var u = uEl ? uEl.value : 'g';
+  if(!w || w <= 0 || isNaN(w)){
+    if(main) main.textContent = '—';
+    if(sec) sec.textContent = '—';
+    if(det) det.textContent = _t('Введите вес слитка','Enter bar weight');
+    return;
+  }
+  var g = u === 'g' ? w : (u === 'oz' ? w * _GOLD_OZ : w * 1000);
+  var gpg = spot / _GOLD_OZ;
+  var usd = g * gpg;
+  if(main) main.textContent = _goldFmtCur(usd);
+  if(sec) sec.textContent = _goldFmtAlt(usd);
+  if(det){
+    det.textContent =
+      _goldFmt(g,3) + ' г  ·  ' + _goldFmt(g/_GOLD_OZ,4) + ' oz\n' +
+      '$' + _goldFmt(gpg) + '/г  ·  €' + _goldFmt(gpg*_goldState.eurRate) + '/г';
+  }
+}
+function _goldFillTable(){
+  var cfg=_goldCfg();
+  var spot = _goldState.spot;
+  var head=_goldEl('gld-table-head'), tb=_goldEl('gld-table-body');
+  if(head) head.textContent = _goldState.currency === 'EUR' ? _t('Цена EUR','Price EUR') : _t('Цена USD','Price USD');
+  if(!tb) return;
+  if(!spot){
+    tb.innerHTML = '<tr><td colspan="3" style="color:var(--text3);text-align:center;padding:20px">' + _t('Загрузка...','Loading...') + '</td></tr>';
+    return;
+  }
+  var gpg = spot / _GOLD_OZ;
+  tb.innerHTML = cfg.bars.map(function(b){
+    var usd = b.g * gpg;
+    var mainP = _goldState.currency === 'EUR' ? usd * _goldState.eurRate : usd;
+    return '<tr>' +
+      '<td class="gld-bar-name">' + esc2(b.l) + '</td>' +
+      '<td class="gld-oz">' + _goldFmt(b.g/_GOLD_OZ,4) + '</td>' +
+      '<td class="gld-price-cell">' + _goldSym() + _goldFmt(mainP) + '</td>' +
+      '</tr>';
+  }).join('');
+}
+function _goldUnitChange(){
+  var uEl=_goldEl('gld-unit'), sfx=_goldEl('gld-suffix');
+  var u = uEl ? uEl.value : 'g';
+  if(sfx) sfx.textContent = {g:'г',oz:'oz',kg:'кг'}[u] || 'г';
+  _goldCalc();
+  _goldSyncPresetActive();
+}
+function _goldSetPreset(v,u,el){
+  var w=_goldEl('gld-weight'), unit=_goldEl('gld-unit'), sfx=_goldEl('gld-suffix');
+  if(w) w.value = v;
+  if(unit) unit.value = u;
+  if(sfx) sfx.textContent = {g:'г',oz:'oz',kg:'кг'}[u] || 'г';
+  document.querySelectorAll('#page-goldcalc .gld-preset').forEach(function(b){ b.classList.remove('active'); });
+  if(el) el.classList.add('active');
+  _goldCalc();
+}
+function _goldApplyDefaultPreset(){
+  var cfg=_goldCfg(), d=cfg.defaultPreset || {v:100,u:'g'};
+  var w=_goldEl('gld-weight'), unit=_goldEl('gld-unit'), sfx=_goldEl('gld-suffix');
+  if(w) w.value = d.v;
+  if(unit) unit.value = d.u;
+  if(sfx) sfx.textContent = {g:'г',oz:'oz',kg:'кг'}[d.u] || 'г';
+}
+function _goldRenderPresets(){
+  var cfg=_goldCfg(), box=_goldEl('gld-presets');
+  if(!box) return;
+  box.innerHTML = cfg.presets.map(function(p,i){
+    return '<button class="gld-preset" data-v="' + p.v + '" data-u="' + esc2(p.u) + '" onclick="_goldSetPreset(' + p.v + ',\'' + esc2(p.u) + '\',this)">' + esc2(p.l) + '</button>';
+  }).join('');
+  _goldSyncPresetActive();
+}
+function _goldSyncPresetActive(){
+  var wEl=_goldEl('gld-weight'), uEl=_goldEl('gld-unit');
+  var w=parseFloat(wEl && wEl.value), u=uEl ? uEl.value : 'g';
+  document.querySelectorAll('#page-goldcalc .gld-preset').forEach(function(b){
+    var bv=parseFloat(b.getAttribute('data-v')), bu=b.getAttribute('data-u');
+    b.classList.toggle('active', Math.abs((bv||0)-(w||0)) < 0.000001 && bu === u);
+  });
+}
+function _goldRenderAll(){
+  _goldUpdateChrome();
+  _goldUpdateTicker();
+  _goldCalc();
+  _goldFillTable();
+}
+function renderGoldCalculator(){
+  _goldInitPrefs();
+  if(!_goldState.spot) _goldState.spot = _goldState.prices[_goldState.metal] || null;
+  _goldRenderAll();
+  if(!_goldState.loaded[_goldState.metal] && !_goldState.fetching) _goldLoadPrice(false);
 }
 
 // ── DIARY PAGE ──
@@ -19074,7 +20008,7 @@ var STORAGE_KEYS = {
   syncable: [
     'user_profile','user_plan','user_goals_v1','user_rules_v1',
     'user_achievements_seen_v1','user_notifications_v1',
-    'portfolio_v1','portfolio_archive_v1','capital_snapshots_v1',
+    'portfolio_v1','portfolio_archive_v1','capital_v1','capital_snapshots_v1',
     'tj_v3','tj_archive_v3','tj_periods',
     'watchlist_v1','weekplan_v1','tp_plans_v1',
     'diary_v1','psy_v1','psycho_v1','aiIdeas',
@@ -20326,7 +21260,8 @@ window.FEATURE_META = {
   export_csv:      { icon:'📤', name:{ru:'Экспорт в CSV/Excel', en:'CSV/Excel Export'}, desc:{ru:'Скачать данные приложения',           en:'Download app data as file'},        default:'pro' },
 
   // ── Sidebar pages (мета: иконка + описание; имя берётся прямо из сайдбара) ─
-  portfolio:       { icon:'💼', desc:{ru:'Управление позициями и P&L',         en:'Position management & P&L'},      default:'free' },
+  portfolio:       { icon:'💼', desc:{ru:'Криптовалютный портфель и P&L',       en:'Crypto portfolio and P&L'},         default:'free' },
+  capital:         { icon:'🏦', desc:{ru:'Активы, пассивы и структура капитала', en:'Assets, liabilities and capital structure'}, default:'free' },
   journal:         { icon:'📊', desc:{ru:'Дневник сделок и статистика',        en:'Trade log and statistics'},       default:'free' },
   paper_trading:   { icon:'📝', desc:{ru:'Симуляция торговли без денег',       en:'Simulation without real money'},  default:'free' },
   strategy:        { icon:'🎯', desc:{ru:'Раздел стратегий и торговых правил', en:'Strategies and trading rules'},   default:'pro'  },
@@ -20334,6 +21269,7 @@ window.FEATURE_META = {
   options_calc:    { icon:'⚡', desc:{ru:'Калькулятор опционов',               en:'Options calculator'},             default:'free' },
   risk_manager:    { icon:'🛡', desc:{ru:'Расчёт размера позиции по риску',    en:'Position sizing by risk'},        default:'free' },
   funding_oi:      { icon:'📊', desc:{ru:'Funding rates и open interest',      en:'Funding rates and open interest'},default:'pro'  },
+  metals_calculator: { icon:'🥇', desc:{ru:'Калькулятор стоимости золотых и серебряных слитков', en:'Gold and silver bullion value calculator'}, default:'free' },
   diary:           { icon:'📔', desc:{ru:'Личные заметки трейдера',            en:'Personal trader notes'},          default:'free' },
   psycho_journal:  { icon:'🧠', desc:{ru:'Журнал эмоций и психо-защита',       en:'Emotions journal & psycho-guard'},default:'free' },
   watchlist:       { icon:'👁', desc:{ru:'Отслеживание цен криптовалют',       en:'Crypto price tracking'},          default:'free' },
@@ -22453,6 +23389,16 @@ function applyLang(l){
     if(strBox && strBox.children.length){ _ppRenderStrategies(); }
     var anWrap = document.getElementById('pp-analytics-wrap');
     if(anWrap && anWrap.innerHTML){ _ppRenderAnalytics(); }
+  }catch(e){}
+  // Re-render Metals Calculator if it is currently visible.
+  try{
+    var glPage = document.getElementById('page-goldcalc');
+    if(glPage && glPage.style.display !== 'none' && typeof _goldRenderAll === 'function') _goldRenderAll();
+  }catch(e){}
+  // Re-render Capital when language changes, because table/chart labels are generated.
+  try{
+    var capPage = document.getElementById('page-capital');
+    if(capPage && capPage.style.display !== 'none' && typeof renderCapital === 'function') renderCapital();
   }catch(e){}
   // Re-render Trading Journal too — same problem there (empty state text,
   // analytics labels, table headers were rendered with whatever the lang
