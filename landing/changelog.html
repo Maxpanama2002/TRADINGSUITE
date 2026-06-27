@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.25">
-<script src="./assets/site.js?v=2.5.25"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.26">
+<script src="./assets/site.js?v=2.5.26"></script>
 </head>
 <body>
 
@@ -36,6 +36,21 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.26</span>
+        <span class="cl-date">2026-06-27</span>
+        <span class="cl-tag feat">feature</span>
+      </div>
+      <div class="cl-body">
+        <b>Капитал — donut переименован в «Структура капитала» и теперь включает пассивы как отдельную категорию.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>«Структура активов» → «Структура капитала»</b> — название карточки больше не вводит в заблуждение, ведь все цифры в ней (с v2.5.25) считаются от общего капитала.</li>
+          <li><b>Пассивы теперь видны прямо в donut</b> — раньше пассивы участвовали только в шкале активы/пассивы под donut, а сам donut и легенда показывали только категории активов, из-за чего кольцо не закрывалось полностью и категория «Кредит» (или любой другой пассив) нигде не была видна по названию. Теперь каждая категория пассивов — это полноценный сегмент кольца, и сумма всех процентов всегда равна 100%.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">

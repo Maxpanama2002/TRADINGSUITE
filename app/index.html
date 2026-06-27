@@ -4430,7 +4430,7 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
         <div class="ca-alloc-wrap">
           <div class="ca-card">
             <div class="ca-card-head">
-              <span class="ca-card-title" data-ru="Структура активов" data-en="Asset structure">Структура активов</span>
+              <span class="ca-card-title" data-ru="Структура капитала" data-en="Capital structure">Структура капитала</span>
               <span class="ca-card-sub" id="cap-alloc-sub">—</span>
             </div>
             <div class="ca-donut-row">
@@ -4454,7 +4454,7 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
               <span class="ca-card-sub" id="cap-balance-sub">—</span>
             </div>
             <div class="ca-bar-list" id="cap-bars"></div>
-            <div class="ca-hint" data-ru="Пассивы не попадают в donut структуры активов, но входят в общий капитал." data-en="Liabilities are not shown in the asset-structure donut, but they do count toward total capital.">Пассивы не попадают в donut структуры активов, но входят в общий капитал.</div>
+            <div class="ca-hint" data-ru="Эти же пассивы учтены отдельной категорией в donut «Структура капитала» слева." data-en="These same liabilities are also shown as a separate category in the «Capital structure» donut on the left.">Эти же пассивы учтены отдельной категорией в donut «Структура капитала» слева.</div>
           </div>
         </div>
 
@@ -6290,7 +6290,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.25';
+window._APP_VERSION = '2.5.26';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -10753,7 +10753,7 @@ function capDeleteItem(id){
 }
 function _capGroupAssets(list){
   var groups={};
-  list.filter(function(x){return x.kind==='asset';}).forEach(function(x){
+  list.forEach(function(x){
     var k=x.category||'Другое';
     if(!groups[k]) groups[k]={name:k,value:0,count:0};
     groups[k].value += parseFloat(x.value)||0;
@@ -10841,7 +10841,7 @@ function renderCapital(){
   _capRenderDonut(groups,totalAssets,total,totalLiabilities);
   _capRenderBars(totalAssets,totalLiabilities,total);
   var allocSub=document.getElementById('cap-alloc-sub');
-  if(allocSub) allocSub.textContent=assets.length+' '+_t('активов','assets')+' · '+_capFmt(total);
+  if(allocSub) allocSub.textContent=_capCountWord(list.length)+' · '+_capFmt(total);
   var balSub=document.getElementById('cap-balance-sub');
   if(balSub) balSub.textContent=_t('общий капитал ','total capital ')+_capFmt(total);
   var tbody=document.getElementById('cap-tbody');
