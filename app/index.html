@@ -6276,7 +6276,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.22';
+window._APP_VERSION = '2.5.23';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -20834,6 +20834,12 @@ async function _cloudAutoDownloadOnLogin(){
     }catch(e){}
   });
   if(skipped) console.warn('[cloud sync] kept ' + skipped + ' local key(s) — cloud had empty values');
+  // Re-apply theme/lang from the just-restored localStorage BEFORE re-rendering —
+  // otherwise widgets rebuilt below read the new theme while :root vars / the open
+  // tool iframe stay patched to whatever theme rendered before login, producing a
+  // mixed/broken-looking UI right after sign-in.
+  try{ applyTheme(getTheme()); }catch(e){}
+  try{ applyLang(getLang()); }catch(e){}
   // Reload the UI with fresh data
   try{ _scheduleDashboardRender(0); }catch(e){}
   if(count) try{ showToast2(_t('Данные загружены из облака ('+count+' объектов)','Data loaded from cloud ('+count+' items)')); }catch(e){}
@@ -22275,6 +22281,14 @@ var _TOOL_VARS = {
   dark: {surf2:'#222220',surf3:'#1a1a18',border:'rgba(255,255,255,.08)',border2:'rgba(255,255,255,.15)',pos:'#6ebd4f',neg:'#f87272'},
   oled: {surf2:'#080808',surf3:'#000000',border:'rgba(255,255,255,.12)',border2:'rgba(255,255,255,.22)',pos:'#6ebd4f',neg:'#f87272'},
   sepia:{surf2:'#f0ebe0',surf3:'#ebe5d8',border:'rgba(60,40,20,.10)',border2:'rgba(60,40,20,.22)',pos:'#3a5c0a',neg:'#7a1f1f'}
+};
+// Design tokens per theme — kept in sync with the :root values in setVars()'s _TV map.
+// Used by applyTheme() (validity check) and injectIframeTheme() (legacy-tool iframe styling).
+var THEMES = {
+  dark:  {bg:'#0d0d16',text:'#f0f0f8',sub:'#9898b8',muted:'#55556a',cardBg:'#161623',inputBg:'#1c1c2e'},
+  light: {bg:'#f3f0ff',text:'#0f0f1a',sub:'#6b7280',muted:'#9ca3af',cardBg:'#ffffff',inputBg:'#f8f5ff'},
+  oled:  {bg:'#000000',text:'#f0f0f8',sub:'#9898b8',muted:'#55556a',cardBg:'#0a0a0a',inputBg:'#0a0a0a'},
+  sepia: {bg:'#f4ecd8',text:'#3d2f1f',sub:'#6b5841',muted:'#8a7a60',cardBg:'#ede0c5',inputBg:'#f0e8d8'}
 };
 function injectIframeTheme(doc, t){
   if(!doc || !doc.head) return;
