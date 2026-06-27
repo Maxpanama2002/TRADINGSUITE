@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.27">
-<script src="./assets/site.js?v=2.5.27"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.28">
+<script src="./assets/site.js?v=2.5.28"></script>
 </head>
 <body>
 
@@ -36,6 +36,20 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.28</span>
+        <span class="cl-date">2026-06-27</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Капитал — доля объекта в таблице считалась от своей группы (активы/пассивы), а не от общего капитала, из-за чего сортировка по «Доле» выглядела нелогичной.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>«Доля» теперь считается от общего капитала для всех строк</b> — раньше актив показывал % от суммы только активов, а пассив — % от суммы только пассивов, и эти два разных масштаба смешивались в одной колонке. Например, пассив с «6.0%» мог быть в долларах меньше актива с «9.3%» — на глаз непонятно, почему сортировка ставит его выше. Теперь у всех строк единый масштаб (% от общего капитала), и сортировка по «Доле» всегда совпадает по порядку с сортировкой по «Стоимости».</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">
