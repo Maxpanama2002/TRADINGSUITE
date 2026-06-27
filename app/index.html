@@ -1090,6 +1090,12 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ca-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
 .ca-table tbody tr:last-child td{border-bottom:none;}
 .ca-table tbody tr:hover td{background:var(--card-bg2);}
+.ca-th-sort{cursor:pointer;user-select:none;}
+.ca-th-sort:hover{color:var(--text2);}
+.ca-th-sort.active{color:var(--accent);}
+.ca-th-arrow{display:inline-block;width:8px;margin-left:3px;}
+.ca-th-sort[data-dir="asc"] .ca-th-arrow::after{content:"▲";}
+.ca-th-sort[data-dir="desc"] .ca-th-arrow::after{content:"▼";}
 .ca-name{font-size:12px;font-weight:800;color:var(--text);}
 .ca-note{font-size:10px;color:var(--text3);margin-top:2px;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ca-class-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;background:var(--card-bg2);color:var(--text2);font-size:11px;font-weight:750;}
@@ -4484,12 +4490,12 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
 
         <div class="ca-table-wrap">
           <table class="ca-table">
-            <thead><tr>
-              <th data-ru="Название" data-en="Name">Название</th>
-              <th data-ru="Класс" data-en="Class">Класс</th>
-              <th data-ru="Тип" data-en="Type">Тип</th>
-              <th class="ca-r" data-ru="Стоимость" data-en="Value">Стоимость</th>
-              <th class="ca-r" data-ru="Доля" data-en="Share">Доля</th>
+            <thead><tr id="cap-tbody-head">
+              <th class="ca-th-sort" data-sort="name" onclick="capSetSort('name')" data-ru="Название" data-en="Name">Название<span class="ca-th-arrow"></span></th>
+              <th class="ca-th-sort" data-sort="category" onclick="capSetSort('category')" data-ru="Класс" data-en="Class">Класс<span class="ca-th-arrow"></span></th>
+              <th class="ca-th-sort" data-sort="kind" onclick="capSetSort('kind')" data-ru="Тип" data-en="Type">Тип<span class="ca-th-arrow"></span></th>
+              <th class="ca-r ca-th-sort" data-sort="value" onclick="capSetSort('value')" data-ru="Стоимость" data-en="Value">Стоимость<span class="ca-th-arrow"></span></th>
+              <th class="ca-r ca-th-sort" data-sort="share" onclick="capSetSort('share')" data-ru="Доля" data-en="Share">Доля<span class="ca-th-arrow"></span></th>
               <th></th>
             </tr></thead>
             <tbody id="cap-tbody"></tbody>
@@ -6290,7 +6296,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.26';
+window._APP_VERSION = '2.5.27';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -10650,6 +10656,7 @@ function pfSaveAdd(){
 // ══ CAPITAL PAGE JS ══
 var _CAP_KEY='capital_v1';
 var _capFilter='all';
+var _capSort={key:'default',dir:'desc'};
 var _capEditId=null;
 var _capKind='asset';
 var CAPITAL_COLORS=['#7c3aed','#ec4899','#22c55e','#f59e0b','#3b82f6','#14b8a6','#f97316','#8b5cf6','#ef4444','#06b6d4','#84cc16','#64748b'];
@@ -10686,6 +10693,17 @@ function capSetFilter(kind){
   document.querySelectorAll('#cap-filter .ca-filter-btn').forEach(function(b){
     b.classList.toggle('active',(b.getAttribute('data-kind')||'all')===_capFilter);
   });
+  renderCapital();
+}
+// Sortable table headers. Default direction per column makes sense for the data
+// (text columns start A→Z, numeric/date columns start largest/newest first).
+var _CAP_SORT_DEFAULT_DIR={name:'asc',category:'asc',kind:'asc',value:'desc',share:'desc'};
+function capSetSort(key){
+  if(_capSort.key===key){
+    _capSort.dir=_capSort.dir==='asc'?'desc':'asc';
+  } else {
+    _capSort={key:key,dir:_CAP_SORT_DEFAULT_DIR[key]||'desc'};
+  }
   renderCapital();
 }
 function capSetKind(kind){
@@ -10846,17 +10864,44 @@ function renderCapital(){
   if(balSub) balSub.textContent=_t('общий капитал ','total capital ')+_capFmt(total);
   var tbody=document.getElementById('cap-tbody');
   if(!tbody) return;
-  var rows=list.filter(function(x){return _capFilter==='all' || x.kind===_capFilter;}).sort(function(a,b){
-    if(a.kind!==b.kind) return a.kind==='asset'?-1:1;
-    return (parseFloat(b.value)||0)-(parseFloat(a.value)||0);
+  document.querySelectorAll('#cap-tbody-head .ca-th-sort').forEach(function(th){
+    th.classList.toggle('active', th.getAttribute('data-sort')===_capSort.key);
+    th.setAttribute('data-dir', _capSort.key===th.getAttribute('data-sort') ? _capSort.dir : '');
   });
+  var rows=list.filter(function(x){return _capFilter==='all' || x.kind===_capFilter;}).map(function(x){
+    var base=x.kind==='asset'?totalAssets:totalLiabilities;
+    x._share=base>0?(x.value/base*100):0;
+    return x;
+  });
+  var dirMul=_capSort.dir==='asc'?1:-1;
+  switch(_capSort.key){
+    case 'name':
+      rows.sort(function(a,b){return dirMul*String(a.name||'').localeCompare(String(b.name||''));});
+      break;
+    case 'category':
+      rows.sort(function(a,b){return dirMul*String(a.category||'').localeCompare(String(b.category||''));});
+      break;
+    case 'kind':
+      rows.sort(function(a,b){return dirMul*String(a.kind||'').localeCompare(String(b.kind||''));});
+      break;
+    case 'value':
+      rows.sort(function(a,b){return dirMul*((parseFloat(a.value)||0)-(parseFloat(b.value)||0));});
+      break;
+    case 'share':
+      rows.sort(function(a,b){return dirMul*(a._share-b._share);});
+      break;
+    default:
+      rows.sort(function(a,b){
+        if(a.kind!==b.kind) return a.kind==='asset'?-1:1;
+        return (parseFloat(b.value)||0)-(parseFloat(a.value)||0);
+      });
+  }
   if(!rows.length){
     tbody.innerHTML='<tr><td colspan="6" class="ca-empty">'+(_capFilter==='all'?_t('Добавь недвижимость, акции, облигации, золото, авто или любой другой объект капитала.','Add real estate, stocks, bonds, gold, cars or any other capital item.'):_t('Нет объектов в этом фильтре','No items in this filter'))+'</td></tr>';
     return;
   }
   tbody.innerHTML=rows.map(function(x,idx){
-    var base=x.kind==='asset'?totalAssets:totalLiabilities;
-    var share=base>0?(x.value/base*100):0;
+    var share=x._share;
     var color=_capClassColor(x.category,idx);
     var val=_capFmt(x.value);
     return '<tr>'
