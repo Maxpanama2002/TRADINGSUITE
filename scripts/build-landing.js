@@ -170,6 +170,12 @@ function walkHtml(dir){
     let count = 0;
     // Match every old 2.1.XXX version reference and replace with APP_VERSION
     html = html.replace(/2\.1\.\d{2,3}/g, function(){ count++; return APP_VERSION; });
+    // Also sync "current version" mentions in the 2.5.x scheme (current scheme).
+    // Skip changelog.html — it intentionally lists many historical 2.5.x version
+    // numbers that must stay as-is, not get overwritten with the latest version.
+    if(name !== 'changelog.html'){
+      html = html.replace(/2\.5\.\d{1,3}/g, function(m){ if(m===APP_VERSION) return m; count++; return APP_VERSION; });
+    }
     // v2.1.165 — cache-bust query string on assets/site.css (and site.js if added later)
     // ensures every visitor sees latest CSS even if their browser cached the old one.
     html = html.replace(/(site\.(?:css|js))(\?v=[^"'>\s]+)?/g, function(_, file, q){
