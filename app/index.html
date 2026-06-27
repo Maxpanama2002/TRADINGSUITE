@@ -6290,7 +6290,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.24';
+window._APP_VERSION = '2.5.25';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -10767,10 +10767,10 @@ function _capRenderDonut(groups,totalAssets,totalCapital,totalLiabilities){
   if(!svg) return;
   var R=40,C=2*Math.PI*R,SW=10;
   var html='<circle class="ca-donut-track" cx="50" cy="50" r="'+R+'" fill="none" stroke-width="'+SW+'"/>';
-  if(totalAssets>0){
+  if(totalCapital>0){
     var offset=0;
     groups.forEach(function(g,i){
-      var pct=g.value/totalAssets;
+      var pct=g.value/totalCapital;
       if(pct<=0) return;
       var len=pct*C, color=_capClassColor(g.name,i);
       html+='<circle class="ca-donut-seg" cx="50" cy="50" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="'+SW+'" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-offset).toFixed(2)+'"/>';
@@ -10797,7 +10797,7 @@ function _capRenderDonut(groups,totalAssets,totalCapital,totalLiabilities){
       legend.innerHTML='<div style="font-size:12px;color:var(--text3)">'+_t('Добавь первый актив, чтобы увидеть структуру','Add your first asset to see the structure')+'</div>';
     } else {
       legend.innerHTML=groups.map(function(g,i){
-        var pct=totalAssets>0?(g.value/totalAssets*100):0;
+        var pct=totalCapital>0?(g.value/totalCapital*100):0;
         var color=_capClassColor(g.name,i);
         return '<div class="ca-legend-item">'
           +'<span class="ca-legend-dot" style="background:'+color+'"></span>'
@@ -10841,7 +10841,7 @@ function renderCapital(){
   _capRenderDonut(groups,totalAssets,total,totalLiabilities);
   _capRenderBars(totalAssets,totalLiabilities,total);
   var allocSub=document.getElementById('cap-alloc-sub');
-  if(allocSub) allocSub.textContent=assets.length+' '+_t('активов','assets')+' · '+_capFmt(totalAssets);
+  if(allocSub) allocSub.textContent=assets.length+' '+_t('активов','assets')+' · '+_capFmt(total);
   var balSub=document.getElementById('cap-balance-sub');
   if(balSub) balSub.textContent=_t('общий капитал ','total capital ')+_capFmt(total);
   var tbody=document.getElementById('cap-tbody');
@@ -22432,11 +22432,11 @@ window.addEventListener('DOMContentLoaded', function(){
   var fr = document.getElementById('tool-frame');
   if(fr) fr.addEventListener('load', function(){
     try{ injectIframeTheme(fr.contentDocument, getTheme()); }catch(e){}
-    try{ injectIframeLang(fr.contentDocument, getLang()); }catch(e){}
+    try{ if(typeof injectIframeLang==='function') injectIframeLang(fr.contentDocument, getLang()); }catch(e){}
   });
   window._afterInitialLoad(function(){
-    applyTheme(getTheme());
-    applyLang(getLang());
+    try{ applyTheme(getTheme()); }catch(e){}
+    try{ if(typeof applyLang==='function') applyLang(getLang()); }catch(e){}
     // iCloud auto-sync state
     var auto = false; try{ auto = localStorage.getItem('icloud_auto') === '1'; }catch(e){}
     var cb = document.getElementById('icloud-auto');
