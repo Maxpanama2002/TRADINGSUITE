@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Портфель</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f0efe9; --surface:#ffffff; --surf2:#f5f4f0; --surf3:#eae9e3;
+  --text:#1a1a18; --text2:#6b6b67; --text3:#9a9a96;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.17);
+  --radius:10px; --radius-lg:14px;
+  --font:'Times New Roman',Times,Georgia,serif;
+  --mono:'Courier New',Courier,monospace;
+  --green-bg:#C0DD97; --green-bd:#639922; --green-tx:#27500A;
+  --red-bg:#F7C1C1;   --red-bd:#E24B4A;   --red-tx:#791F1F;
+  --amber-bg:#FAC775; --amber-bd:#EF9F27; --amber-tx:#633806;
+  --blue-bg:#B5D4F4;  --blue-bd:#378ADD;  --blue-tx:#0C447C;
+  --purple-bg:#CECBF6;--purple-bd:#7F77DD;--purple-tx:#26215C;
+  --pos:#27500A; --neg:#791F1F;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:28px 16px;}
+.page{max-width:860px;margin:0 auto;}
+.page-wide{max-width:1060px;margin:0 auto;}
+h1{font-size:28px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.section-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;}
+.card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:18px 20px;}
+.card+.card{margin-top:12px;}
+.card-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--border);}
+.metric-grid{display:grid;gap:8px;margin-bottom:18px;}
+.mg-4{grid-template-columns:repeat(4,1fr);} .mg-3{grid-template-columns:repeat(3,1fr);} .mg-2{grid-template-columns:repeat(2,1fr);}
+.metric{background:var(--surf2);border-radius:var(--radius);padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.metric-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.pos{color:var(--pos);} .neg{color:var(--neg);} .blue{color:var(--blue-tx);} .amber{color:var(--amber-tx);}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:18px;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+.arch-row{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius);margin-bottom:6px;}
+.arch-act{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:14px;font-weight:700;flex-shrink:0;}
+.arch-act.add{background:#C0DD97;color:#27500A;}
+.arch-act.sell{background:#F7C1C1;color:#791F1F;}
+.arch-act.del{background:var(--surf3);color:var(--text2);}
+.arch-act.inc{background:#B5D4F4;color:#0C447C;}
+.arch-main{flex:1;min-width:0;}
+.arch-title{font-size:13px;font-weight:700;color:var(--text);}
+.arch-meta{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--mono);}
+.arch-empty{padding:40px 20px;text-align:center;color:var(--text2);font-size:14px;}
+.arch-clear{background:none;border:0.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--text2);font-family:var(--font);font-size:12px;font-weight:600;}
+.arch-clear:hover{color:var(--text);border-color:var(--text);}
+.tab-btn{flex:1;padding:9px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s;}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.full{grid-column:span 2;} .field.full3{grid-column:span 3;}
+.field label{font-size:12px;color:var(--text2);}
+input[type=text],input[type=number],input[type=datetime-local],input[type=date],select,textarea{width:100%;padding:9px 11px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--text3);background:var(--surface);}
+textarea{resize:vertical;min-height:56px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--surf3);border-radius:2px;outline:none;border:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--surface);}
+.btn-primary{width:100%;padding:11px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .15s;}
+.btn-primary:hover{opacity:.82;}
+.btn-secondary{padding:8px 16px;background:none;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text2);transition:all .15s;}
+.btn-secondary:hover{border-color:var(--text);color:var(--text);}
+.toggle-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.toggle-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tbtn{padding:10px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.tbtn:hover{border-color:var(--text3);color:var(--text);}
+.tbtn.a-green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.tbtn.a-red{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.tbtn.a-amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.tbtn.a-blue{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.tbtn.a-dark{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:700;}
+.badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.b-green{background:var(--green-bg);color:var(--green-tx);}
+.b-red{background:var(--red-bg);color:var(--red-tx);}
+.b-amber{background:var(--amber-bg);color:var(--amber-tx);}
+.b-blue{background:var(--blue-bg);color:var(--blue-tx);}
+.b-purple{background:var(--purple-bg);color:var(--purple-tx);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border2);}
+tbody td{padding:9px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surf2);}
+.divider{height:0.5px;background:var(--border2);margin:16px 0;}
+.mono{font-family:var(--mono);}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:15px;}
+.chart-wrap{position:relative;width:100%;height:240px;margin:10px 0;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--text2);}
+.detail-val{font-family:var(--mono);font-weight:700;}
+.verdict{padding:12px 16px;font-size:14px;margin-bottom:18px;border-left:3px solid;line-height:1.6;border-radius:0 var(--radius) var(--radius) 0;}
+.v-profit{border-color:var(--green-bd);background:var(--green-bg);color:var(--green-tx);}
+.v-loss{border-color:var(--red-bd);background:var(--red-bg);color:var(--red-tx);}
+.v-neutral{border-color:var(--text3);background:var(--surf2);color:var(--text2);}
+.v-partial{border-color:var(--amber-bd);background:var(--amber-bg);color:var(--amber-tx);}
+.insight-box{background:var(--surf2);border:0.5px solid var(--border);border-radius:var(--radius);padding:2px 14px;margin-top:6px;}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.insight-row:last-child{border-bottom:none;}
+@media(max-width:560px){.mg-4,.mg-3{grid-template-columns:1fr 1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}.field.full,.field.full3{grid-column:span 1;}}
+
+body{padding:20px 14px 60px;}
+.pf-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.pf-table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px;}
+.pf-table th{text-align:right;padding:8px 10px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid var(--border2);background:var(--surf2);white-space:nowrap;}
+.pf-table th:first-child,.pf-table th:nth-child(2){text-align:left;}
+.pf-table td{padding:10px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;text-align:right;white-space:nowrap;}
+.pf-table td:first-child{text-align:left;}
+.pf-table tbody tr:hover td{background:var(--surf2);}
+.pf-table tbody tr:last-child td{border-bottom:none;}
+.pf-table tfoot td{padding:10px;font-weight:700;border-top:1.5px solid var(--border2);background:var(--surf2);}
+.coin-name{font-weight:700;font-size:14px;}
+.coin-sym{font-size:11px;color:var(--text2);font-family:var(--mono);}
+.pch{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.pch.up{background:var(--green-bg);color:var(--green-tx);}
+.pch.dn{background:var(--red-bg);color:var(--red-tx);}
+.pch.fl{background:var(--surf3);color:var(--text2);}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .15s;}
+.del-btn:hover{background:var(--red-bg);color:var(--red-tx);}
+.edit-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:2px 5px;border-radius:4px;transition:all .15s;line-height:1;}
+.edit-btn:hover{background:var(--amber-bg);color:var(--amber-tx);}
+.edit-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;}
+.edit-modal.open{display:flex;}
+.edit-box{background:var(--surface);border-radius:var(--radius-lg);padding:24px 22px;width:min(340px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.edit-box h3{font-size:16px;font-weight:700;margin-bottom:4px;}
+.edit-sym-info{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.edit-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.edit-row label{font-size:12px;color:var(--text2);}
+.edit-hint{font-size:11px;color:var(--text3);margin-top:3px;}
+.edit-actions{display:flex;gap:8px;margin-top:16px;}
+.edit-actions .btn-secondary,.edit-actions .btn-primary{flex:1;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a18;color:#f0efe9;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:99999;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.status-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--surf2);border-radius:var(--radius);font-size:12px;color:var(--text2);}
+.refresh-btn{background:var(--text);color:var(--surface);border:none;border-radius:var(--radius);padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.refresh-btn:disabled{opacity:.45;cursor:not-allowed;}
+.sell-btn{background:var(--red-bd);color:#fff;border:none;border-radius:var(--radius);padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:opacity .15s;}
+.sell-btn:hover{opacity:.85;}
+.sell-btn:disabled{opacity:.45;cursor:not-allowed;}
+#sell-modal select{width:100%;padding:9px 11px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;}
+#sell-pnl-preview{font-size:12px;font-family:var(--mono);font-weight:700;margin-top:6px;padding:6px 10px;border-radius:6px;}
+.err{color:var(--red-tx);font-size:12px;width:100%;}
+.add-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:14px;overflow:visible;}
+.add-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;border-radius:var(--radius-lg);}
+.add-hdr:hover{background:var(--surf2);}
+.add-body{display:none;padding:0 16px 16px;border-top:0.5px solid var(--border);}
+.add-card.open .add-body{display:block;}
+.add-card.open .af-chev{transform:rotate(180deg);}
+.af-chev{font-size:10px;color:var(--text3);transition:transform .2s;}
+.sym-wrap{position:relative;}
+.sug-box{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:0.5px solid var(--border2);border-top:none;border-radius:0 0 var(--radius) var(--radius);z-index:200;max-height:180px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.12);}
+.sug-item{padding:9px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+.sug-item:hover{background:var(--surf2);}
+.sug-sym{font-weight:700;font-family:var(--mono);}
+.sug-name{font-size:11px;color:var(--text2);}
+.api-note{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="page-wide">
+  <h1>Портфель</h1>
+  <p class="subtitle">Крипто-активы с автообновлением цен через CoinGecko</p>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tab-btn-pf" onclick="_pfTab('pf')">Портфель</button>
+    <button class="tab-btn" id="tab-btn-arch" onclick="_pfTab('arch')">Архив операций</button>
+  </div>
+
+  <div id="tab-portfolio" class="tab-pane active">
+
+  <div class="metric-grid mg-4" id="pf-metrics">
+    <div class="metric"><div class="metric-label">Текущая стоимость</div><div class="metric-value" id="m-val">—</div></div>
+    <div class="metric"><div class="metric-label">Вложено</div><div class="metric-value" id="m-inv">—</div></div>
+    <div class="metric"><div class="metric-label">P&L</div><div class="metric-value" id="m-pnl">—</div></div>
+    <div class="metric"><div class="metric-label">P&L %</div><div class="metric-value" id="m-pct">—</div></div>
+  </div>
+
+  <div class="status-bar">
+    <button class="refresh-btn" id="rbtn" onclick="fetchPrices()">&#8635; Обновить цены</button>
+    <button class="sell-btn" onclick="openSellModal()">− Продать</button>
+    <span id="upd-time">Цены не загружены</span>
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+      <input type="checkbox" id="auto-cb" onchange="toggleAuto()" style="width:auto;padding:0;border:none;background:none;cursor:pointer">
+      Авто (60с)
+    </label>
+    <span class="err" id="ferr" style="display:none"></span>
+  </div>
+
+  <div class="add-card open" id="add-card">
+    <div class="add-hdr" onclick="document.getElementById('add-card').classList.toggle('open')">
+      <span style="font-weight:700;font-size:14px">+ Добавить позицию</span>
+      <span class="af-chev">&#9660;</span>
+    </div>
+    <div class="add-body">
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field">
+          <label>Символ монеты</label>
+          <div class="sym-wrap">
+            <input type="text" id="inp-sym" placeholder="BTC, ETH, SOL…" oninput="onInput()" autocomplete="off" spellcheck="false">
+            <div class="sug-box" id="sug-box" style="display:none"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>CoinGecko ID <span style="font-size:10px;color:var(--text3)">(авто или вручную)</span></label>
+          <input type="text" id="inp-id" placeholder="bitcoin, ethereum…">
+        </div>
+        <div class="field">
+          <label>Количество</label>
+          <input type="number" id="inp-qty" placeholder="0.5" step="any" min="0" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Средняя цена покупки ($)</label>
+          <input type="number" id="inp-buy" placeholder="0.00" step="any" min="0" inputmode="decimal">
+        </div>
+      </div>
+      <p class="api-note">Если монеты нет в списке — введи символ вручную и укажи CoinGecko ID со страницы coingecko.com (в URL после /coins/). Например: для Sui → sui, для Celestia → celestia.</p>
+      <button class="btn-primary" style="margin-top:12px" onclick="addPos()">Добавить в портфель</button>
+    </div>
+  </div>
+
+  <div id="pf-out"></div>
+  </div><!-- /tab-portfolio -->
+
+  <div id="tab-archive" class="tab-pane">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:12px;color:var(--text2);">История всех операций с портфелем</span>
+      <button class="arch-clear" onclick="_archClear()">Очистить архив</button>
+    </div>
+    <div id="arch-out"></div>
+  </div><!-- /tab-archive -->
+</div>
+
+<script>
+var portfolio = [], archive = [];
+var cache = {};
+var autoT = null;
+
+var COINS = {"BTC": {"id": "bitcoin", "name": "Bitcoin"}, "ETH": {"id": "ethereum", "name": "Ethereum"}, "USDT": {"id": "tether", "name": "Tether"}, "BNB": {"id": "binancecoin", "name": "BNB"}, "SOL": {"id": "solana", "name": "Solana"}, "USDC": {"id": "usd-coin", "name": "USD Coin"}, "XRP": {"id": "ripple", "name": "XRP"}, "DOGE": {"id": "dogecoin", "name": "Dogecoin"}, "ADA": {"id": "cardano", "name": "Cardano"}, "AVAX": {"id": "avalanche-2", "name": "Avalanche"}, "SHIB": {"id": "shiba-inu", "name": "Shiba Inu"}, "TON": {"id": "the-open-network", "name": "TON"}, "DOT": {"id": "polkadot", "name": "Polkadot"}, "TRX": {"id": "tron", "name": "TRON"}, "LINK": {"id": "chainlink", "name": "Chainlink"}, "MATIC": {"id": "matic-network", "name": "Polygon"}, "LTC": {"id": "litecoin", "name": "Litecoin"}, "BCH": {"id": "bitcoin-cash", "name": "Bitcoin Cash"}, "NEAR": {"id": "near", "name": "NEAR Protocol"}, "UNI": {"id": "uniswap", "name": "Uniswap"}, "ICP": {"id": "internet-computer", "name": "Internet Computer"}, "APT": {"id": "aptos", "name": "Aptos"}, "FIL": {"id": "filecoin", "name": "Filecoin"}, "SUI": {"id": "sui", "name": "Sui"}, "ARB": {"id": "arbitrum", "name": "Arbitrum"}, "OP": {"id": "optimism", "name": "Optimism"}, "ATOM": {"id": "cosmos", "name": "Cosmos"}, "INJ": {"id": "injective-protocol", "name": "Injective"}, "IMX": {"id": "immutable-x", "name": "Immutable X"}, "VET": {"id": "vechain", "name": "VeChain"}, "AAVE": {"id": "aave", "name": "Aave"}, "GRT": {"id": "the-graph", "name": "The Graph"}, "STX": {"id": "blockstack", "name": "Stacks"}, "HBAR": {"id": "hedera-hashgraph", "name": "Hedera"}, "MKR": {"id": "maker", "name": "Maker"}, "ALGO": {"id": "algorand", "name": "Algorand"}, "SAND": {"id": "the-sandbox", "name": "The Sandbox"}, "MANA": {"id": "decentraland", "name": "Decentraland"}, "EOS": {"id": "eos", "name": "EOS"}, "XLM": {"id": "stellar", "name": "Stellar"}, "FLOW": {"id": "flow", "name": "Flow"}, "AXS": {"id": "axie-infinity", "name": "Axie Infinity"}, "CRV": {"id": "curve-dao-token", "name": "Curve DAO"}, "XMR": {"id": "monero", "name": "Monero"}, "FTM": {"id": "fantom", "name": "Fantom"}, "THETA": {"id": "theta-token", "name": "Theta"}, "KAVA": {"id": "kava", "name": "Kava"}, "SNX": {"id": "havven", "name": "Synthetix"}, "ZEC": {"id": "zcash", "name": "Zcash"}, "COMP": {"id": "compound-governance-token", "name": "Compound"}, "YFI": {"id": "yearn-finance", "name": "Yearn Finance"}, "BAT": {"id": "basic-attention-token", "name": "Basic Attention"}, "ZRX": {"id": "0x", "name": "0x Protocol"}, "ENJ": {"id": "enjincoin", "name": "Enjin"}, "CHZ": {"id": "chiliz", "name": "Chiliz"}, "CELR": {"id": "celer-network", "name": "Celer"}, "ROSE": {"id": "oasis-network", "name": "Oasis"}, "EGLD": {"id": "elrond-erd-2", "name": "MultiversX"}, "ONE": {"id": "harmony", "name": "Harmony"}, "LUNA": {"id": "terra-luna-2", "name": "Terra 2.0"}, "RUNE": {"id": "thorchain", "name": "THORChain"}, "CAKE": {"id": "pancakeswap-token", "name": "PancakeSwap"}, "ZIL": {"id": "zilliqa", "name": "Zilliqa"}, "IOTA": {"id": "iota", "name": "IOTA"}, "NEO": {"id": "neo", "name": "NEO"}, "KSM": {"id": "kusama", "name": "Kusama"}, "DASH": {"id": "dash", "name": "Dash"}, "WAVES": {"id": "waves", "name": "Waves"}, "CELO": {"id": "celo", "name": "Celo"}, "ENS": {"id": "ethereum-name-service", "name": "ENS"}, "LDO": {"id": "lido-dao", "name": "Lido DAO"}, "RPL": {"id": "rocket-pool", "name": "Rocket Pool"}, "SUSHI": {"id": "sushi", "name": "SushiSwap"}, "1INCH": {"id": "1inch", "name": "1inch"}, "CVX": {"id": "convex-finance", "name": "Convex Finance"}, "FXS": {"id": "frax-share", "name": "Frax Share"}, "DYDX": {"id": "dydx", "name": "dYdX"}, "GMX": {"id": "gmx", "name": "GMX"}, "PERP": {"id": "perpetual-protocol", "name": "Perpetual Protocol"}, "BLUR": {"id": "blur", "name": "Blur"}, "MAGIC": {"id": "magic", "name": "Magic"}, "SSV": {"id": "ssv-network", "name": "SSV Network"}, "PENDLE": {"id": "pendle", "name": "Pendle"}, "RDNT": {"id": "radiant-capital", "name": "Radiant Capital"}, "JOE": {"id": "joe", "name": "Trader Joe"}, "VELO": {"id": "velodrome-finance", "name": "Velodrome"}, "AERO": {"id": "aerodrome-finance", "name": "Aerodrome"}, "PYTH": {"id": "pyth-network", "name": "Pyth Network"}, "JUP": {"id": "jupiter-exchange-solana", "name": "Jupiter"}, "BONK": {"id": "bonk", "name": "Bonk"}, "WIF": {"id": "dogwifcoin", "name": "dogwifhat"}, "BOME": {"id": "book-of-meme", "name": "Book of MEME"}, "POPCAT": {"id": "popcat", "name": "Popcat"}, "MEW": {"id": "cat-in-a-dogs-world", "name": "MEW"}, "RENDER": {"id": "render-token", "name": "Render"}, "WLD": {"id": "worldcoin-wld", "name": "Worldcoin"}, "SEI": {"id": "sei-network", "name": "Sei"}, "TIA": {"id": "celestia", "name": "Celestia"}, "STRK": {"id": "starknet", "name": "Starknet"}, "ALT": {"id": "altlayer", "name": "AltLayer"}, "DYM": {"id": "dymension", "name": "Dymension"}, "MANTA": {"id": "manta-network", "name": "Manta"}, "JTO": {"id": "jito-governance-token", "name": "Jito"}, "ETHFI": {"id": "ether-fi", "name": "Ether.fi"}, "ENA": {"id": "ethena", "name": "Ethena"}, "W": {"id": "wormhole", "name": "Wormhole"}, "ZK": {"id": "zksync", "name": "zkSync"}, "TAIKO": {"id": "taiko", "name": "Taiko"}, "IO": {"id": "io-net", "name": "io.net"}, "ZRO": {"id": "layerzero", "name": "LayerZero"}, "LISTA": {"id": "lista", "name": "Lista DAO"}, "SCR": {"id": "scroll", "name": "Scroll"}, "EIGEN": {"id": "eigenlayer", "name": "EigenLayer"}, "MOODENG": {"id": "moo-deng", "name": "Moo Deng"}, "GOAT": {"id": "goat", "name": "GOAT"}, "ACT": {"id": "act-i-the-ai-prophecy", "name": "Act I"}, "PNUT": {"id": "peanut-the-squirrel", "name": "Peanut"}, "NEIRO": {"id": "first-neiro-on-ethereum", "name": "Neiro"}, "PEPE": {"id": "pepe", "name": "Pepe"}, "FLOKI": {"id": "floki", "name": "Floki"}, "BRETT": {"id": "brett", "name": "Brett"}, "MOG": {"id": "mog-coin", "name": "Mog Coin"}, "TURBO": {"id": "turbo", "name": "Turbo"}, "PEOPLE": {"id": "constitutiondao", "name": "ConstitutionDAO"}, "NOT": {"id": "notcoin", "name": "Notcoin"}, "DOGS": {"id": "dogs-2", "name": "DOGS"}, "HMSTR": {"id": "hamster-kombat", "name": "Hamster Kombat"}, "CATI": {"id": "catizen", "name": "Catizen"}, "KAS": {"id": "kaspa", "name": "Kaspa"}, "ONDO": {"id": "ondo-finance", "name": "Ondo"}, "MOVE": {"id": "movement", "name": "Movement"}, "HYPE": {"id": "hyperliquid", "name": "Hyperliquid"}, "VIRTUAL": {"id": "virtual-protocol", "name": "Virtuals Protocol"}, "AI16Z": {"id": "ai16z", "name": "ai16z"}, "GRIFFAIN": {"id": "griffain", "name": "Griffain"}, "FARTCOIN": {"id": "fartcoin", "name": "Fartcoin"}, "TRUMP": {"id": "official-trump", "name": "TRUMP"}, "MELANIA": {"id": "melania-meme", "name": "MELANIA"}, "S": {"id": "sonic-3", "name": "Sonic"}, "LAYER": {"id": "solayer", "name": "Solayer"}, "BIO": {"id": "bio-protocol", "name": "Bio Protocol"}, "IP": {"id": "story-2", "name": "Story"}, "BERA": {"id": "berachain-bera", "name": "Berachain"}, "SIGN": {"id": "sign", "name": "Sign"}, "TST": {"id": "the-smurfs-society", "name": "TST"}};
+
+function load() {
+  try {
+    // 1. Try parent localStorage (parent reads/writes its own storage directly)
+    var pf = null;
+    try { if (window.parent && window.parent !== window) pf = window.parent.localStorage.getItem('portfolio_v1'); } catch(e) {}
+    // 2. Fallback to own localStorage
+    if (!pf) { try { pf = localStorage.getItem('portfolio_v1'); } catch(e) {} }
+    if (pf) portfolio = JSON.parse(pf);
+  } catch(e) {}
+}
+function save() {
+  var raw = JSON.stringify(portfolio);
+  // Save everywhere possible so parent can read it back
+  try { localStorage.setItem('portfolio_v1', raw); } catch(e) {}
+  try { if (window.parent && window.parent !== window) window.parent.localStorage.setItem('portfolio_v1', raw); } catch(e) {}
+}
+
+function f2(n) { return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fPrice(p) {
+  if (p >= 1000) return '$' + p.toLocaleString('en-US', {maximumFractionDigits:0});
+  if (p >= 1)    return '$' + f2(p);
+  if (p >= 0.01) return '$' + p.toLocaleString('en-US', {minimumFractionDigits:4, maximumFractionDigits:4});
+  return '$' + p.toLocaleString('en-US', {minimumFractionDigits:6, maximumFractionDigits:6});
+}
+
+function onInput() {
+  var v = (document.getElementById('inp-sym').value || '').toUpperCase().replace(/\s/g,'');
+  var box = document.getElementById('sug-box');
+  if (!v) { box.style.display = 'none'; return; }
+  var keys = Object.keys(COINS);
+  var hits = [];
+  for (var i = 0; i < keys.length; i++) {
+    var sym = keys[i];
+    var c = COINS[sym];
+    if (sym.indexOf(v) === 0 || c.name.toUpperCase().indexOf(v) !== -1) {
+      hits.push({sym:sym, id:c.id, name:c.name});
+      if (hits.length >= 10) break;
+    }
+  }
+  if (!hits.length) { box.style.display = 'none'; return; }
+  var html = '';
+  for (var j = 0; j < hits.length; j++) {
+    var h = hits[j];
+    html += '<div class="sug-item" onclick="pick(\'' + h.sym + '\',\'' + h.id + '\')">'
+          + '<span class="sug-sym">' + h.sym + '</span>'
+          + '<span class="sug-name">' + h.name + '</span>'
+          + '</div>';
+  }
+  box.innerHTML = html;
+  box.style.display = 'block';
+}
+
+function pick(sym, id) {
+  document.getElementById('inp-sym').value = sym;
+  document.getElementById('inp-id').value  = id;
+  document.getElementById('sug-box').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.sym-wrap')) {
+    document.getElementById('sug-box').style.display = 'none';
+  }
+});
+
+function _archLoad(){ try { archive = JSON.parse(localStorage.getItem('portfolio_archive_v1')||'[]'); } catch(e){ archive = []; } }
+function _archSave(){ try { localStorage.setItem('portfolio_archive_v1', JSON.stringify(archive)); } catch(e){} }
+function _archLog(action, sym, qty, price, note){
+  archive.unshift({ id: Date.now()+Math.random(), ts: Date.now(), action: action, sym: sym||'', qty: qty||0, price: price||0, note: note||'' });
+  if (archive.length > 1000) archive = archive.slice(0,1000);
+  _archSave();
+  if (document.getElementById('arch-out')) _archRender();
+}
+function _fmtArchDate(ts){ var d=new Date(ts); var p=function(n){return n<10?'0'+n:n;}; return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+function _archRender(){
+  var el = document.getElementById('arch-out');
+  if (!el) return;
+  if (!archive.length){ el.innerHTML = '<div class="arch-empty">Архив пуст — операции с портфелем будут появляться здесь</div>'; return; }
+  var ACTIONS = { add:{cls:'add',ic:'+',lbl:'Добавлено'}, increase:{cls:'inc',ic:'\u2191',lbl:'Пополнено'}, sell:{cls:'sell',ic:'\u2212',lbl:'Продано'}, del:{cls:'del',ic:'\u2715',lbl:'Удалено'} };
+  var h = '';
+  for (var i=0; i<archive.length; i++){
+    var a = archive[i]; var ai = ACTIONS[a.action] || {cls:'del',ic:'?',lbl:a.action};
+    h += '<div class="arch-row">';
+    h += '<span class="arch-act '+ai.cls+'">'+ai.ic+'</span>';
+    h += '<div class="arch-main">';
+    h += '<div class="arch-title">'+ai.lbl+': '+(a.sym||'?')+(a.qty?' &middot; '+a.qty+' шт':'')+(a.price?' @ $'+(+a.price).toFixed(4):'')+'</div>';
+    h += '<div class="arch-meta">'+_fmtArchDate(a.ts)+(a.note?' &middot; '+a.note:'')+'</div>';
+    h += '</div></div>';
+  }
+  el.innerHTML = h;
+}
+function _archClear(){ if(!confirm('Очистить весь архив операций?')) return; archive=[]; _archSave(); _archRender(); }
+function _pfTab(which){
+  var isArch = which==='arch';
+  document.getElementById('tab-portfolio').classList.toggle('active', !isArch);
+  document.getElementById('tab-archive').classList.toggle('active', isArch);
+  document.getElementById('tab-btn-pf').classList.toggle('active', !isArch);
+  document.getElementById('tab-btn-arch').classList.toggle('active', isArch);
+  if (isArch) _archRender();
+}
+
+function addPos() {
+  var sym = (document.getElementById('inp-sym').value || '').trim().toUpperCase();
+  var id  = (document.getElementById('inp-id').value  || '').trim().toLowerCase();
+  var qty = parseFloat(document.getElementById('inp-qty').value);
+  var buy = parseFloat(document.getElementById('inp-buy').value);
+  if (!sym)         { alert('Укажи символ монеты'); return; }
+  if (!id)          { alert('Укажи CoinGecko ID'); return; }
+  if (!qty || qty <= 0) { alert('Укажи количество'); return; }
+  if (!buy || buy <= 0) { alert('Укажи цену покупки'); return; }
+
+  var exist = null;
+  for (var i = 0; i < portfolio.length; i++) {
+    if (portfolio[i].gecko === id) { exist = portfolio[i]; break; }
+  }
+  if (exist) {
+    var newQty  = exist.qty + qty;
+    var newAvg  = (exist.qty * exist.buy + qty * buy) / newQty;
+    exist.qty = newQty;
+    exist.buy = newAvg;
+    _archLog('increase', sym, qty, buy, 'Ср. цена: $'+f2(newAvg)); showToast(sym + ' — позиция увеличена. Ср. цена: $' + f2(newAvg));
+  } else {
+    var coinName = (COINS[sym] && COINS[sym].name) || sym;
+    portfolio.push({id: Date.now(), sym: sym, name: coinName, gecko: id, qty: qty, buy: buy}); _archLog('add', sym, qty, buy, '');
+  }
+  save();
+  document.getElementById('inp-sym').value = '';
+  document.getElementById('inp-id').value  = '';
+  document.getElementById('inp-qty').value = '';
+  document.getElementById('inp-buy').value = '';
+  render();
+  setTimeout(fetchPrices, 80);
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+var _editId = null;
+function editPos(id) {
+  var p = null; for(var i=0;i<portfolio.length;i++){if(portfolio[i].id===id){p=portfolio[i];break;}}
+  if (!p) return;
+  _editId = id;
+  document.getElementById('edit-title').textContent = p.sym + ' — редактирование';
+  var qStr = p.qty >= 1 ? p.qty.toFixed(4) : p.qty.toLocaleString('en-US',{maximumFractionDigits:8});
+  document.getElementById('edit-sym-info').textContent = p.name + ' — тек. объём: ' + qStr;
+  document.getElementById('edit-qty').value = p.qty;
+  document.getElementById('edit-buy').value = p.buy;
+  document.getElementById('edit-modal').classList.add('open');
+  setTimeout(function(){document.getElementById('edit-qty').focus();},60);
+}
+function _closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  _editId = null;
+}
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById('edit-modal')) return;
+  _closeEditModal();
+}
+function saveEdit() {
+  var p = null; for(var i=0;i<portfolio.length;i++){if(portfolio[i].id===_editId){p=portfolio[i];break;}}
+  if (!p) return;
+  var qty = parseFloat(document.getElementById('edit-qty').value);
+  var buy = parseFloat(document.getElementById('edit-buy').value);
+  if (isNaN(qty)||qty<=0){alert('Укажи корректный объём');return;}
+  if (isNaN(buy)||buy<=0){alert('укажи корректную цену');return;}
+  p.qty = qty; p.buy = buy;
+  save(); _closeEditModal(); render();
+}
+
+function delPos(id) {
+  if (!confirm('Удалить позицию?')) return;
+  var _gone = null;
+  for (var _i=0; _i<portfolio.length; _i++) if (portfolio[_i].id===id) { _gone = portfolio[_i]; break; }
+  if (_gone) _archLog('del', _gone.sym, _gone.qty, _gone.buy, 'Удалена позиция');
+  portfolio = portfolio.filter(function(p) { return p.id !== id; });
+  save();
+  render();
+}
+
+// ── Sell ──
+function openSellModal() {
+  if (!portfolio.length) { alert('Портфель пуст — нечего продавать'); return; }
+  var sel = document.getElementById('sell-asset');
+  sel.innerHTML = '';
+  for (var i = 0; i < portfolio.length; i++) {
+    var p = portfolio[i];
+    var qStr = p.qty >= 1 ? p.qty.toFixed(4) : p.qty.toLocaleString('en-US',{maximumFractionDigits:8});
+    var opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.sym + ' — ' + qStr + ' @ ' + fPrice(p.buy);
+    sel.appendChild(opt);
+  }
+  document.getElementById('sell-qty').value = '';
+  document.getElementById('sell-price').value = '';
+  updateSellInfo();
+  document.getElementById('sell-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('sell-qty').focus(); }, 60);
+}
+function _closeSellModal() { document.getElementById('sell-modal').classList.remove('open'); }
+function closeSellModal(e) { if (e && e.target !== document.getElementById('sell-modal')) return; _closeSellModal(); }
+function _sellSelected() {
+  var sid = parseInt(document.getElementById('sell-asset').value);
+  for (var i = 0; i < portfolio.length; i++) if (portfolio[i].id === sid) return portfolio[i];
+  return null;
+}
+function updateSellInfo() {
+  var p = _sellSelected();
+  var info = document.getElementById('sell-info');
+  var prev = document.getElementById('sell-pnl-preview');
+  prev.style.display = 'none';
+  if (!p) { info.textContent = ''; return; }
+  var qStr = p.qty >= 1 ? p.qty.toFixed(4) : p.qty.toLocaleString('en-US',{maximumFractionDigits:8});
+  var cur = cache[p.gecko] ? cache[p.gecko].usd : null;
+  info.textContent = p.name + ' — в наличии: ' + qStr + ' @ ср. ' + fPrice(p.buy) + (cur !== null ? ' · рынок ' + fPrice(cur) : '');
+  if (cur !== null && !document.getElementById('sell-price').value) {
+    document.getElementById('sell-price').placeholder = String(cur);
+  }
+  recalcSellPnl();
+}
+function recalcSellPnl() {
+  var p = _sellSelected();
+  var prev = document.getElementById('sell-pnl-preview');
+  if (!p) { prev.style.display = 'none'; return; }
+  var qty = parseFloat(document.getElementById('sell-qty').value);
+  var price = parseFloat(document.getElementById('sell-price').value);
+  if (!qty || qty <= 0 || !price || price <= 0) { prev.style.display = 'none'; return; }
+  var pnl = (price - p.buy) * qty;
+  var pct = p.buy > 0 ? (price - p.buy) / p.buy * 100 : 0;
+  prev.style.display = '';
+  prev.style.background = pnl >= 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+  prev.style.color = pnl >= 0 ? 'var(--green-tx)' : 'var(--red-tx)';
+  prev.textContent = 'P&L: ' + (pnl >= 0 ? '+' : '') + '$' + f2(pnl) + ' (' + (pct >= 0 ? '+' : '') + f2(pct) + '%)';
+}
+function sellAll() {
+  var p = _sellSelected();
+  if (!p) return;
+  document.getElementById('sell-qty').value = p.qty;
+  recalcSellPnl();
+}
+function confirmSell() {
+  var p = _sellSelected();
+  if (!p) { alert('Выбери актив'); return; }
+  var qty = parseFloat(document.getElementById('sell-qty').value);
+  var price = parseFloat(document.getElementById('sell-price').value);
+  if (!qty || qty <= 0)   { alert('Укажи количество для продажи'); return; }
+  if (!price || price <= 0) { alert('Укажи цену продажи'); return; }
+  if (qty > p.qty + 1e-12) { alert('Объём продажи (' + qty + ') превышает имеющийся (' + p.qty + ')'); return; }
+  var pnl = (price - p.buy) * qty;
+  p.qty = p.qty - qty;
+  if (p.qty < 1e-10) {
+    portfolio = portfolio.filter(function(x){ return x.id !== p.id; });
+  }
+  _archLog('sell', p.sym, qty, price, 'P&L '+(pnl>=0?'+':'')+'$'+f2(pnl)); save(); _closeSellModal(); render();
+  showToast('Продано ' + p.sym + ': ' + qty + ' @ ' + fPrice(price) + ' · P&L ' + (pnl >= 0 ? '+' : '') + '$' + f2(pnl));
+}
+
+function toggleAuto() {
+  if (document.getElementById('auto-cb').checked) {
+    autoT = setInterval(fetchPrices, 60000);
+  } else {
+    clearInterval(autoT); autoT = null;
+  }
+}
+
+var GC2CC = {
+  'binancecoin':'bnb','ripple':'xrp','matic-network':'polygon',
+  'avalanche-2':'avalanche','shiba-inu':'shiba-inu',
+  'uniswap':'uniswap','chainlink':'chainlink','stellar':'stellar'
+};
+
+function mkSignal(ms) {
+  try {
+    if (AbortSignal.timeout) return AbortSignal.timeout(ms);
+  } catch(e) {}
+  try {
+    var c = new AbortController();
+    setTimeout(function(){ c.abort(); }, ms);
+    return c.signal;
+  } catch(e) {}
+  return undefined;
+}
+
+async function tryFetch(url) {
+  var sig = mkSignal(9000);
+  var opts = sig ? {signal: sig} : {};
+  var r = await fetch(url, opts);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function fetchPrices() {
+  if (!portfolio.length) return;
+  var btn = document.getElementById('rbtn');
+  var err = document.getElementById('ferr');
+  if (btn) { btn.disabled = true; btn.textContent = '\u23f3 \u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430\u2026'; }
+  if (err) err.style.display = 'none';
+
+  var ids = [];
+  portfolio.forEach(function(p) { if (ids.indexOf(p.gecko) === -1) ids.push(p.gecko); });
+  var ok = false;
+
+  // 1. CoinGecko direct
+  try {
+    var cgUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd&include_24hr_change=true';
+    var d = await tryFetch(cgUrl);
+    if (d && typeof d === 'object' && Object.keys(d).length) { Object.assign(cache, d); ok = true; }
+  } catch(e1) {}
+
+  // 2. CoinCap (works with null-origin)
+  if (!ok) {
+    try {
+      var ccIds = ids.map(function(g) { return GC2CC[g] || g; });
+      var ccUrl = 'https://api.coincap.io/v2/assets?ids=' + ccIds.join(',');
+      var d2 = await tryFetch(ccUrl);
+      if (d2 && d2.data && d2.data.length) {
+        var rev = {};
+        ids.forEach(function(g) { rev[GC2CC[g] || g] = g; });
+        d2.data.forEach(function(a) {
+          var gecko = rev[a.id] || a.id;
+          cache[gecko] = { usd: parseFloat(a.priceUsd) || 0, usd_24h_change: parseFloat(a.changePercent24Hr) || 0 };
+        });
+        ok = true;
+      }
+    } catch(e2) {}
+  }
+
+  // 3. CORS proxy fallback (allorigins)
+  if (!ok) {
+    try {
+      var cgUrl2 = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd&include_24hr_change=true';
+      var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(cgUrl2);
+      var d3 = await tryFetch(proxyUrl);
+      if (d3 && typeof d3 === 'object' && Object.keys(d3).length) { Object.assign(cache, d3); ok = true; }
+    } catch(e3) {}
+  }
+
+  if (ok) {
+    var t = new Date();
+    var upd = document.getElementById('upd-time');
+    if (upd) upd.textContent = '\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u043e ' + t.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } else {
+    if (err) { err.textContent = '\u041e\u0448\u0438\u0431\u043a\u0430: API \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e. \u041f\u0440\u043e\u0432\u0435\u0440\u044c \u0441\u0435\u0442\u044c'; err.style.display = ''; }
+    var upd2 = document.getElementById('upd-time');
+    if (upd2) upd2.textContent = '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c';
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '&#8635; \u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0446\u0435\u043d\u044b'; }
+  render();
+}
+function render() {
+  var el = document.getElementById('pf-out');
+  if (!portfolio.length) {
+    el.innerHTML = '<div class="empty-state">Портфель пуст — добавь первую позицию выше</div>';
+    setMetrics(null,null,null,null);
+    return;
+  }
+  var totVal = 0, totInv = 0, tot24 = 0, has24 = false;
+  var rows = '';
+  for (var i = 0; i < portfolio.length; i++) {
+    var p = portfolio[i];
+    var pd = cache[p.gecko];
+    var cur  = pd ? pd['usd'] : null;
+    var ch24 = pd ? pd['usd_24h_change'] : null;
+    var inv  = p.qty * p.buy;
+    var val  = cur !== null ? p.qty * cur : null;
+    var pnl  = val !== null ? val - inv : null;
+    var pct  = pnl !== null && inv > 0 ? pnl / inv * 100 : null;
+    var c24c = ch24 === null ? 'fl' : ch24 > 0.005 ? 'up' : ch24 < -0.005 ? 'dn' : 'fl';
+
+    if (val !== null) { totVal += val; totInv += inv; }
+    if (val !== null && ch24 !== null) { tot24 += val * ch24 / 100; has24 = true; }
+
+    var qtyStr = p.qty >= 1 ? f2(p.qty) : p.qty.toLocaleString('en-US',{maximumFractionDigits:6});
+
+    rows += '<tr>';
+    rows += '<td><div class="coin-name">' + p.sym + '</div><div class="coin-sym">' + p.name + '</div></td>';
+    rows += '<td class="mono" style="text-align:right">' + qtyStr + '</td>';
+    rows += '<td class="mono">' + fPrice(p.buy) + '</td>';
+    rows += '<td class="mono">' + (cur !== null ? fPrice(cur) : '<span style="color:var(--text3)">—</span>') + '</td>';
+    rows += '<td class="mono" style="font-weight:700">' + (val !== null ? '$' + f2(val) : '—') + '</td>';
+    rows += '<td class="mono" style="color:' + (pnl === null ? 'var(--text2)' : pnl >= 0 ? 'var(--pos)' : 'var(--neg)') + ';font-weight:700">'
+          + (pnl !== null ? (pnl >= 0 ? '+' : '') + '$' + f2(pnl) : '—') + '</td>';
+    rows += '<td>' + (pct !== null ? '<span class="pch ' + (pct >= 0 ? 'up' : 'dn') + '">' + (pct >= 0 ? '+' : '') + f2(pct) + '%</span>' : '—') + '</td>';
+    rows += '<td>' + (ch24 !== null ? '<span class="pch ' + c24c + '">' + (ch24 >= 0 ? '+' : '') + f2(ch24) + '%</span>' : '—') + '</td>';
+    rows += '<td style="display:flex;gap:3px;align-items:center;justify-content:flex-end"><button class="edit-btn" title="Редактировать" onclick="editPos(' + p.id + ')">&#9998;</button><button class="del-btn" onclick="delPos(' + p.id + ')">&#215;</button></td>';
+    rows += '</tr>';
+  }
+
+  var totPnl = totVal - totInv;
+  var totPct = totInv > 0 ? totPnl / totInv * 100 : 0;
+
+  var tf = '<tfoot><tr>';
+  tf += '<td colspan="4" style="text-align:left;font-family:var(--mono)">ИТОГО</td>';
+  tf += '<td class="mono">$' + f2(totVal) + '</td>';
+  tf += '<td class="mono" style="color:' + (totPnl >= 0 ? 'var(--pos)' : 'var(--neg)') + '">' + (totPnl >= 0 ? '+' : '') + '$' + f2(totPnl) + '</td>';
+  tf += '<td><span class="pch ' + (totPct >= 0 ? 'up' : 'dn') + '">' + (totPct >= 0 ? '+' : '') + f2(totPct) + '%</span></td>';
+  tf += '<td>' + (has24 ? '<span class="pch ' + (tot24 >= 0 ? 'up' : 'dn') + '">' + (tot24 >= 0 ? '+' : '') + '$' + f2(tot24) + '</span>' : '—') + '</td>';
+  tf += '<td></td></tr></tfoot>';
+
+  el.innerHTML = '<div class="pf-wrap"><table class="pf-table">'
+    + '<thead><tr><th>Монета</th><th>Кол-во</th><th>Ср. цена</th><th>Текущая</th><th>Стоимость</th><th>P&L $</th><th>P&L %</th><th>24ч</th><th></th></tr></thead>'
+    + '<tbody>' + rows + '</tbody>'
+    + tf
+    + '</table></div>';
+
+  setMetrics(totVal, totInv, totPnl, totPct);
+}
+
+function setMetrics(val, inv, pnl, pct) {
+  var ve = document.getElementById('m-val');
+  var ie = document.getElementById('m-inv');
+  var pe = document.getElementById('m-pnl');
+  var pp = document.getElementById('m-pct');
+  ve.textContent = val !== null && val > 0 ? '$' + f2(val) : '—';
+  ie.textContent = inv !== null && inv > 0 ? '$' + f2(inv) : '—';
+  if (pnl !== null) {
+    pe.textContent  = (pnl >= 0 ? '+' : '') + '$' + f2(pnl);
+    pe.className    = 'metric-value ' + (pnl >= 0 ? 'pos' : 'neg');
+    pp.textContent  = (pct >= 0 ? '+' : '') + f2(pct) + '%';
+    pp.className    = 'metric-value ' + (pct >= 0 ? 'pos' : 'neg');
+  } else {
+    pe.textContent = '—'; pe.className = 'metric-value';
+    pp.textContent = '—'; pp.className = 'metric-value';
+  }
+}
+
+load(); _archLoad(); render();
+if (portfolio.length) fetchPrices();
+</script>
+<div id="toast" class="toast"></div>
+<div id="edit-modal" class="edit-modal" onclick="closeEditModal(event)">
+  <div class="edit-box">
+    <h3 id="edit-title"></h3>
+    <div class="edit-sym-info" id="edit-sym-info"></div>
+    <div class="edit-row">
+      <label>Объём (кол-во монет)</label>
+      <input type="number" id="edit-qty" step="any" min="0" placeholder="0.00">
+      <div class="edit-hint">Частичное закрытие: уменьши объём в поле</div>
+    </div>
+    <div class="edit-row">
+      <label>Ср. цена входа ($)</label>
+      <input type="number" id="edit-buy" step="any" min="0" placeholder="0.00">
+    </div>
+    <div class="edit-actions">
+      <button class="btn-secondary" onclick="_closeEditModal()">Отмена</button>
+      <button class="btn-primary" onclick="saveEdit()">Сохранить</button>
+    </div>
+  </div>
+</div>
+<div id="sell-modal" class="edit-modal" onclick="closeSellModal(event)">
+  <div class="edit-box">
+    <h3>Продажа актива</h3>
+    <div class="edit-sym-info" id="sell-info"></div>
+    <div class="edit-row">
+      <label>Актив</label>
+      <select id="sell-asset" onchange="updateSellInfo()"></select>
+    </div>
+    <div class="edit-row">
+      <label>Количество для продажи</label>
+      <input type="number" id="sell-qty" step="any" min="0" placeholder="0.00" oninput="recalcSellPnl()">
+      <div class="edit-hint"><a href="javascript:void(0)" onclick="sellAll()" style="color:var(--blue-tx);text-decoration:underline">Продать всё</a></div>
+    </div>
+    <div class="edit-row">
+      <label>Цена продажи ($)</label>
+      <input type="number" id="sell-price" step="any" min="0" placeholder="0.00" oninput="recalcSellPnl()">
+      <div id="sell-pnl-preview" style="display:none"></div>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-secondary" onclick="_closeSellModal()">Отмена</button>
+      <button class="btn-primary" onclick="confirmSell()">Продать</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

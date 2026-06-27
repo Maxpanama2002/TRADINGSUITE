@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Дневник трейдера</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f0efe9; --surface:#ffffff; --surf2:#f5f4f0; --surf3:#eae9e3;
+  --text:#1a1a18; --text2:#6b6b67; --text3:#9a9a96;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.17);
+  --radius:10px; --radius-lg:14px;
+  --font:'Times New Roman',Times,Georgia,serif;
+  --mono:'Courier New',Courier,monospace;
+  --green-bg:#C0DD97; --green-bd:#639922; --green-tx:#27500A;
+  --red-bg:#F7C1C1;   --red-bd:#E24B4A;   --red-tx:#791F1F;
+  --amber-bg:#FAC775; --amber-bd:#EF9F27; --amber-tx:#633806;
+  --blue-bg:#B5D4F4;  --blue-bd:#378ADD;  --blue-tx:#0C447C;
+  --purple-bg:#CECBF6;--purple-bd:#7F77DD;--purple-tx:#26215C;
+  --pos:#27500A; --neg:#791F1F;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:28px 16px;}
+.page{max-width:860px;margin:0 auto;}
+.page-wide{max-width:1060px;margin:0 auto;}
+h1{font-size:28px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.section-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;}
+.card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:18px 20px;}
+.card+.card{margin-top:12px;}
+.card-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--border);}
+.metric-grid{display:grid;gap:8px;margin-bottom:18px;}
+.mg-4{grid-template-columns:repeat(4,1fr);} .mg-3{grid-template-columns:repeat(3,1fr);} .mg-2{grid-template-columns:repeat(2,1fr);}
+.metric{background:var(--surf2);border-radius:var(--radius);padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.metric-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.pos{color:var(--pos);} .neg{color:var(--neg);} .blue{color:var(--blue-tx);} .amber{color:var(--amber-tx);}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:18px;}
+.tab-btn{flex:1;padding:9px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s;}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.full{grid-column:span 2;} .field.full3{grid-column:span 3;}
+.field label{font-size:12px;color:var(--text2);}
+input[type=text],input[type=number],input[type=datetime-local],input[type=date],select,textarea{width:100%;padding:9px 11px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--text3);background:var(--surface);}
+textarea{resize:vertical;min-height:56px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--surf3);border-radius:2px;outline:none;border:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--surface);}
+.btn-primary{width:100%;padding:11px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .15s;}
+.btn-primary:hover{opacity:.82;}
+.btn-secondary{padding:8px 16px;background:none;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text2);transition:all .15s;}
+.btn-secondary:hover{border-color:var(--text);color:var(--text);}
+.toggle-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.toggle-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tbtn{padding:10px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.tbtn:hover{border-color:var(--text3);color:var(--text);}
+.tbtn.a-green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.tbtn.a-red{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.tbtn.a-amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.tbtn.a-blue{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.tbtn.a-dark{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:700;}
+.badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.b-green{background:var(--green-bg);color:var(--green-tx);}
+.b-red{background:var(--red-bg);color:var(--red-tx);}
+.b-amber{background:var(--amber-bg);color:var(--amber-tx);}
+.b-blue{background:var(--blue-bg);color:var(--blue-tx);}
+.b-purple{background:var(--purple-bg);color:var(--purple-tx);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border2);}
+tbody td{padding:9px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surf2);}
+.divider{height:0.5px;background:var(--border2);margin:16px 0;}
+.mono{font-family:var(--mono);}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:15px;}
+.chart-wrap{position:relative;width:100%;height:240px;margin:10px 0;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--text2);}
+.detail-val{font-family:var(--mono);font-weight:700;}
+.verdict{padding:12px 16px;font-size:14px;margin-bottom:18px;border-left:3px solid;line-height:1.6;border-radius:0 var(--radius) var(--radius) 0;}
+.v-profit{border-color:var(--green-bd);background:var(--green-bg);color:var(--green-tx);}
+.v-loss{border-color:var(--red-bd);background:var(--red-bg);color:var(--red-tx);}
+.v-neutral{border-color:var(--text3);background:var(--surf2);color:var(--text2);}
+.v-partial{border-color:var(--amber-bd);background:var(--amber-bg);color:var(--amber-tx);}
+.insight-box{background:var(--surf2);border:0.5px solid var(--border);border-radius:var(--radius);padding:2px 14px;margin-top:6px;}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.insight-row:last-child{border-bottom:none;}
+@media(max-width:560px){.mg-4,.mg-3{grid-template-columns:1fr 1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}.field.full,.field.full3{grid-column:span 1;}}
+
+.ebtn{padding:9px 4px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;line-height:1.3;}
+.ebtn:hover{border-color:var(--text3);color:var(--text);}
+.ebtn[data-e="calm"].active{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.ebtn[data-e="fear"].active{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.ebtn[data-e="greed"].active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.ebtn[data-e="fomo"].active{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.ebtn[data-e="revenge"].active{background:var(--purple-bg);border-color:var(--purple-bd);color:var(--purple-tx);font-weight:700;}
+.emotion-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;}
+.tag-btn{padding:5px 12px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);border-radius:99px;cursor:pointer;background:var(--surf2);color:var(--text2);font-family:var(--font);transition:all .15s;}
+.tag-btn:hover{border-color:var(--text3);color:var(--text);}
+.tag-btn.active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);}
+.diary-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;}
+.diary-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .1s;}
+.diary-header:hover{background:var(--surf2);}
+.diary-body{display:none;padding:0 16px 16px;border-top:0.5px solid var(--border);}
+.diary-card.open .diary-body{display:block;}
+.diary-card.open .dchev{transform:rotate(180deg);}
+.dchev{font-size:10px;color:var(--text3);margin-left:auto;transition:transform .2s;flex-shrink:0;}
+.diary-date{font-size:15px;font-weight:700;}
+.diary-meta{font-size:12px;color:var(--text2);margin-top:2px;}
+.del-diary-btn{background:none;border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:12px;padding:4px 10px;font-family:var(--font);transition:all .15s;flex-shrink:0;}
+.del-diary-btn:hover{background:var(--red-bg);color:var(--red-tx);border-color:var(--red-bd);}
+.entry-block{margin-bottom:12px;}
+.entry-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.entry-text{font-size:14px;line-height:1.7;color:var(--text);}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Дневник трейдера</h1>
+  <p class="subtitle">Психологические заметки, наблюдения, выводы</p>
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tbw" onclick="goTab('write')">Новая запись</button>
+    <button class="tab-btn" id="tbf" onclick="goTab('feed')">Все записи</button>
+  </div>
+
+  <div id="tab-write">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Запись</div>
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="field"><label>Дата</label><input type="date" id="d-date"></div>
+        <div class="field"><label>Рынок сегодня</label>
+          <select id="d-market">
+            <option value="">— не указан —</option>
+            <option value="bull">Бычий (рост)</option>
+            <option value="bear">Медвежий (падение)</option>
+            <option value="range">Боковик</option>
+            <option value="volatile">Волатильный</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:14px">
+        <label style="margin-bottom:6px">Преобладающая эмоция дня</label>
+        <div class="emotion-grid">
+          <button class="ebtn" data-e="calm"    onclick="pickEmotion(this)">Спокойствие</button>
+          <button class="ebtn" data-e="fear"    onclick="pickEmotion(this)">Страх</button>
+          <button class="ebtn" data-e="greed"   onclick="pickEmotion(this)">Жадность</button>
+          <button class="ebtn" data-e="fomo"    onclick="pickEmotion(this)">FOMO</button>
+          <button class="ebtn" data-e="revenge" onclick="pickEmotion(this)">Месть рынку</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:14px">
+        <label style="margin-bottom:6px">Теги дня</label>
+        <div class="tag-row">
+          <button class="tag-btn" data-tag="дисциплина"   onclick="pickTag(this)">Дисциплина</button>
+          <button class="tag-btn" data-tag="терпение"     onclick="pickTag(this)">Терпение</button>
+          <button class="tag-btn" data-tag="переторговля" onclick="pickTag(this)">Переторговля</button>
+          <button class="tag-btn" data-tag="прорыв"       onclick="pickTag(this)">Прорыв</button>
+          <button class="tag-btn" data-tag="ошибка"       onclick="pickTag(this)">Ошибка</button>
+          <button class="tag-btn" data-tag="инсайт"       onclick="pickTag(this)">Инсайт</button>
+          <button class="tag-btn" data-tag="стресс"       onclick="pickTag(this)">Стресс</button>
+          <button class="tag-btn" data-tag="фокус"        onclick="pickTag(this)">Фокус</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:12px">
+        <label>Что произошло сегодня?</label>
+        <textarea id="d-happened" rows="3" placeholder="Описание торгового дня, сделок, событий…"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>Что сделал правильно?</label>
+        <textarea id="d-good" rows="2" placeholder="Сильные стороны сегодня…"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label>Что можно улучшить?</label>
+        <textarea id="d-improve" rows="2" placeholder="Над чем работать…"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:16px">
+        <label>Установка на завтра</label>
+        <textarea id="d-tomorrow" rows="2" placeholder="Правило или мысль на следующий день…"></textarea>
+      </div>
+      <button class="btn-primary" onclick="saveEntry()">Сохранить запись</button>
+    </div>
+  </div>
+
+  <div id="tab-feed" style="display:none">
+    <div style="margin-bottom:12px">
+      <input type="text" id="d-search" placeholder="Поиск по тексту или тегу…" oninput="renderFeed()">
+    </div>
+    <div id="diary-feed"></div>
+  </div>
+</div>
+
+<script>
+var entries = [];
+var selectedEmotion = '';
+var selectedTags = [];
+
+var EL = {calm:'Спокойствие', fear:'Страх', greed:'Жадность', fomo:'FOMO', revenge:'Месть рынку'};
+var MARKETS = {bull:'Бычий', bear:'Медвежий', range:'Боковик', volatile:'Волатильный'};
+
+function loadEntries() {
+  try { var s = localStorage.getItem('diary_v1'); if (s) entries = JSON.parse(s); } catch(e) {}
+  setDefaultDate();
+}
+function saveEntries() { localStorage.setItem('diary_v1', JSON.stringify(entries)); }
+
+function setDefaultDate() {
+  var n = new Date();
+  var y = n.getFullYear(), mo = String(n.getMonth()+1).padStart(2,'0'), d = String(n.getDate()).padStart(2,'0');
+  document.getElementById('d-date').value = y+'-'+mo+'-'+d;
+}
+
+function goTab(t) {
+  document.getElementById('tab-write').style.display = t === 'write' ? '' : 'none';
+  document.getElementById('tab-feed').style.display  = t === 'feed'  ? '' : 'none';
+  document.getElementById('tbw').classList.toggle('active', t === 'write');
+  document.getElementById('tbf').classList.toggle('active', t === 'feed');
+  if (t === 'feed') renderFeed();
+}
+
+function pickEmotion(btn) {
+  var grid = document.querySelector('.emotion-grid');
+  grid.querySelectorAll('.ebtn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  selectedEmotion = btn.getAttribute('data-e');
+}
+
+function pickTag(btn) {
+  btn.classList.toggle('active');
+  selectedTags = [];
+  document.querySelectorAll('.tag-btn.active').forEach(function(b) { selectedTags.push(b.getAttribute('data-tag')); });
+}
+
+function saveEntry() {
+  var date = document.getElementById('d-date').value;
+  if (!date) { alert('Укажи дату'); return; }
+  var happened = document.getElementById('d-happened').value;
+  var good     = document.getElementById('d-good').value;
+  var improve  = document.getElementById('d-improve').value;
+  var tomorrow = document.getElementById('d-tomorrow').value;
+  if (!happened && !good && !improve && !tomorrow) { alert('Добавь хотя бы одну заметку'); return; }
+  var entry = {
+    id: Date.now(), date: date,
+    emotion: selectedEmotion,
+    market: document.getElementById('d-market').value,
+    tags: selectedTags.slice(),
+    happened: happened, good: good, improve: improve, tomorrow: tomorrow
+  };
+  entries.unshift(entry);
+  saveEntries();
+  document.getElementById('d-happened').value = '';
+  document.getElementById('d-good').value = '';
+  document.getElementById('d-improve').value = '';
+  document.getElementById('d-tomorrow').value = '';
+  document.getElementById('d-market').value = '';
+  document.querySelectorAll('.ebtn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tag-btn').forEach(function(b) { b.classList.remove('active'); });
+  selectedEmotion = '';
+  selectedTags = [];
+  setDefaultDate();
+  alert('Запись сохранена!');
+}
+
+function deleteEntry(id) {
+  if (!confirm('Удалить запись?')) return;
+  entries = entries.filter(function(e) { return e.id !== id; });
+  saveEntries();
+  renderFeed();
+}
+
+function toggleDiary(id) {
+  var card = document.getElementById('de-' + id);
+  if (card) card.classList.toggle('open');
+}
+
+function renderFeed() {
+  var el = document.getElementById('diary-feed');
+  var q = (document.getElementById('d-search').value || '').toLowerCase();
+  var fe = entries;
+  if (q) {
+    fe = entries.filter(function(e) {
+      var text = (e.happened + ' ' + e.good + ' ' + e.improve + ' ' + e.tomorrow + ' ' + e.tags.join(' ')).toLowerCase();
+      return text.indexOf(q) !== -1;
+    });
+  }
+  if (!entries.length) { el.innerHTML = '<div class="empty-state">Записей пока нет</div>'; return; }
+  if (!fe.length) { el.innerHTML = '<div class="empty-state">Ничего не найдено</div>'; return; }
+
+  var html = '';
+  for (var i = 0; i < fe.length; i++) {
+    var e = fe[i];
+    var d = new Date(e.date);
+    var dl = d.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
+    var emotionLabel = e.emotion ? EL[e.emotion] || e.emotion : '';
+    var marketLabel  = e.market  ? (MARKETS[e.market] || '') : '';
+    var tagsStr = e.tags && e.tags.length ? e.tags.map(function(t){return '#'+t;}).join(' ') : '';
+    var metaParts = [];
+    if (emotionLabel) metaParts.push(emotionLabel);
+    if (marketLabel)  metaParts.push(marketLabel);
+    if (tagsStr)      metaParts.push(tagsStr);
+    var metaStr = metaParts.join(' &nbsp;·&nbsp; ');
+
+    html += '<div class="diary-card" id="de-' + e.id + '">';
+    html += '<div class="diary-header" onclick="toggleDiary(' + e.id + ')">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div class="diary-date">' + dl + '</div>';
+    html += '<div class="diary-meta">' + metaStr + '</div>';
+    html += '</div>';
+    html += '<button class="del-diary-btn" onclick="event.stopPropagation();deleteEntry(' + e.id + ')">Удалить</button>';
+    html += '<span class="dchev">&#9660;</span>';
+    html += '</div>';
+    html += '<div class="diary-body">';
+    if (e.happened) {
+      html += '<div class="entry-block"><div class="entry-label">Что произошло</div>';
+      html += '<div class="entry-text">' + e.happened.replace(/\n/g,'<br>') + '</div></div>';
+    }
+    if (e.good) {
+      html += '<div class="entry-block"><div class="entry-label" style="color:var(--green-tx)">Правильно</div>';
+      html += '<div class="entry-text" style="color:var(--green-tx)">' + e.good.replace(/\n/g,'<br>') + '</div></div>';
+    }
+    if (e.improve) {
+      html += '<div class="entry-block"><div class="entry-label" style="color:var(--amber-tx)">Улучшить</div>';
+      html += '<div class="entry-text" style="color:var(--amber-tx)">' + e.improve.replace(/\n/g,'<br>') + '</div></div>';
+    }
+    if (e.tomorrow) {
+      html += '<div class="entry-block"><div class="entry-label" style="color:var(--blue-tx)">На завтра</div>';
+      html += '<div class="entry-text" style="color:var(--blue-tx)">' + e.tomorrow.replace(/\n/g,'<br>') + '</div></div>';
+    }
+    html += '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+loadEntries();
+</script>
+</body>
+</html>

@@ -26,18 +26,26 @@ if (!fs.existsSync(src)) {
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const APP_VERSION = pkg.version;
 
+fs.rmSync(dst, { recursive: true, force: true });
 fs.mkdirSync(dst, { recursive: true });
 
 let copied = 0;
-fs.readdirSync(src).forEach(name => {
-  const s = path.join(src, name);
-  const d = path.join(dst, name);
+function copyRecursive(s, d, rel){
   const stat = fs.statSync(s);
-  if (stat.isFile()) {
-    fs.copyFileSync(s, d);
-    copied++;
-    console.log('  · ' + name + ' (' + (stat.size / 1024).toFixed(1) + ' KB)');
+  if (stat.isDirectory()) {
+    fs.mkdirSync(d, { recursive: true });
+    fs.readdirSync(s).forEach(name => {
+      copyRecursive(path.join(s, name), path.join(d, name), path.join(rel, name));
+    });
+    return;
   }
+  if (!stat.isFile()) return;
+  fs.copyFileSync(s, d);
+  copied++;
+  console.log('  · ' + rel + ' (' + (stat.size / 1024).toFixed(1) + ' KB)');
+}
+fs.readdirSync(src).forEach(name => {
+  copyRecursive(path.join(src, name), path.join(dst, name), name);
 });
 
 // Inject a "web demo" banner script into the COPY of index.html so the

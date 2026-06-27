@@ -1,0 +1,145 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Торговый план на неделю</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0efe9;--surface:#fff;--surf2:#f5f4f0;--surf3:#eae9e3;--text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);--radius:10px;--radius-lg:14px;--font:'Times New Roman',Times,Georgia,serif;--mono:'Courier New',Courier,monospace;--green-bg:#C0DD97;--green-bd:#639922;--green-tx:#27500A;--red-bg:#F7C1C1;--red-bd:#E24B4A;--red-tx:#791F1F;--pos:#27500A;--neg:#791F1F}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a18;--surface:#252522;--surf2:#2e2e2b;--surf3:#3a3a36;--text:#f0efe9;--text2:#9a9a96;--text3:#6b6b67;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14)}}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:24px 16px}
+.page{max-width:680px;margin:0 auto}
+h1{font-size:26px;font-weight:700;margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:20px}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.tab-btn{flex:1;padding:8px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.btn-primary{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:14px}
+.empty{text-align:center;color:var(--text2);padding:40px 0;font-size:14px}
+textarea,input[type=text],input[type=number]{background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;padding:10px 12px}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.week-label{font-size:17px;font-weight:700}
+.nav-btn{background:var(--surf2);border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:18px;color:var(--text)}
+.field-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;margin-top:14px}
+.field-label:first-child{margin-top:0}
+textarea{width:100%;min-height:80px;resize:vertical}
+input[type=number]{width:100px}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);min-height:42px}
+.tag{display:inline-flex;align-items:center;gap:4px;background:var(--text);color:var(--bg);border-radius:6px;padding:3px 9px;font-size:13px}
+.tag-x{background:none;border:none;color:var(--bg);cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:.7}
+.add-tag-row{display:flex;gap:8px;margin-top:6px}
+.add-tag-row input{flex:1}
+.add-tag-row button{padding:8px 14px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);cursor:pointer;font-weight:700}
+.arch-row{padding:12px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:8px}
+.arch-date{font-size:12px;color:var(--text2);margin-bottom:4px}
+.arch-goal{font-size:14px;font-weight:600}
+</style></head>
+<body><div class="page">
+<h1>Торговый план</h1>
+<p class="subtitle">Цели и правила на неделю</p>
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab(0)">Текущая неделя</button>
+  <button class="tab-btn" onclick="showTab(1)">Архив</button>
+</div>
+<div id="t0"></div>
+<div id="t1" style="display:none"></div>
+</div>
+<script>
+var STORE='wplan_v1';
+var weekOff=0;
+var plans={};
+function load(){try{var d=localStorage.getItem(STORE);plans=d?JSON.parse(d):{};}catch(e){plans={};}}
+function save(){localStorage.setItem(STORE,JSON.stringify(plans));}
+function getMonday(off){
+  var d=new Date();d.setHours(0,0,0,0);
+  var day=d.getDay()||7;d.setDate(d.getDate()-day+1+off*7);
+  return d.toISOString().slice(0,10);
+}
+function getWeekLabel(off){
+  var mon=new Date(getMonday(off)),sun=new Date(mon);sun.setDate(sun.getDate()+6);
+  var fmt=function(x){return x.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});};
+  return fmt(mon)+' — '+fmt(sun);
+}
+function getP(key){return plans[key]||{goal:'',maxT:'',instrs:[],forbid:[],notes:''};}
+function showTab(n){
+  for(var j=0;j<2;j++){
+    document.getElementById('t'+j).style.display=j===n?'':'none';
+    document.querySelectorAll('.tab-btn')[j].classList[j===n?'add':'remove']('active');
+  }
+  if(n===0)renderWeek();else renderArch();
+}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function tagsHtml(arr,wid){
+  var h='<div class="tags-wrap" id="'+wid+'">';
+  for(var i=0;i<arr.length;i++){
+    h+='<span class="tag" data-v="'+escH(arr[i])+'">'+escH(arr[i])
+      +'<button class="tag-x" onclick="removeTag(this)">&times;</button></span>';
+  }
+  h+='</div><div class="add-tag-row">'
+    +'<input type="text" data-wrap="'+wid+'" placeholder="Добавить&hellip;">'
+    +'<button data-wrap="'+wid+'" onclick="addTag(this)">+</button></div>';
+  return h;
+}
+function removeTag(btn){btn.parentNode.remove();}
+function addTag(btn){
+  var wid=btn.getAttribute('data-wrap');
+  var inp=btn.previousElementSibling;
+  var v=(inp.value||'').trim();if(!v)return;
+  var wrap=document.getElementById(wid);
+  var tag=document.createElement('span');
+  tag.className='tag';tag.setAttribute('data-v',v);
+  tag.innerHTML=escH(v)+'<button class="tag-x" onclick="removeTag(this)">&times;</button>';
+  wrap.appendChild(tag);
+  inp.value='';
+}
+function getTags(wid){
+  var tags=[];
+  document.getElementById(wid).querySelectorAll('.tag').forEach(function(t){tags.push(t.getAttribute('data-v'));});
+  return tags;
+}
+function renderWeek(){
+  var key=getMonday(weekOff),p=getP(key);
+  var el=document.getElementById('t0');
+  var h='<div class="week-nav">'
+    +'<button class="nav-btn" onclick="weekOff--;renderWeek()">←</button>'
+    +'<span class="week-label">'+getWeekLabel(weekOff)+'</span>'
+    +'<button class="nav-btn" onclick="weekOff++;renderWeek()">→</button></div>';
+  h+='<div class="field-label">Цель недели</div>'
+    +'<textarea id="wp-goal" placeholder="Главная торговая цель на эту неделю…">'+escH(p.goal)+'</textarea>';
+  h+='<div class="field-label">Макс. сделок в день</div>'
+    +'<input type="number" id="wp-max" min="0" max="99" value="'+escH(p.maxT)+'" placeholder="5">';
+  h+='<div class="field-label">Инструменты для торговли</div>'+tagsHtml(p.instrs,'wp-in');
+  h+='<div class="field-label">Запрещённые инструменты</div>'+tagsHtml(p.forbid,'wp-fo');
+  h+='<div class="field-label">Заметки</div>'
+    +'<textarea id="wp-notes" placeholder="Дополнительные заметки…">'+escH(p.notes)+'</textarea>';
+  h+='<button class="btn-primary" onclick="savePlan()">Сохранить план</button>';
+  el.innerHTML=h;
+}
+function savePlan(){
+  var key=getMonday(weekOff);
+  plans[key]={
+    goal:document.getElementById('wp-goal').value||'',
+    maxT:document.getElementById('wp-max').value||'',
+    notes:document.getElementById('wp-notes').value||'',
+    instrs:getTags('wp-in'),
+    forbid:getTags('wp-fo')
+  };
+  save();alert('Сохранено!');
+}
+function renderArch(){
+  var el=document.getElementById('t1');
+  var keys=Object.keys(plans).sort().reverse();
+  if(!keys.length){el.innerHTML='<div class="empty">Архив пуст</div>';return;}
+  var h='';
+  for(var j=0;j<keys.length;j++){
+    var k=keys[j],p=plans[k];
+    var lbl=new Date(k).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+    h+='<div class="arch-row"><div class="arch-date">Неделя с '+lbl+'</div>'
+      +'<div class="arch-goal">'+(p.goal?escH(p.goal):'Цель не указана')+'</div>';
+    if(p.maxT) h+='<div style="font-size:13px;color:var(--text2);margin-top:4px">Макс. сделок: '+escH(p.maxT)+'</div>';
+    if(p.instrs&&p.instrs.length) h+='<div style="font-size:13px;color:var(--text2);margin-top:2px">Торгую: '+p.instrs.map(escH).join(', ')+'</div>';
+    if(p.forbid&&p.forbid.length) h+='<div style="font-size:13px;color:var(--text2);margin-top:2px">Запрещено: '+p.forbid.map(escH).join(', ')+'</div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+load();renderWeek();
+</script></body></html>

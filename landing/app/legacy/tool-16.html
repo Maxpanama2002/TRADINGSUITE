@@ -1,0 +1,433 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0efe9;--surface:#ffffff;--surf2:#f5f4f0;--surf3:#eae9e3;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);
+  --radius:10px;--radius-lg:14px;
+  --font:'Times New Roman',Times,Georgia,serif;
+  --green-bd:#639922;--red-bd:#E24B4A;
+  --pos:#27500A;--neg:#791F1F;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;padding:24px 16px;}
+h1{font-size:24px;font-weight:700;margin-bottom:4px;}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:20px;}
+
+/* Goal card (top) - 2 column layout */
+.goal-card{background:var(--surf2);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:22px;display:flex;gap:18px;flex-wrap:wrap;}
+.goal-left{flex:1 1 420px;min-width:0;}
+.goal-right{flex:1 1 360px;min-width:280px;display:flex;flex-direction:column;}
+.chart-title{font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+.chart-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px 4px;flex:1;min-height:170px;display:flex;flex-direction:column;}
+.chart-svg{width:100%;flex:1;min-height:140px;}
+.chart-legend{display:flex;gap:14px;font-size:11px;color:var(--text2);justify-content:center;padding-top:4px;}
+.chart-legend .dot{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:4px;}
+.chart-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:13px;text-align:center;padding:20px;}
+
+.goal-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:14px;}
+.goal-row .field{display:flex;flex-direction:column;gap:4px;}
+.goal-row label{font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.goal-row input{width:130px;padding:7px 10px;border:0.5px solid var(--border2);border-radius:8px;font-family:inherit;font-size:14px;background:var(--surface);color:var(--text);}
+.goal-row input:focus{outline:none;border-color:#888;}
+.goal-bar-wrap{height:18px;background:var(--surface);border-radius:9px;overflow:hidden;border:0.5px solid var(--border);}
+.goal-bar{height:100%;background:#639922;border-radius:9px;transition:width .4s ease;}
+.goal-bar-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-top:6px;}
+.goal-stats{display:flex;gap:24px;flex-wrap:wrap;font-size:13px;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--border);}
+.goal-stat-label{font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px;}
+.goal-stat b{font-size:15px;}
+.pos{color:#27500A;}.neg{color:#791F1F;}
+
+/* Weekly settings */
+.wt-settings{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:12px;}
+.wt-settings .field{display:flex;flex-direction:column;gap:4px;}
+.wt-settings label{font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.wt-settings input{width:110px;padding:7px 9px;border:0.5px solid var(--border2);border-radius:8px;font-family:inherit;font-size:13px;background:var(--surface);color:var(--text);}
+.wt-settings input:focus{outline:none;border-color:#888;}
+.wt-save{padding:8px 16px;background:var(--text);color:var(--bg);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.wt-save:hover{opacity:.85;}
+
+/* Summary strip */
+.wt-summary{display:flex;gap:18px;flex-wrap:wrap;padding:10px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:12px;font-size:13px;}
+.wt-summary b{color:var(--text);}
+.wt-summary .behind{color:var(--neg);}
+.wt-summary .ahead{color:var(--pos);}
+
+/* Table actions */
+.tbl-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.tbl-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);}
+.add-btn{padding:7px 14px;background:var(--text);color:var(--bg);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.add-btn:hover{opacity:.85;}
+
+/* Table */
+.wt-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}
+.wt-tbl th{text-align:left;padding:8px 8px;color:var(--text2);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border2);background:var(--surf2);}
+.wt-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.wt-tbl tr:hover td{background:var(--surf2);}
+.wt-tbl .month-row td{background:var(--surf3);font-weight:700;font-size:11px;text-align:center;color:var(--text2);padding:5px 8px;}
+.wt-tbl .hit td:first-child{border-left:3px solid var(--green-bd);}
+.wt-tbl .miss td:first-child{border-left:3px solid var(--red-bd);}
+.wt-fi{width:90px;padding:5px 7px;border:0.5px solid var(--border2);border-radius:6px;font-family:inherit;font-size:13px;background:var(--surface);color:var(--text);text-align:right;}
+.wt-fi-note{width:100%;min-width:100px;padding:5px 7px;border:0.5px solid var(--border2);border-radius:6px;font-family:inherit;font-size:12px;background:var(--surface);color:var(--text);}
+.del-btn{background:none;border:none;color:#c0392b;cursor:pointer;font-size:18px;line-height:1;padding:0 4px;}
+.del-btn:hover{color:#791F1F;}
+.col-del{width:36px;text-align:center;}
+.wt-empty{text-align:center;color:var(--text2);padding:32px;font-size:14px;background:var(--surf2);border-radius:var(--radius);}
+</style></head><body>
+<h1>Таблица цели</h1>
+<p class="subtitle">Цель, прогресс и план/факт по неделям</p>
+
+<div class="goal-card">
+  <div class="goal-left">
+    <div class="goal-row">
+      <div class="field"><label>Стартовый баланс $</label><input id="g-start" type="number" placeholder="50000" min="0"></div>
+      <div class="field"><label>Целевой баланс $</label><input id="g-goal" type="number" placeholder="100000" min="0"></div>
+      <div class="field"><label>Текущий баланс $</label><input id="g-curr" type="number" placeholder="50000" min="0"></div>
+    </div>
+    <div class="goal-bar-wrap"><div id="g-bar" class="goal-bar" style="width:0%"></div></div>
+    <div class="goal-bar-labels"><span id="g-l-start">$0</span><span id="g-pct"><b>0%</b></span><span id="g-l-goal">$0</span></div>
+    <div class="goal-stats">
+      <div class="goal-stat"><span class="goal-stat-label">Баланс</span><b id="g-bal">$0</b></div>
+      <div class="goal-stat"><span class="goal-stat-label">P&amp;L</span><b id="g-pnl">$0</b></div>
+      <div class="goal-stat"><span class="goal-stat-label">До цели</span><b id="g-rem">$0</b></div>
+    </div>
+  </div>
+  <div class="goal-right">
+    <div class="chart-title">График: план vs факт</div>
+    <div class="chart-card" id="chart-card"></div>
+  </div>
+</div>
+
+<div id="wt-root"></div>
+
+<script>
+var GT_CFG_KEY='goal_cfg_v1';
+var WT_KEY='wt_tracker_v2';
+
+function escH(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(v){return (v||0).toLocaleString('ru-RU',{maximumFractionDigits:0});}
+
+/* ─── Goal card (top) ─── */
+function gtLoadCfg(){try{var d=localStorage.getItem(GT_CFG_KEY);return d?JSON.parse(d):{goal:0,startBal:0,currBal:0};}catch(e){return{goal:0,startBal:0,currBal:0};}}
+function gtSaveCfg(c){localStorage.setItem(GT_CFG_KEY,JSON.stringify(c));}
+function gtRenderProgress(){
+  var c=gtLoadCfg();
+  var sEl=document.getElementById('g-start');
+  var gEl=document.getElementById('g-goal');
+  var bEl=document.getElementById('g-curr');
+  if(document.activeElement!==sEl)sEl.value=c.startBal||'';
+  if(document.activeElement!==gEl)gEl.value=c.goal||'';
+  if(document.activeElement!==bEl)bEl.value=c.currBal||'';
+  var s=parseFloat(c.startBal)||0;
+  var g=parseFloat(c.goal)||0;
+  var b=parseFloat(c.currBal)||0;
+  var pct=(g>s)?Math.max(0,Math.min(100,Math.round((b-s)/(g-s)*100))):0;
+  document.getElementById('g-bar').style.width=pct+'%';
+  document.getElementById('g-pct').innerHTML='<b>'+pct+'%</b>';
+  document.getElementById('g-l-start').textContent='$'+fmt(s);
+  document.getElementById('g-l-goal').textContent='$'+fmt(g);
+  document.getElementById('g-bal').textContent='$'+fmt(b);
+  var pnl=b-s;
+  document.getElementById('g-pnl').innerHTML='<span class="'+(pnl>=0?'pos':'neg')+'">'+(pnl>=0?'+':'-')+'$'+fmt(Math.abs(pnl))+'</span>';
+  var rem=g-b;
+  document.getElementById('g-rem').innerHTML=rem<=0&&g>0?'<span class="pos">Достигнута!</span>':'$'+fmt(rem);
+}
+function gtOnCfgChange(field,val){
+  var c=gtLoadCfg();
+  c[field]=val===''?0:(parseFloat(val)||0);
+  gtSaveCfg(c);
+  gtRenderProgress();
+}
+
+/* ─── Chart ─── */
+function renderChart(plan,actBal,dep,goalBal){
+  var card=document.getElementById('chart-card');
+  if(!plan||plan.length<2){
+    card.innerHTML='<div class="chart-empty">Нет данных для графика.<br>Введи параметры и нажми «Сохранить».</div>';
+    return;
+  }
+  // Theme-aware colors via CSS variables
+  var cs=getComputedStyle(document.documentElement);
+  var cLine=cs.getPropertyValue('--text').trim()||'#1a1a18';
+  var cFaint=cs.getPropertyValue('--text2').trim()||'#6b6b67';
+  var nw=plan.length-1;
+  var W=400,H=170,PX=42,PY=14;
+  // Find min/max for Y axis
+  var allVals=plan.slice();
+  for(var i=0;i<actBal.length;i++){if(actBal[i]!==null)allVals.push(actBal[i]);}
+  if(goalBal>0)allVals.push(goalBal);
+  var minV=Math.min.apply(null,allVals);
+  var maxV=Math.max.apply(null,allVals);
+  if(maxV===minV)maxV=minV+1;
+  var pad=(maxV-minV)*0.05;
+  minV-=pad;maxV+=pad;
+  var sc=function(xi,yi){
+    return {
+      x:PX+(xi/(nw||1))*(W-PX-12),
+      y:H-PY-((yi-minV)/(maxV-minV))*(H-PY*2)
+    };
+  };
+  // Plan path
+  var pp='M';
+  for(var i=0;i<plan.length;i++){var c=sc(i,plan[i]);pp+=(i>0?'L':'')+c.x.toFixed(1)+' '+c.y.toFixed(1);}
+  // Fact path (only for non-null values)
+  var fp='',started=false;
+  for(var i=0;i<actBal.length;i++){
+    if(actBal[i]!==null){
+      var c=sc(i,actBal[i]);
+      fp+=(started?'L':'M')+c.x.toFixed(1)+' '+c.y.toFixed(1);
+      started=true;
+    }
+  }
+  // Goal line
+  var goalY=goalBal>0?sc(0,goalBal).y:null;
+  var svg='<svg class="chart-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">';
+  // Goal line dashed
+  if(goalY!==null){
+    svg+='<line x1="'+PX+'" y1="'+goalY.toFixed(1)+'" x2="'+(W-12)+'" y2="'+goalY.toFixed(1)+'" stroke="'+cLine+'" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>';
+    svg+='<text x="'+(W-14)+'" y="'+(goalY-3).toFixed(1)+'" font-size="9" fill="'+cFaint+'" text-anchor="end">цель $'+fmt(goalBal)+'</text>';
+  }
+  // Plan line (dashed, faint)
+  svg+='<path d="'+pp+'" fill="none" stroke="'+cFaint+'" stroke-width="1.5" stroke-dasharray="5,3" stroke-linejoin="round" opacity="0.5"/>';
+  // Fact line (solid, primary)
+  if(fp)svg+='<path d="'+fp+'" fill="none" stroke="'+cLine+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  // Last fact dot
+  for(var i=actBal.length-1;i>=0;i--){
+    if(actBal[i]!==null){var c=sc(i,actBal[i]);svg+='<circle cx="'+c.x.toFixed(1)+'" cy="'+c.y.toFixed(1)+'" r="3.5" fill="'+cLine+'"/>';break;}
+  }
+  // Y-axis labels
+  svg+='<text x="4" y="14" font-size="9" fill="'+cFaint+'">$'+fmt(maxV)+'</text>';
+  svg+='<text x="4" y="'+(H-4)+'" font-size="9" fill="'+cFaint+'">$'+fmt(minV)+'</text>';
+  // X-axis labels
+  svg+='<text x="'+PX+'" y="'+(H-2)+'" font-size="9" fill="'+cFaint+'">1</text>';
+  svg+='<text x="'+(W-14)+'" y="'+(H-2)+'" font-size="9" fill="'+cFaint+'" text-anchor="end">'+nw+'</text>';
+  svg+='</svg>';
+  svg+='<div class="chart-legend"><span><span class="dot" style="background:'+cFaint+';opacity:0.5"></span>план</span><span><span class="dot" style="background:'+cLine+'"></span>факт</span>'
+    +(goalY!==null?'<span><span class="dot" style="border:1px dashed '+cLine+';opacity:0.4;background:transparent"></span>цель</span>':'')+'</div>';
+  card.innerHTML=svg;
+}
+function wtLoad(){
+  try{var d=localStorage.getItem(WT_KEY);return d?JSON.parse(d):{deposit:0,goalPct:5,startDate:'',numWeeks:0,actuals:{}};}
+  catch(e){return{deposit:0,goalPct:5,startDate:'',numWeeks:0,actuals:{}};}
+}
+function wtSave(d){localStorage.setItem(WT_KEY,JSON.stringify(d));}
+function wtMonday(ds){var d=new Date(ds);var day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d;}
+function wtLabel(mon,n){
+  var s=new Date(mon);s.setDate(s.getDate()+(n-1)*7);
+  var e=new Date(s);e.setDate(e.getDate()+6);
+  var f=function(x){return String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0');};
+  return f(s)+'–'+f(e);
+}
+function wtMonthName(mon,n){
+  var ms=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var d=new Date(mon);d.setDate(d.getDate()+(n-1)*7);
+  return ms[d.getMonth()];
+}
+function wtYear(mon,n){var d=new Date(mon);d.setDate(d.getDate()+(n-1)*7);return d.getFullYear();}
+
+function renderWeekly(){
+  var cfg=wtLoad();
+  var root=document.getElementById('wt-root');
+  var today=new Date().toISOString().slice(0,10);
+
+  // Settings bar
+  var h='<div class="wt-settings">'
+    +'<div class="field"><label>Депозит $</label><input id="wt-dep" type="number" value="'+(cfg.deposit||'')+'" placeholder="50000" min="0"></div>'
+    +'<div class="field"><label>Цель/нед %</label><input id="wt-goal" type="number" value="'+(cfg.goalPct||5)+'" min="0.1" max="100" step="0.1"></div>'
+    +'<div class="field"><label>Старт (пн)</label><input id="wt-start" type="date" value="'+(cfg.startDate||today)+'"></div>'
+    +'<div class="field"><label>Недель</label><input id="wt-weeks" type="number" value="'+(cfg.numWeeks||0)+'" min="0" max="260"></div>'
+    +'<button class="wt-save" id="wt-save-btn">Сохранить</button>'
+    +'</div>';
+
+  if(!cfg.startDate||!cfg.numWeeks||cfg.numWeeks<1){
+    root.innerHTML=h+'<div class="wt-empty">Введи параметры (депозит, цель/нед %, старт, число недель) и нажми «Сохранить» — таблица будет построена автоматически.</div>';
+    wireSettings();
+    renderChart(null,[],0,gtLoadCfg().goal);
+    return;
+  }
+
+  var dep=parseFloat(cfg.deposit)||0;
+  var goal=parseFloat(cfg.goalPct)||5;
+  var nw=parseInt(cfg.numWeeks)||0;
+  var mon=wtMonday(cfg.startDate);
+
+  // Compound plan
+  var plan=[dep];
+  for(var i=1;i<=nw;i++)plan.push(plan[i-1]*(1+goal/100));
+
+  // Actual running balance
+  var actBal=[dep];
+  var lastActBal=dep;
+  var lastActWeek=0;
+  for(var i=1;i<=nw;i++){
+    var a=cfg.actuals[String(i)];
+    if(a&&a.profit!==null&&a.profit!==''){
+      lastActBal+=parseFloat(a.profit)||0;
+      lastActWeek=i;
+    }
+    actBal.push(lastActWeek>=i?lastActBal:null);
+  }
+
+  // Summary
+  var curWeek=Math.min(lastActWeek+1,nw);
+  var planNow=plan[Math.min(lastActWeek,nw)];
+  var actNow=lastActWeek>0?actBal[lastActWeek]:dep;
+  var diff=actNow-planNow;
+  h+='<div class="wt-summary">'
+    +'<span>Неделя <b>'+curWeek+'/'+nw+'</b></span>'
+    +'<span>План: <b>$'+fmt(planNow)+'</b></span>'
+    +'<span>Факт: <b>$'+fmt(actNow)+'</b></span>'
+    +'<span class="'+(diff>=0?'ahead':'behind')+'">'+(diff>=0?'+':'')+fmt(diff)+' $</span>'
+    +'</div>';
+
+  // Sync goal-card current balance with weekly actual
+  if(actNow>0){
+    var gc=gtLoadCfg();
+    if(gc.currBal!==actNow){gc.currBal=actNow;gtSaveCfg(gc);gtRenderProgress();}
+  }
+
+  // Table actions
+  h+='<div class="tbl-actions">'
+    +'<span class="tbl-title">План/факт по неделям</span>'
+    +'<button class="add-btn" id="wt-add-row">+ Добавить неделю</button>'
+    +'</div>';
+
+  // Table
+  h+='<div style="overflow-x:auto"><table class="wt-tbl"><thead><tr>'
+    +'<th>#</th><th>Месяц</th><th>Неделя</th>'
+    +'<th>Старт $</th><th>+%</th><th>План $</th>'
+    +'<th>Факт $</th><th>Баланс $</th>'
+    +'<th>Рез</th><th>Заметки</th><th class="col-del"></th>'
+    +'</tr></thead><tbody>';
+  var curMonth='', mActStart=dep, mPlanStart=dep;
+  var fmtP=function(v){return v.toFixed(1);};
+  for(var i=1;i<=nw;i++){
+    var mn=wtMonthName(mon,i)+' '+wtYear(mon,i);
+    if(mn!==curMonth){
+      if(curMonth){
+        var mEI=i-1, mPE=plan[mEI], mAE=actBal[mEI];
+        var mPL=mPE-mPlanStart;
+        var mAL=mAE!==null?mAE-mActStart:null;
+        h+='<tr class="month-row"><td colspan="11">◆ '+curMonth+': план +$'+fmt(mPL)+' (→$'+fmt(mPE)+')'
+          +(mAL!==null?' · факт +$'+fmt(mAL)+' (→$'+fmt(mAE)+')  '+fmtP((mAL/(mActStart||1))*100)+'%':'')
+          +'</td></tr>';
+        mPlanStart=plan[mEI];
+        mActStart=mAE!==null?mAE:mActStart;
+      }
+      curMonth=mn;
+    }
+    var rs=plan[i-1], pe=plan[i], rg=pe-rs;
+    var act=cfg.actuals[String(i)]||{profit:'',notes:''};
+    var ap=act.profit!==null&&act.profit!==''?parseFloat(act.profit):null;
+    var ab=ap!==null?(actBal[i-1]!==null?actBal[i-1]:dep)+ap:null;
+    var hit=ap!==null?(ap>=rg?'hit':'miss'):'';
+    h+='<tr class="'+hit+'" data-wk="'+i+'">'
+      +'<td>'+i+'</td>'
+      +'<td style="font-size:11px;color:var(--text2)">'+wtMonthName(mon,i)+'</td>'
+      +'<td style="font-size:11px">'+wtLabel(mon,i)+'</td>'
+      +'<td>$'+fmt(rs)+'</td>'
+      +'<td style="color:var(--pos)">+$'+fmt(rg)+'</td>'
+      +'<td>$'+fmt(pe)+'</td>'
+      +'<td><input class="wt-fi" type="number" data-action="profit" placeholder="0" value="'+(ap!==null?ap:'')+'"></td>'
+      +'<td>'+(ab!==null?'$'+fmt(ab):'—')+'</td>'
+      +'<td>'+(hit==='hit'?'<span style="color:var(--pos)">✓</span>':hit==='miss'?'<span style="color:var(--neg)">✗</span>':'')+'</td>'
+      +'<td><input class="wt-fi-note" type="text" data-action="notes" placeholder="Заметки" value="'+escH(act.notes||'')+'"></td>'
+      +'<td class="col-del"><button class="del-btn" data-action="del" title="Удалить неделю">×</button></td>'
+      +'</tr>';
+  }
+  // Last month summary
+  if(curMonth){
+    var mPE=plan[nw], mAE=actBal[nw];
+    var mPL=mPE-mPlanStart;
+    var mAL=mAE!==null?mAE-mActStart:null;
+    h+='<tr class="month-row"><td colspan="11">◆ '+curMonth+': план +$'+fmt(mPL)+' (→$'+fmt(mPE)+')'
+      +(mAL!==null?' · факт +$'+fmt(mAL)+' (→$'+fmt(mAE)+')  '+fmtP((mAL/(mActStart||1))*100)+'%':'')
+      +'</td></tr>';
+  }
+  h+='</tbody></table></div>';
+
+  root.innerHTML=h;
+
+  // Render chart with calculated plan/actBal
+  renderChart(plan,actBal,dep,gtLoadCfg().goal);
+
+  // Wire up
+  wireSettings();
+  document.getElementById('wt-add-row').addEventListener('click',wtAddWeek);
+  root.querySelectorAll('tr[data-wk]').forEach(function(tr){
+    var wk=parseInt(tr.getAttribute('data-wk'));
+    var pIn=tr.querySelector('[data-action="profit"]');
+    var nIn=tr.querySelector('[data-action="notes"]');
+    var dBtn=tr.querySelector('[data-action="del"]');
+    if(pIn)pIn.addEventListener('blur',function(){wtSetProfit(wk,pIn.value);});
+    if(nIn)nIn.addEventListener('blur',function(){wtSetNote(wk,nIn.value);});
+    if(dBtn)dBtn.addEventListener('click',function(){wtDelWeek(wk);});
+  });
+}
+
+function wireSettings(){
+  var sb=document.getElementById('wt-save-btn');
+  if(sb)sb.addEventListener('click',wtSaveSettings);
+}
+
+function wtSaveSettings(){
+  var dep=parseFloat(document.getElementById('wt-dep').value)||0;
+  var goal=parseFloat(document.getElementById('wt-goal').value)||5;
+  var start=document.getElementById('wt-start').value;
+  var nw=parseInt(document.getElementById('wt-weeks').value)||0;
+  var cfg=wtLoad();
+  cfg.deposit=dep;cfg.goalPct=goal;cfg.startDate=start;cfg.numWeeks=nw;
+  wtSave(cfg);
+  // Sync goal-card start balance
+  var gc=gtLoadCfg();
+  if(!gc.startBal)gc.startBal=dep;
+  if(!gc.currBal)gc.currBal=dep;
+  gtSaveCfg(gc);
+  gtRenderProgress();
+  renderWeekly();
+}
+
+function wtSetProfit(wk,val){
+  var cfg=wtLoad();
+  if(!cfg.actuals[String(wk)])cfg.actuals[String(wk)]={profit:null,notes:''};
+  cfg.actuals[String(wk)].profit=val===''?null:(parseFloat(val)||0);
+  wtSave(cfg);
+  renderWeekly();
+}
+function wtSetNote(wk,val){
+  var cfg=wtLoad();
+  if(!cfg.actuals[String(wk)])cfg.actuals[String(wk)]={profit:null,notes:''};
+  cfg.actuals[String(wk)].notes=val;
+  wtSave(cfg);
+}
+function wtAddWeek(){
+  var cfg=wtLoad();
+  cfg.numWeeks=(parseInt(cfg.numWeeks)||0)+1;
+  wtSave(cfg);
+  renderWeekly();
+}
+function wtDelWeek(wk){
+  var cfg=wtLoad();
+  var nw=parseInt(cfg.numWeeks)||0;
+  var newAct={};
+  for(var i=1;i<=nw;i++){
+    if(i===wk)continue;
+    var src=cfg.actuals[String(i)];
+    if(src){
+      var tgt=i<wk?i:i-1;
+      newAct[String(tgt)]=src;
+    }
+  }
+  cfg.actuals=newAct;
+  cfg.numWeeks=Math.max(0,nw-1);
+  wtSave(cfg);
+  renderWeekly();
+}
+
+/* Init */
+gtRenderProgress();
+renderWeekly();
+document.getElementById('g-start').addEventListener('input',function(){gtOnCfgChange('startBal',this.value);renderWeekly();});
+document.getElementById('g-goal').addEventListener('input',function(){gtOnCfgChange('goal',this.value);renderWeekly();});
+document.getElementById('g-curr').addEventListener('input',function(){gtOnCfgChange('currBal',this.value);});
+</script>
+</body></html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Трекер правил</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0efe9;--surface:#fff;--surf2:#f5f4f0;--surf3:#eae9e3;--text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);--radius:10px;--radius-lg:14px;--font:'Times New Roman',Times,Georgia,serif;--mono:'Courier New',Courier,monospace;--green-bg:#C0DD97;--green-bd:#639922;--green-tx:#27500A;--red-bg:#F7C1C1;--red-bd:#E24B4A;--red-tx:#791F1F;--pos:#27500A;--neg:#791F1F}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a18;--surface:#252522;--surf2:#2e2e2b;--surf3:#3a3a36;--text:#f0efe9;--text2:#9a9a96;--text3:#6b6b67;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14)}}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:24px 16px}
+.page{max-width:680px;margin:0 auto}
+h1{font-size:26px;font-weight:700;margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:20px}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.tab-btn{flex:1;padding:8px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.btn-primary{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:14px}
+.empty{text-align:center;color:var(--text2);padding:40px 0;font-size:14px}
+textarea,input[type=text],input[type=number]{background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;padding:10px 12px}
+.score-bar{background:var(--surf2);border-radius:var(--radius-lg);padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.score-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.rule-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:6px;border:1.5px solid transparent;transition:all .15s}
+.rule-item.ok{background:var(--green-bg);border-color:var(--green-bd)}
+.rule-item.bad{background:var(--red-bg);border-color:var(--red-bd)}
+.rule-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.rule-item.ok .rule-check{background:var(--green-bd);border-color:var(--green-bd);color:#fff}
+.rule-item.bad .rule-check{background:var(--red-bd);border-color:var(--red-bd);color:#fff}
+.rule-text{flex:1;font-size:14px}
+.rule-item.ok .rule-text{color:var(--green-tx);font-weight:600}
+.rule-item.bad .rule-text{color:var(--red-tx)}
+.rule-actions{display:flex;gap:5px;flex-shrink:0}
+.rbtn{padding:4px 10px;font-size:11px;font-weight:700;border:none;border-radius:6px;cursor:pointer;font-family:var(--font)}
+.rbtn-ok{background:var(--green-bg);color:var(--green-tx)}
+.rbtn-bad{background:var(--red-bg);color:var(--red-tx)}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row input{flex:1}
+.add-row button{padding:10px 16px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);cursor:pointer;font-size:18px;font-weight:700}
+.manage-rule{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surf2);border-radius:var(--radius);margin-bottom:6px}
+.manage-rule span{flex:1;font-size:14px}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:6px}
+.hist-date{font-size:12px;color:var(--text2);flex:0 0 70px}
+.hist-bar{flex:1;height:8px;background:var(--surf3);border-radius:4px;overflow:hidden}
+.hist-fill{height:100%;border-radius:4px}
+.hist-pct{font-size:13px;font-weight:700;font-family:var(--mono);flex:0 0 38px;text-align:right}
+</style></head>
+<body><div class="page">
+<h1>Трекер правил</h1>
+<p class="subtitle">Ежедневный чеклист торговой дисциплины</p>
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab(0)">Чеклист</button>
+  <button class="tab-btn" onclick="showTab(1)">Правила</button>
+  <button class="tab-btn" onclick="showTab(2)">История</button>
+</div>
+<div id="t0"></div>
+<div id="t1" style="display:none"></div>
+<div id="t2" style="display:none"></div>
+</div>
+<script>
+var KR='rt_rules_v1',KH='rt_hist_v1';
+var DEF=['Торговать только по тренду','Соблюдать стоп-лосс','Не усредняться в убыток','Не торговать в первые 15 минут','Дождаться подтверждения входа','Соблюдать дневной лимит риска'];
+var rules=[],hist=[],checks={};
+function load(){
+  try{var r=localStorage.getItem(KR);rules=r?JSON.parse(r):DEF.slice();}catch(e){rules=DEF.slice();}
+  try{var h=localStorage.getItem(KH);hist=h?JSON.parse(h):[];}catch(e){hist=[];}
+  var td=todayKey();
+  for(var x=0;x<hist.length;x++){if(hist[x].date===td){checks=JSON.parse(JSON.stringify(hist[x].checks));return;}}
+  checks={};
+}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function saveRules(){localStorage.setItem(KR,JSON.stringify(rules));}
+function saveH(){localStorage.setItem(KH,JSON.stringify(hist));}
+function showTab(n){
+  for(var j=0;j<3;j++){
+    document.getElementById('t'+j).style.display=j===n?'':'none';
+    document.querySelectorAll('.tab-btn')[j].classList[j===n?'add':'remove']('active');
+  }
+  if(n===0)renderCheck();else if(n===1)renderRules();else renderHist();
+}
+function renderCheck(){
+  var el=document.getElementById('t0');
+  var ok=0,bad=0,n=rules.length;
+  for(var i=0;i<n;i++){if(checks[i]===1)ok++;else if(checks[i]===0)bad++;}
+  var pct=n?Math.round(ok/n*100):0;
+  var col=pct>=80?'var(--green-bg)':pct>=50?'#FAC775':'var(--red-bg)';
+  var tc=pct>=80?'var(--green-tx)':pct>=50?'#633806':'var(--red-tx)';
+  var h='<div class="score-bar">'
+    +'<div class="score-circle" style="background:'+col+';color:'+tc+'">'+pct+'%</div>'
+    +'<div><div style="font-size:16px;font-weight:700">'+ok+' из '+n+' правил соблюдено</div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-top:4px">Нарушено: '+bad+' &middot; Не отмечено: '+(n-ok-bad)+'</div></div></div>';
+  for(var i=0;i<n;i++){
+    var st=checks[i]===1?'ok':checks[i]===0?'bad':'';
+    var ck=checks[i]===1?'&#10003;':checks[i]===0?'&#10007;':'';
+    h+='<div class="rule-item '+st+'">'
+      +'<div class="rule-check">'+ck+'</div>'
+      +'<span class="rule-text">'+rules[i]+'</span>'
+      +'<div class="rule-actions">'
+      +'<button class="rbtn rbtn-ok" onclick="mark('+i+',1)">&#10003;</button>'
+      +'<button class="rbtn rbtn-bad" onclick="mark('+i+',0)">&#10007;</button>'
+      +'</div></div>';
+  }
+  h+='<button class="btn-primary" onclick="saveDay()">Сохранить день</button>';
+  el.innerHTML=h;
+}
+function mark(i,v){if(checks[i]===v)delete checks[i];else checks[i]=v;renderCheck();}
+function saveDay(){
+  var td=todayKey(),n=rules.length,ok=0;
+  for(var i=0;i<n;i++){if(checks[i]===1)ok++;}
+  var pct=n?Math.round(ok/n*100):0;
+  var nh=[];for(var x=0;x<hist.length;x++){if(hist[x].date!==td)nh.push(hist[x]);}
+  nh.unshift({date:td,checks:JSON.parse(JSON.stringify(checks)),pct:pct,ok:ok,n:n});
+  if(nh.length>90)nh=nh.slice(0,90);
+  hist=nh;saveH();alert('Сохранено! '+pct+'%');
+}
+function renderRules(){
+  var el=document.getElementById('t1');
+  var h='<div class="add-row"><input id="nri" type="text" placeholder="Добавить правило&hellip;"><button onclick="addRule()">+</button></div>';
+  for(var i=0;i<rules.length;i++){
+    h+='<div class="manage-rule"><span>'+rules[i]+'</span><button class="del-btn" onclick="delRule('+i+')">&times;</button></div>';
+  }
+  el.innerHTML=h;
+}
+function addRule(){var v=(document.getElementById('nri').value||'').trim();if(!v)return;rules.push(v);saveRules();document.getElementById('nri').value='';renderRules();}
+function delRule(i){if(!confirm('Удалить правило?'))return;rules.splice(i,1);saveRules();renderRules();}
+function renderHist(){
+  var el=document.getElementById('t2');
+  if(!hist.length){el.innerHTML='<div class="empty">Нет записей &mdash; сохрани первый день в Чеклисте</div>';return;}
+  var h='';
+  for(var j=0;j<Math.min(hist.length,60);j++){
+    var d=hist[j];
+    var col=d.pct>=80?'var(--green-bd)':d.pct>=50?'#EF9F27':'var(--red-bd)';
+    h+='<div class="hist-row"><span class="hist-date">'+d.date.slice(5)+'</span>'
+      +'<div class="hist-bar"><div class="hist-fill" style="width:'+d.pct+'%;background:'+col+'"></div></div>'
+      +'<span class="hist-pct" style="color:'+col+'">'+d.pct+'%</span></div>';
+  }
+  el.innerHTML=h;
+}
+load();renderCheck();
+</script></body></html>

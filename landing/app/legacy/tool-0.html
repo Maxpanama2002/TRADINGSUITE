@@ -1,0 +1,474 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Торговый журнал</title>
+<script src="../vendor/chart.umd.js"></script>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f0efe9; --surface:#ffffff; --surf2:#f5f4f0; --surf3:#eae9e3;
+  --text:#1a1a18; --text2:#6b6b67; --text3:#9a9a96;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.17);
+  --radius:10px; --radius-lg:14px;
+  --font:'Times New Roman',Times,Georgia,serif;
+  --mono:'Courier New',Courier,monospace;
+  --green-bg:#C0DD97; --green-bd:#639922; --green-tx:#27500A;
+  --red-bg:#F7C1C1;   --red-bd:#E24B4A;   --red-tx:#791F1F;
+  --amber-bg:#FAC775; --amber-bd:#EF9F27; --amber-tx:#633806;
+  --blue-bg:#B5D4F4;  --blue-bd:#378ADD;  --blue-tx:#0C447C;
+  --purple-bg:#CECBF6;--purple-bd:#7F77DD;--purple-tx:#26215C;
+  --pos:#27500A; --neg:#791F1F;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:28px 16px;}
+.page{max-width:860px;margin:0 auto;}
+.page-wide{max-width:1060px;margin:0 auto;}
+h1{font-size:28px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.section-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;}
+.card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:18px 20px;}
+.card+.card{margin-top:12px;}
+.card-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--border);}
+.metric-grid{display:grid;gap:8px;margin-bottom:18px;}
+.mg-4{grid-template-columns:repeat(4,1fr);} .mg-3{grid-template-columns:repeat(3,1fr);} .mg-2{grid-template-columns:repeat(2,1fr);}
+.metric{background:var(--surf2);border-radius:var(--radius);padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.metric-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.pos{color:var(--pos);} .neg{color:var(--neg);} .blue{color:var(--blue-tx);} .amber{color:var(--amber-tx);}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:18px;}
+.tab-btn{flex:1;padding:9px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s;}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.full{grid-column:span 2;} .field.full3{grid-column:span 3;}
+.field label{font-size:12px;color:var(--text2);}
+input[type=text],input[type=number],input[type=datetime-local],input[type=date],select,textarea{width:100%;padding:9px 11px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--text3);background:var(--surface);}
+textarea{resize:vertical;min-height:56px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--surf3);border-radius:2px;outline:none;border:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--surface);}
+.btn-primary{width:100%;padding:11px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .15s;}
+.btn-primary:hover{opacity:.82;}
+.btn-secondary{padding:8px 16px;background:none;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text2);transition:all .15s;}
+.btn-secondary:hover{border-color:var(--text);color:var(--text);}
+.toggle-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.toggle-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tbtn{padding:10px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.tbtn:hover{border-color:var(--text3);color:var(--text);}
+.tbtn.a-green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.tbtn.a-red{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.tbtn.a-amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.tbtn.a-blue{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.tbtn.a-dark{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:700;}
+.badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.b-green{background:var(--green-bg);color:var(--green-tx);}
+.b-red{background:var(--red-bg);color:var(--red-tx);}
+.b-amber{background:var(--amber-bg);color:var(--amber-tx);}
+.b-blue{background:var(--blue-bg);color:var(--blue-tx);}
+.b-purple{background:var(--purple-bg);color:var(--purple-tx);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border2);}
+tbody td{padding:9px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surf2);}
+.divider{height:0.5px;background:var(--border2);margin:16px 0;}
+.mono{font-family:var(--mono);}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:15px;}
+.chart-wrap{position:relative;width:100%;height:240px;margin:10px 0;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--text2);}
+.detail-val{font-family:var(--mono);font-weight:700;}
+.verdict{padding:12px 16px;font-size:14px;margin-bottom:18px;border-left:3px solid;line-height:1.6;border-radius:0 var(--radius) var(--radius) 0;}
+.v-profit{border-color:var(--green-bd);background:var(--green-bg);color:var(--green-tx);}
+.v-loss{border-color:var(--red-bd);background:var(--red-bg);color:var(--red-tx);}
+.v-neutral{border-color:var(--text3);background:var(--surf2);color:var(--text2);}
+.v-partial{border-color:var(--amber-bd);background:var(--amber-bg);color:var(--amber-tx);}
+.insight-box{background:var(--surf2);border:0.5px solid var(--border);border-radius:var(--radius);padding:2px 14px;margin-top:6px;}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.insight-row:last-child{border-bottom:none;}
+@media(max-width:560px){.mg-4,.mg-3{grid-template-columns:1fr 1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}.field.full,.field.full3{grid-column:span 1;}}
+
+.add-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:1.5px dashed var(--border2);border-radius:var(--radius-lg);background:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--text2);font-family:var(--font);transition:all .15s;margin-bottom:10px;}
+.add-btn:hover{background:var(--surf2);color:var(--text);border-color:var(--text3);}
+.plus-icon{width:22px;height:22px;border-radius:50%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;flex-shrink:0;}
+.trade-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;}
+.card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .1s;}
+.card-header:hover{background:var(--surf2);}
+.card-chevron{font-size:10px;color:var(--text3);margin-left:auto;transition:transform .2s;flex-shrink:0;}
+.trade-card.open .card-chevron{transform:rotate(180deg);}
+.card-body{display:none;padding:0 14px 16px;border-top:0.5px solid var(--border);}
+.trade-card.open .card-body{display:block;}
+.card-title{font-size:15px;font-weight:700;}
+.card-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.del-card-btn{background:none;border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:12px;padding:4px 10px;font-family:var(--font);flex-shrink:0;transition:all .15s;}
+.del-card-btn:hover{background:var(--red-bg);color:var(--red-tx);border-color:var(--red-bd);}
+.del-row-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .15s;}
+.del-row-btn:hover{background:var(--red-bg);color:var(--red-tx);}
+.ebtn{padding:9px 4px;font-size:12px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;line-height:1.3;}
+.ebtn:hover{border-color:var(--text3);color:var(--text);}
+.ebtn[data-e="calm"].active{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.ebtn[data-e="fear"].active{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.ebtn[data-e="greed"].active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.ebtn[data-e="fomo"].active{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.ebtn[data-e="revenge"].active{background:var(--purple-bg);border-color:var(--purple-bd);color:var(--purple-tx);font-weight:700;}
+.pbtn{padding:9px 4px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.pbtn:hover{border-color:var(--text3);color:var(--text);}
+.pbtn[data-p="yes"].active{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.pbtn[data-p="partial"].active{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.pbtn[data-p="no"].active{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.emotion-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.risk-result{background:var(--amber-bg);border:0.5px solid var(--amber-bd);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber-tx);font-weight:600;margin-top:8px;display:none;}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.filter-bar input,.filter-bar select{width:auto;flex:1;min-width:120px;padding:7px 10px;font-size:13px;}
+.filter-bar .btn-secondary{flex-shrink:0;}
+.export-bar{display:flex;gap:8px;margin-bottom:12px;}
+/* PERIOD */
+.period-box{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px;}
+.period-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.ptype-btn{padding:12px 8px;font-size:13px;font-weight:700;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.ptype-btn.active{background:var(--text);color:var(--surface);border-color:var(--text);}
+.period-selects{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.close-period-btn{width:100%;padding:12px;background:var(--amber-bg);color:var(--amber-tx);border:1.5px solid var(--amber-bd);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:700;font-family:var(--font);transition:all .15s;}
+.close-period-btn:hover{background:var(--amber-bd);color:#fff;}
+.period-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;}
+.period-card-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .1s;}
+.period-card-header:hover{background:var(--surf2);}
+.period-card.open .period-card-body{display:block;}
+.period-card.open .period-chevron{transform:rotate(180deg);}
+.period-card-body{display:none;padding:0 16px 16px;border-top:0.5px solid var(--border);}
+.period-chevron{font-size:10px;color:var(--text3);margin-left:auto;transition:transform .2s;flex-shrink:0;}
+.period-name{font-size:15px;font-weight:700;}
+.period-meta{font-size:12px;color:var(--text2);margin-top:2px;}
+.period-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+.del-period-btn{background:none;border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:12px;padding:4px 10px;font-family:var(--font);transition:all .15s;}
+.del-period-btn:hover{background:var(--red-bg);color:var(--red-tx);border-color:var(--red-bd);}
+.chart-toggle{display:flex;gap:6px;margin-bottom:10px;}.ctgl{padding:5px 14px;font-size:12px;font-weight:600;border:1px solid var(--border2);border-radius:6px;cursor:pointer;background:var(--surf2);color:var(--text2);font-family:var(--font);transition:all .15s;}.ctgl.active{background:var(--text);color:var(--bg);}.hm-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 16px;}.hm-cell{border-radius:var(--radius);padding:10px 6px;text-align:center;}.hm-day{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}.hm-wr{font-size:15px;font-weight:700;font-family:var(--mono);}.hm-meta{font-size:10px;opacity:.75;margin-top:3px;}.err-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}.err-lbl{font-size:12px;flex:0 0 150px;}.err-trk{flex:1;height:7px;background:var(--surf3);border-radius:4px;overflow:hidden;}.err-fill{height:100%;border-radius:4px;background:var(--red-bd);}.err-meta{font-size:12px;font-family:var(--mono);flex:0 0 90px;text-align:right;}
+
+</style></head><body>
+<div class="page">
+  <h1>Торговый журнал</h1>
+  <p class="subtitle">Фиксируй сделки, эмоции и следование плану</p>
+  <div class="metric-grid mg-4" id="metrics-bar"></div>
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="showTab('log')">Сделки</button>
+    <button class="tab-btn" onclick="showTab('periods')">Периоды</button>
+    <button class="tab-btn" onclick="showTab('stats')">Аналитика</button>
+  </div>
+  <div id="tab-log">
+    <button class="add-btn" onclick="addCard()"><span class="plus-icon">+</span>&nbsp;Новая сделка</button>
+    <div id="cards"></div>
+  </div>
+  <div id="tab-periods" style="display:none">
+    <div class="period-box">
+      <div class="section-label">Закрыть период</div>
+      <div class="period-type-grid">
+        <button class="ptype-btn active" onclick="setPType('month')" id="pt-month">Месяц</button>
+        <button class="ptype-btn" onclick="setPType('quarter')" id="pt-quarter">Квартал</button>
+        <button class="ptype-btn" onclick="setPType('year')" id="pt-year">Год</button>
+      </div>
+      <div class="period-selects" id="period-selects"></div>
+      <div id="period-preview" style="margin-bottom:14px"></div>
+      <button class="close-period-btn" onclick="closePeriod()">Закрыть и сохранить период</button>
+    </div>
+    <div class="section-label" style="margin-bottom:8px">Сохранённые периоды</div>
+    <div id="archived-periods"></div>
+  </div>
+  <div id="tab-stats" style="display:none"><div id="stats-content"></div></div>
+  </div>
+<script>
+const EL={calm:'Спокойствие',fear:'Страх',greed:'Жадность',fomo:'FOMO',revenge:'Месть'};
+const PL={yes:'Полностью',partial:'Частично',no:'Нарушил'};
+let trades=[],cardIdx=0,pnlChart=null,archivedPeriods=[],currentPType='month';
+function load(){try{const s=localStorage.getItem('tj_v3');if(s)trades=JSON.parse(s);}catch(e){}try{const p=localStorage.getItem('tj_periods');if(p)archivedPeriods=JSON.parse(p);}catch(e){}renderMetrics();}
+function save(){localStorage.setItem('tj_v3',JSON.stringify(trades));}
+function savePeriods(){localStorage.setItem('tj_periods',JSON.stringify(archivedPeriods));}
+function nowLocal(){const n=new Date();return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,16);}
+function showTab(t){['log','periods','stats'].forEach((tab,i)=>{document.getElementById('tab-'+tab).style.display=tab===t?'':'none';document.querySelectorAll('.tab-btn')[i].classList.toggle('active',tab===t);});if(t==='stats')renderStats();if(t==='periods'){buildPeriodSelects();renderArchivedPeriods();}}
+
+
+function clearFilters(){document.getElementById('f-search').value='';document.getElementById('f-dir').value='';document.getElementById('f-emotion').value='';renderHistory();}
+function getFilteredTrades(){let r=trades;const s=(document.getElementById('f-search').value||'').toLowerCase();const d=document.getElementById('f-dir').value;const e=document.getElementById('f-emotion').value;if(s)r=r.filter(t=>t.asset&&t.asset.toLowerCase().includes(s));if(d)r=r.filter(t=>t.dir===d);if(e)r=r.filter(t=>t.emotion===e);return r;}
+function exportCSV(){
+  const ft=getFilteredTrades();
+  if(!ft.length){alert('Нет сделок для экспорта');return;}
+  const h=['Дата','Инструмент','Направление','Размер','Цена входа','Цена выхода','Стоп-лосс','Тейк-профит','P&L','Эмоция','Соблюдение плана','Причина выхода','Заметки'];
+  const rows=ft.map(t=>[t.date||'',t.asset||'',t.dir==='long'?'Long':'Short',t.size||'',t.entry||'',t.exit||'',t.sl||'',t.tp||'',t.pnl||'',EL[t.emotion]||'',PL[t.plan]||'',t.reason||'',t.notes||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const csv='\uFEFF'+[h.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='trades_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+// RISK CALC
+function calcRisk(id){
+  const deposit=parseFloat(document.getElementById('rc-dep-'+id).value)||0;
+  const riskPct=parseFloat(document.getElementById('rc-pct-'+id).value)||1;
+  const entry=parseFloat(document.getElementById('fen-'+id).value)||0;
+  const sl=parseFloat(document.getElementById('fsl-'+id).value)||0;
+  const res=document.getElementById('risk-result-'+id);
+  if(!deposit||!entry||!sl){res.style.display='none';return;}
+  const riskAmt=deposit*riskPct/100;
+  const diff=Math.abs(entry-sl);
+  if(!diff){res.style.display='none';return;}
+  const units=riskAmt/diff;
+  const posSize=(units*entry).toFixed(2);
+  res.style.display='block';
+  res.textContent='Риск: $'+riskAmt.toFixed(2)+' · Объём позиции: $'+posSize+' ('+units.toFixed(4)+' ед.)';
+}
+// PERIOD
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const QUARTERS=['I квартал (янв–март)','II квартал (апр–июнь)','III квартал (июл–сен)','IV квартал (окт–дек)'];
+function setPType(t){currentPType=t;document.querySelectorAll('.ptype-btn').forEach(b=>b.classList.remove('active'));document.getElementById('pt-'+t).classList.add('active');buildPeriodSelects();}
+function buildPeriodSelects(){
+  const now=new Date();const cy=now.getFullYear();const cm=now.getMonth();const cq=Math.floor(cm/3);
+  const sel=document.getElementById('period-selects');
+  const yearOpts=Array.from({length:6},(_,i)=>cy-i).map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(currentPType==='month'){const mo=MONTHS.map((m,i)=>`<option value="${i}"${i===cm?' selected':''}>${m}</option>`).join('');sel.innerHTML=`<div class="field"><label>Месяц</label><select id="ps-month">${mo}</select></div><div class="field"><label>Год</label><select id="ps-year">${yearOpts}</select></div>`;}
+  else if(currentPType==='quarter'){const qo=QUARTERS.map((q,i)=>`<option value="${i}"${i===cq?' selected':''}>${q}</option>`).join('');sel.innerHTML=`<div class="field"><label>Квартал</label><select id="ps-quarter">${qo}</select></div><div class="field"><label>Год</label><select id="ps-year">${yearOpts}</select></div>`;}
+  else{sel.innerHTML=`<div class="field full"><label>Год</label><select id="ps-year">${yearOpts}</select></div>`;}
+  sel.querySelectorAll('select').forEach(s=>s.addEventListener('change',updatePeriodPreview));
+  updatePeriodPreview();
+}
+function getPeriodRange(){
+  const y=parseInt((document.getElementById('ps-year')||{value:new Date().getFullYear()}).value);
+  if(currentPType==='month'){const m=parseInt(document.getElementById('ps-month').value);return{from:new Date(y,m,1),to:new Date(y,m+1,0,23,59,59),label:MONTHS[m]+' '+y};}
+  else if(currentPType==='quarter'){const q=parseInt(document.getElementById('ps-quarter').value);const sm=q*3;return{from:new Date(y,sm,1),to:new Date(y,sm+3,0,23,59,59),label:QUARTERS[q].split(' (')[0]+' '+y};}
+  else{return{from:new Date(y,0,1),to:new Date(y,11,31,23,59,59),label:'Год '+y};}
+}
+function updatePeriodPreview(){
+  try{const{from,to,label}=getPeriodRange();const pts=trades.filter(t=>{if(!t.date)return false;const d=new Date(t.date);return d>=from&&d<=to;});const el=document.getElementById('period-preview');if(!pts.length){el.innerHTML=`<div style="font-size:13px;color:var(--text2);padding:10px 0">В периоде «${label}» сделок нет</div>`;return;}const wins=pts.filter(t=>t.pnl>0).length;const tp=pts.reduce((s,t)=>s+t.pnl,0);const wr=Math.round(wins/pts.length*100);el.innerHTML=`<div style="background:var(--surf2);border-radius:var(--radius);padding:12px 14px;font-size:13px"><span style="font-weight:700">${label}</span> &nbsp;·&nbsp; ${pts.length} сделок &nbsp;·&nbsp; ВР ${wr}% &nbsp;·&nbsp; P&L <span style="font-family:var(--mono);font-weight:700;color:${tp>=0?'var(--pos)':'var(--neg)'}">${tp>=0?'+':''}${tp.toFixed(2)}</span></div>`;}catch(e){}
+}
+function closePeriod(){
+  const{from,to,label}=getPeriodRange();const pts=trades.filter(t=>{if(!t.date)return false;const d=new Date(t.date);return d>=from&&d<=to;});
+  if(!pts.length){alert('В выбранном периоде нет сделок.');return;}
+  if(!confirm('Закрыть период «'+label+'» ('+pts.length+' сделок)?'))return;
+  const wins=pts.filter(t=>t.pnl>0).length;const totalPnl=pts.reduce((s,t)=>s+t.pnl,0);
+  const best=pts.reduce((b,t)=>t.pnl>b.pnl?t:b,pts[0]);const worst=pts.reduce((b,t)=>t.pnl<b.pnl?t:b,pts[0]);
+  archivedPeriods.unshift({id:Date.now(),label,type:currentPType,from:from.toISOString(),to:to.toISOString(),closedAt:new Date().toISOString(),count:pts.length,wins,losses:pts.length-wins,totalPnl,avgPnl:totalPnl/pts.length,winRate:Math.round(wins/pts.length*100),bestTrade:{asset:best.asset,pnl:best.pnl},worstTrade:{asset:worst.asset,pnl:worst.pnl},trades:pts});
+  savePeriods();renderArchivedPeriods();updatePeriodPreview();alert('Период «'+label+'» сохранён!');
+}
+function renderArchivedPeriods(){
+  const el=document.getElementById('archived-periods');
+  if(!archivedPeriods.length){el.innerHTML='<div class="empty-state">Нет сохранённых периодов</div>';return;}
+  el.innerHTML=archivedPeriods.map((p,i)=>{
+    const tb=p.type==='month'?'b-blue':p.type==='quarter'?'b-amber':'b-purple';
+    const tl=p.type==='month'?'Месяц':p.type==='quarter'?'Квартал':'Год';
+    const pc=p.totalPnl>=0?'var(--pos)':'var(--neg)';
+    return `<div class="period-card" id="pc-${p.id}">
+      <div class="period-card-header" onclick="togglePeriodCard(${p.id})">
+        <div style="flex:1;min-width:0"><div class="period-name">${p.label}</div>
+          <div class="period-meta"><span class="badge ${tb}">${tl}</span> &nbsp;${p.count} сделок &nbsp;·&nbsp; ВР ${p.winRate}% &nbsp;·&nbsp; <span class="mono" style="color:${pc};font-weight:700">${p.totalPnl>=0?'+':''}${p.totalPnl.toFixed(2)}</span></div>
+        </div>
+        <button class="del-period-btn" onclick="event.stopPropagation();deletePeriod(${p.id})">Удалить</button>
+        <span class="period-chevron">&#9660;</span>
+      </div>
+      <div class="period-card-body">
+        <div class="period-stats">
+          <div class="metric"><div class="metric-label">Сделок</div><div class="metric-value">${p.count}</div></div>
+          <div class="metric"><div class="metric-label">Винрейт</div><div class="metric-value ${p.winRate>=50?'pos':'neg'}">${p.winRate}%</div></div>
+          <div class="metric"><div class="metric-label">Итого P&L</div><div class="metric-value ${p.totalPnl>=0?'pos':'neg'}">${p.totalPnl>=0?'+':''}${p.totalPnl.toFixed(2)}</div></div>
+          <div class="metric"><div class="metric-label">Средний P&L</div><div class="metric-value ${p.avgPnl>=0?'pos':'neg'}">${p.avgPnl>=0?'+':''}${p.avgPnl.toFixed(2)}</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div class="metric" style="background:var(--green-bg)"><div class="metric-label" style="color:var(--green-tx)">Лучшая</div><div class="metric-value pos">${p.bestTrade.asset} +${p.bestTrade.pnl.toFixed(2)}</div></div>
+          <div class="metric" style="background:var(--red-bg)"><div class="metric-label" style="color:var(--red-tx)">Худшая</div><div class="metric-value neg">${p.worstTrade.asset} ${p.worstTrade.pnl.toFixed(2)}</div></div>
+        </div>
+        <p class="section-label">Сделки периода</p>
+        <div class="table-wrap"><table><thead><tr><th>Дата</th><th>Инструмент</th><th>Напр.</th><th>P&L</th><th>Эмоция</th><th>План</th></tr></thead>
+        <tbody>${p.trades.map(t=>`<tr>
+          <td class="mono" style="font-size:11px;white-space:nowrap">${(t.date||'').replace('T',' ')}</td>
+          <td style="font-weight:700">${t.asset}</td>
+          <td><span class="badge ${t.dir==='long'?'b-green':'b-red'}">${t.dir==='long'?'Long':'Short'}</span></td>
+          <td class="mono" style="color:${t.pnl>=0?'var(--pos)':'var(--neg)'};font-weight:700">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
+          <td style="font-size:12px;color:var(--text2)">${EL[t.emotion]||'&mdash;'}</td>
+          <td>${t.plan?`<span class="badge ${t.plan==='yes'?'b-green':t.plan==='partial'?'b-amber':'b-red'}">${PL[t.plan]}</span>`:'&mdash;'}</td>
+        </tr>`).join('')}</tbody></table></div>
+        <p style="font-size:11px;color:var(--text3);margin-top:10px">Закрыт: ${new Date(p.closedAt).toLocaleString('ru-RU')}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+function togglePeriodCard(id){document.getElementById('pc-'+id).classList.toggle('open');}
+function deletePeriod(id){if(!confirm('Удалить период?'))return;archivedPeriods=archivedPeriods.filter(p=>p.id!==id);savePeriods();renderArchivedPeriods();}
+// CARDS
+function addCard(){
+  const id=++cardIdx;
+  document.querySelectorAll('.trade-card.open').forEach(c=>c.classList.remove('open'));
+  const div=document.createElement('div');div.className='trade-card open';div.id='card-'+id;
+  div.innerHTML=`<div class="card-header" onclick="toggleCard(${id})">
+    <div style="flex:1;min-width:0"><div class="card-title">Новая сделка</div><div class="card-sub" id="csub-${id}">заполни форму</div></div>
+    <span class="card-chevron">&#9660;</span>
+  </div>
+  <div class="card-body">
+    <p class="section-label" style="margin-top:14px">Параметры</p>
+    <div class="form-grid">
+      <div class="field"><label>Дата и время</label><input type="datetime-local" id="fd-${id}" value="${nowLocal()}"></div>
+      <div class="field"><label>Инструмент</label><input type="text" id="fa-${id}" placeholder="BTC/USD"></div>
+      <div class="field"><label>Направление</label><select id="fdir-${id}"><option value="long">Long (покупка)</option><option value="short">Short (продажа)</option></select></div>
+      <div class="field"><label>Размер позиции</label><input type="number" id="fsz-${id}" placeholder="0.1" step="any"></div>
+      <div class="field"><label>Цена входа</label><input type="number" id="fen-${id}" placeholder="0.00" step="any" oninput="calcRisk(${id})"></div>
+      <div class="field"><label>Цена выхода</label><input type="number" id="fex-${id}" placeholder="0.00" step="any"></div>
+      <div class="field"><label>Стоп-лосс (план)</label><input type="number" id="fsl-${id}" placeholder="0.00" step="any" oninput="calcRisk(${id})"></div>
+      <div class="field"><label>Тейк-профит (план)</label><input type="number" id="ftp-${id}" placeholder="0.00" step="any"></div>
+      <div class="field"><label>P&amp;L ($)</label><input type="number" id="fpnl-${id}" placeholder="0.00" step="any"></div>
+    </div>
+    <div class="divider"></div>
+    <p class="section-label">Калькулятор риска</p>
+    <div class="form-grid">
+      <div class="field"><label>Депозит ($)</label><input type="number" id="rc-dep-${id}" placeholder="10000" step="any" oninput="calcRisk(${id})"></div>
+      <div class="field"><label>Риск на сделку (%)</label><input type="number" id="rc-pct-${id}" placeholder="1" step="0.1" value="1" oninput="calcRisk(${id})"></div>
+    </div>
+    <div class="risk-result" id="risk-result-${id}"></div>
+    <div class="divider"></div>
+    <p class="section-label">Психология</p>
+    <div class="field" style="margin-bottom:10px"><label style="margin-bottom:6px">Эмоция перед входом</label>
+      <div class="emotion-grid">
+        <button class="ebtn" data-e="calm"    onclick="pickE(this)">Спокойствие</button>
+        <button class="ebtn" data-e="fear"    onclick="pickE(this)">Страх</button>
+        <button class="ebtn" data-e="greed"   onclick="pickE(this)">Жадность</button>
+        <button class="ebtn" data-e="fomo"    onclick="pickE(this)">FOMO</button>
+        <button class="ebtn" data-e="revenge" onclick="pickE(this)">Месть</button>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label style="margin-bottom:6px">Соблюдение плана</label>
+      <div class="plan-grid">
+        <button class="pbtn" data-p="yes"     onclick="pickP(this)">Полностью</button>
+        <button class="pbtn" data-p="partial" onclick="pickP(this)">Частично</button>
+        <button class="pbtn" data-p="no"      onclick="pickP(this)">Нарушил</button>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label>Почему вышел раньше / нарушил план?</label><textarea id="frs-${id}" placeholder="Испугался отката..."></textarea></div>
+    <div class="field" style="margin-bottom:12px"><label>Заметки и выводы</label><textarea id="fnt-${id}" placeholder="Что можно улучшить?"></textarea></div>
+    <div class="field" style="margin-bottom:12px"><label>Тип ошибки</label><select id="fet-${id}"><option value="">— не указан —</option><option value="emotion">Эмоциональная</option><option value="system">Нарушение системы</option><option value="signal">Ложный сигнал</option><option value="exit">Плохой выход</option><option value="force">Форс-мажор</option></select></div>
+    <div id="rules-check-${id}"></div>
+    <button class="btn-primary" onclick="saveTrade(${id})">Сохранить сделку</button>
+  </div>`;
+  (function(){var rl=[];try{var rd=localStorage.getItem('rt_rules_v1');if(rd)rl=JSON.parse(rd);}catch(e){}var rc=div.querySelector('#rules-check-'+id);if(!rc||!rl.length)return;var ch='<p class="section-label" style="margin-top:12px">Чеклист</p>';ch+=rl.map(function(r){return '<label style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;font-size:13px;cursor:pointer"><input type="checkbox" style="margin-top:2px"><span>'+r+'</span></label>';}).join('');rc.innerHTML=ch;})()
+  const c=document.getElementById('cards');c.insertBefore(div,c.firstChild);
+}
+function toggleCard(id){document.getElementById('card-'+id).classList.toggle('open');}
+function pickE(btn){btn.closest('.emotion-grid').querySelectorAll('.ebtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function pickP(btn){btn.closest('.plan-grid').querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function saveTrade(id){
+  const asset=(document.getElementById('fa-'+id).value||'').trim();const pnlVal=parseFloat(document.getElementById('fpnl-'+id).value);
+  if(!asset){alert('Укажи инструмент');return;}if(isNaN(pnlVal)){alert('Укажи P&L');return;}
+  const card=document.getElementById('card-'+id);
+  const eBtn=card.querySelector('.ebtn.active'),pBtn=card.querySelector('.pbtn.active');
+  const emotion=eBtn?eBtn.dataset.e:'',plan=pBtn?pBtn.dataset.p:'';
+  const t={id:Date.now(),cardId:id,date:document.getElementById('fd-'+id).value,asset,dir:document.getElementById('fdir-'+id).value,size:document.getElementById('fsz-'+id).value,entry:document.getElementById('fen-'+id).value,exit:document.getElementById('fex-'+id).value,sl:document.getElementById('fsl-'+id).value,tp:document.getElementById('ftp-'+id).value,pnl:pnlVal,emotion,plan,reason:document.getElementById('frs-'+id).value,notes:document.getElementById('fnt-'+id).value,errType:document.getElementById('fet-'+id).value||''};
+  trades.unshift(t);save();renderMetrics();
+  const col=pnlVal>=0?'var(--pos)':'var(--neg)';
+  card.querySelector('.card-title').textContent=asset+' \u00b7 '+(t.dir==='long'?'Long':'Short');
+  card.querySelector('#csub-'+id).innerHTML=`<span class="mono" style="color:${col};font-weight:700">${pnlVal>=0?'+':''}${pnlVal.toFixed(2)}</span>`+(emotion?` \u00b7 ${EL[emotion]}`:'')+( plan?` \u00b7 ${PL[plan]}`:'');
+  const hdr=card.querySelector('.card-header');
+  if(!hdr.querySelector('.del-card-btn')){const btn=document.createElement('button');btn.className='del-card-btn';btn.textContent='Удалить';btn.onclick=e=>{e.stopPropagation();deleteCard(t.id,id);};hdr.insertBefore(btn,hdr.querySelector('.card-chevron'));}
+  card.classList.remove('open');
+}
+function deleteCard(tid,cid){if(!confirm('Удалить?'))return;trades=trades.filter(t=>t.id!==tid);save();renderMetrics();const c=document.getElementById('card-'+cid);if(c)c.remove();}
+function deleteFromHistory(tid){if(!confirm('Удалить?'))return;const t=trades.find(x=>x.id===tid);trades=trades.filter(x=>x.id!==tid);save();renderMetrics();if(t&&t.cardId){const c=document.getElementById('card-'+t.cardId);if(c)c.remove();}renderHistory();}
+function renderMetrics(){
+  const total=trades.length,wins=trades.filter(t=>t.pnl>0).length;const totalPnl=trades.reduce((s,t)=>s+t.pnl,0);const wr=total?Math.round(wins/total*100):null,avg=total?totalPnl/total:0;
+  document.getElementById('metrics-bar').innerHTML=`<div class="metric"><div class="metric-label">Сделок</div><div class="metric-value">${total}</div></div><div class="metric"><div class="metric-label">Винрейт</div><div class="metric-value ${wr!==null&&wr>=50?'pos':wr!==null?'neg':''}">${wr!==null?wr+'%':'&mdash;'}</div></div><div class="metric"><div class="metric-label">Итого P&L</div><div class="metric-value ${totalPnl>=0?'pos':'neg'}">${totalPnl>=0?'+':''}${totalPnl.toFixed(2)}</div></div><div class="metric"><div class="metric-label">Средний P&L</div><div class="metric-value ${avg>=0?'pos':'neg'}">${avg>=0?'+':''}${avg.toFixed(2)}</div></div>`;
+}
+function renderHistory(){
+  const el=document.getElementById('history-content');const ft=getFilteredTrades();
+  document.getElementById('history-count').textContent=ft.length+' из '+trades.length+' сделок';
+  if(!trades.length){el.innerHTML='<div class="empty-state">Сделок пока нет</div>';return;}
+  if(!ft.length){el.innerHTML='<div class="empty-state">Нет сделок по выбранным фильтрам</div>';return;}
+  el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Инструмент</th><th>Напр.</th><th>P&L</th><th>Эмоция</th><th>План</th><th>Заметки</th><th></th></tr></thead><tbody>${ft.map(t=>`<tr>
+    <td class="mono" style="font-size:11px;white-space:nowrap">${(t.date||'').replace('T',' ')}</td>
+    <td style="font-weight:700">${t.asset}</td>
+    <td><span class="badge ${t.dir==='long'?'b-green':'b-red'}">${t.dir==='long'?'Long':'Short'}</span></td>
+    <td class="mono" style="color:${t.pnl>=0?'var(--pos)':'var(--neg)'};font-weight:700">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
+    <td style="font-size:12px;color:var(--text2)">${EL[t.emotion]||'&mdash;'}</td>
+    <td>${t.plan?`<span class="badge ${t.plan==='yes'?'b-green':t.plan==='partial'?'b-amber':'b-red'}">${PL[t.plan]}</span>`:'&mdash;'}</td>
+    <td style="font-size:12px;color:var(--text2);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.notes||t.reason||'&mdash;'}</td>
+    <td><button class="del-row-btn" onclick="deleteFromHistory(${t.id})">&#215;</button></td>
+  </tr>`).join('')}</tbody></table></div>`;
+}
+function _hmColor(avgPnl,n){
+  if(n===0)return'background:var(--surf2);color:var(--text3)';
+  if(avgPnl>0){const i=Math.min(avgPnl/20,1);const r=Math.round(192+i*(99-192));const g=Math.round(221+i*(153-221));const b=Math.round(151+i*(34-151));return`background:rgba(${r},${g},${b},0.55);color:var(--green-tx)`}
+  else{const i=Math.min(-avgPnl/20,1);const r=Math.round(247+i*(226-247));const g=Math.round(193+i*(75-193));const b=Math.round(193+i*(74-193));return`background:rgba(${r},${g},${b},0.55);color:var(--red-tx)`}
+}
+var _pnlChartType='line';
+function renderPnlSection(el){
+  const sorted=[...trades].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let cum=0;
+  const labels=sorted.map(t=>(t.date||'').slice(5,10));
+  const cumData=sorted.map(t=>{cum+=t.pnl;return parseFloat(cum.toFixed(2));});
+  // daily pnl by date
+  const byDay={};sorted.forEach(t=>{const d=(t.date||'').slice(0,10);if(!byDay[d])byDay[d]=0;byDay[d]+=t.pnl;});
+  const dayLabels=Object.keys(byDay);const dayData=dayLabels.map(d=>parseFloat(byDay[d].toFixed(2)));
+  const up=cumData[cumData.length-1]>=0;
+  el.innerHTML+=`<p class="section-label">P&L</p>
+  <div class="chart-toggle">
+    <button class="ctgl ${_pnlChartType==='line'?'active':''}" onclick="_pnlChartType='line';renderStats()">Кривая</button>
+    <button class="ctgl ${_pnlChartType==='bar'?'active':''}" onclick="_pnlChartType='bar';renderStats()">По дням</button>
+  </div>
+  <div class="chart-wrap"><canvas id="pnl-chart"></canvas></div><div class="divider"></div>`;
+  setTimeout(()=>{
+    const ctx=document.getElementById('pnl-chart');if(!ctx)return;
+    if(pnlChart)pnlChart.destroy();
+    if(_pnlChartType==='line'){
+      pnlChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'P&L',data:cumData,borderColor:up?'#639922':'#E24B4A',backgroundColor:up?'rgba(99,153,34,0.08)':'rgba(226,75,74,0.08)',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:up?'#639922':'#E24B4A'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(128,128,128,0.1)'}},y:{ticks:{font:{size:11},color:'#888',callback:v=>(v>=0?'+':'')+v},grid:{color:'rgba(128,128,128,0.1)'}}}}});
+    }else{
+      pnlChart=new Chart(ctx,{type:'bar',data:{labels:dayLabels,datasets:[{label:'P&L',data:dayData,backgroundColor:dayData.map(v=>v>=0?'rgba(99,153,34,0.7)':'rgba(226,75,74,0.7)'),borderColor:dayData.map(v=>v>=0?'#639922':'#E24B4A'),borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11},color:'#888'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888',callback:v=>(v>=0?'+':'')+v},grid:{color:'rgba(128,128,128,0.1)'}}}}});
+    }
+  },50);
+}
+function renderHeatmap(el){
+  const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const stats=Array(7).fill(null).map(()=>({n:0,wins:0,pnl:0}));
+  trades.forEach(t=>{
+    if(!t.date)return;
+    const d=new Date(t.date);const dow=(d.getDay()+6)%7; // 0=Mon
+    stats[dow].n++;if(t.pnl>0)stats[dow].wins++;stats[dow].pnl+=t.pnl;
+  });
+  el.innerHTML+=`<p class="section-label">Активность по дням недели</p>
+  <div class="hm-wrap">${days.map((d,i)=>{
+    const s=stats[i];const avg=s.n?s.pnl/s.n:0;const wr=s.n?Math.round(s.wins/s.n*100):0;
+    return`<div class="hm-cell" style="${_hmColor(avg,s.n)}">
+      <div class="hm-day">${d}</div>
+      <div class="hm-wr">${s.n?wr+'%':'—'}</div>
+      <div class="hm-meta">${s.n?s.n+' сд':'нет'}</div>
+      <div class="hm-meta">${s.n?(avg>=0?'+':'')+avg.toFixed(1):'—'}</div>
+    </div>`;
+  }).join('')}</div><div class="divider"></div>`;
+}
+function renderEmotionPlan(el){
+  const bE={},bP={};trades.forEach(t=>{if(t.emotion){if(!bE[t.emotion])bE[t.emotion]={total:0,wins:0,pnl:0};bE[t.emotion].total++;if(t.pnl>0)bE[t.emotion].wins++;bE[t.emotion].pnl+=t.pnl;}if(t.plan){if(!bP[t.plan])bP[t.plan]={total:0,wins:0,pnl:0};bP[t.plan].total++;if(t.pnl>0)bP[t.plan].wins++;bP[t.plan].pnl+=t.pnl;}});
+  el.innerHTML+=`<p class="section-label">Эмоция → результат</p><div class="insight-box">${Object.entries(bE).map(([k,v])=>`<div class="insight-row"><span>${EL[k]||k}</span><span class="mono" style="font-size:12px">${v.total} сд &middot; ВР ${Math.round(v.wins/v.total*100)}% &middot; <span style="color:${v.pnl>=0?'var(--pos)':'var(--neg)'};font-weight:700">${v.pnl>=0?'+':''}${v.pnl.toFixed(2)}</span></span></div>`).join('')}</div>
+  <div class="divider"></div>
+  <p class="section-label">Соблюдение плана → результат</p><div class="insight-box">${Object.entries(bP).map(([k,v])=>`<div class="insight-row"><span>${PL[k]||k}</span><span class="mono" style="font-size:12px">${v.total} сд &middot; ВР ${Math.round(v.wins/v.total*100)}% &middot; <span style="color:${v.pnl>=0?'var(--pos)':'var(--neg)'};font-weight:700">${v.pnl>=0?'+':''}${v.pnl.toFixed(2)}</span></span></div>`).join('')}</div>
+  <div class="divider"></div>`;
+}
+function renderErrorAnalysis(el){
+  const ET={emotion:'Эмоциональная',system:'Нарушение системы',signal:'Ложный сигнал',exit:'Плохой выход',force:'Форс-мажор'};
+  const losses=trades.filter(t=>t.pnl<0);
+  if(losses.length===0){el.innerHTML+='';return;}
+  const byErr={};losses.forEach(t=>{const k=t.errType||'unknown';if(!byErr[k])byErr[k]={n:0,pnl:0};byErr[k].n++;byErr[k].pnl+=t.pnl;});
+  const total=losses.length;
+  const sorted=Object.entries(byErr).sort((a,b)=>b[1].n-a[1].n);
+  const maxN=sorted[0]?sorted[0][1].n:1;
+  el.innerHTML+=`<p class="section-label">Анализ ошибок (убыточные сделки: ${total})</p>
+  <div class="insight-box">${sorted.map(([k,v])=>`
+    <div class="err-row">
+      <span class="err-lbl">${ET[k]||'Не указано'}</span>
+      <div class="err-trk"><div class="err-fill" style="width:${Math.round(v.n/maxN*100)}%"></div></div>
+      <span class="err-meta" style="color:var(--neg)">${v.n} сд · ${v.pnl.toFixed(0)}$</span>
+    </div>`).join('')}
+  </div>`;
+}
+function renderStats(){
+  const el=document.getElementById('stats-content');
+  if(trades.length<2){el.innerHTML='<div class="empty-state">Нужно хотя бы 2 сделки</div>';return;}
+  el.innerHTML='';
+  renderPnlSection(el);
+  renderHeatmap(el);
+  renderEmotionPlan(el);
+  renderErrorAnalysis(el);
+}
+load();
+</script></body></html>

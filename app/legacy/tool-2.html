@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --bg2: #ffffff;
+    --bg3: #f8f7f4;
+    --bg4: #eeedea;
+    --border: rgba(0,0,0,0.07);
+    --border2: rgba(0,0,0,0.14);
+    --text: #1a1a1a;
+    --muted: #9a9590;
+    --muted2: #6b6660;
+    --green: #0a8f5c;
+    --green-dim: rgba(10,143,92,0.09);
+    --red: #d63050;
+    --red-dim: rgba(214,48,80,0.08);
+    --amber: #b87000;
+    --amber-dim: rgba(184,112,0,0.08);
+    --blue: #1a6fc4;
+    --blue-dim: rgba(26,111,196,0.08);
+    --accent: #5448d4;
+    --accent-dim: rgba(84,72,212,0.1);
+    --font-mono: 'Times New Roman', Times, serif;
+    --font-sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(84,72,212,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(84,72,212,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 24px 60px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .header-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(0,214,143,0.2);
+    border-radius: 4px;
+    padding: 4px 10px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .tab {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 20px;
+    border-radius: 7px;
+    border: none;
+    background: none;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  .tab:hover { color: var(--text); }
+
+  .tab.active {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border2);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: border-color 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .card:hover { border-color: var(--border2); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+  .card-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Grid layouts */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+  .gap-14 { gap: 14px; }
+
+  /* Form elements */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  input[type="number"],
+  select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input[type="number"]:focus,
+  select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,109,250,0.15);
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9590' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  select option { background: var(--bg2); color: var(--text); }
+
+  /* Range slider */
+  .range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+    outline: none;
+    border: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .range-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 38px;
+    text-align: right;
+  }
+
+  /* Metric cards */
+  .metric {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .metric-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric-value.pos { color: var(--green); }
+  .metric-value.neg { color: var(--red); }
+  .metric-value.warn { color: var(--amber); }
+  .metric-value.blue { color: var(--blue); }
+
+  /* Direction toggle */
+  .direction-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .dir-btn {
+    position: relative;
+    padding: 14px 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border2);
+    background: var(--bg3);
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+    letter-spacing: 0.03em;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .dir-btn:hover {
+    border-color: var(--border2);
+    color: var(--muted2);
+    transform: translateY(-1px);
+  }
+
+  .dir-btn .btn-icon {
+    display: block;
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 4px;
+    transition: transform 0.18s;
+  }
+
+  .dir-btn .btn-label {
+    display: block;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .dir-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0 0 8px 8px;
+    background: transparent;
+    transition: background 0.18s;
+  }
+
+  .dir-btn.active-long {
+    background: #0a8f5c;
+    border-color: #0a8f5c;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(10,143,92,0.30);
+    transform: translateY(-1px);
+  }
+
+  .dir-btn.active-long .btn-icon { transform: translateY(-2px); }
+
+  .dir-btn.active-long::after {
+    background: rgba(255,255,255,0.25);
+  }
+
+  .dir-btn.active-short {
+    background: #d63050;
+    border-color: #d63050;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(214,48,80,0.28);
+    transform: translateY(-1px);
+  }
+
+  .dir-btn.active-short .btn-icon { transform: translateY(2px); }
+
+  .dir-btn.active-short::after {
+    background: rgba(255,255,255,0.25);
+  }
+
+  /* Detail rows */
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row-label { color: var(--muted2); }
+  .detail-row-val { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+
+  /* Liq bar */
+  .liq-price-big {
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--red);
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+
+  .liq-dist {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .liq-bar-track {
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .liq-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .liq-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .safety-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .tag-long { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,0.2); }
+  .tag-short { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,79,106,0.2); }
+
+  /* Section spacer */
+  .section-gap { margin-bottom: 14px; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* Note text */
+  .note {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.6;
+    font-family: var(--font-mono);
+  }
+
+  /* Hidden */
+  .hidden { display: none !important; }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tab-content { animation: fadeIn 0.2s ease; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+    .header { flex-wrap: wrap; gap: 12px; }
+    .tabs { width: 100%; }
+    .tab { flex: 1; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 13L7 8L10 11L14 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="14" cy="5" r="1.5" fill="white"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Futures Calc</div>
+        <div class="logo-sub">perpetual futures calculator</div>
+      </div>
+    </div>
+    <div class="header-badge">● LIVE</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('calc')">PnL &amp; Liquidation</button>
+    <button class="tab" onclick="setTab('breakeven')">Безубыток</button>
+    <button class="tab" onclick="setTab('funding')">Фандинг</button>
+  </div>
+
+  <!-- TAB 1: Calculator -->
+  <div id="tab-calc" class="tab-content">
+
+    <div class="grid2 section-gap" style="gap:14px; margin-bottom:14px;">
+
+      <!-- Left: Position params -->
+      <div class="card">
+        <div class="card-title">Параметры позиции</div>
+
+        <div class="field">
+          <label>Направление</label>
+          <div class="direction-toggle">
+            <button class="dir-btn active-long" id="btn-long" onclick="setDir('long')">
+              <span class="btn-icon">▲</span>
+              <span class="btn-label">Long</span>
+            </button>
+            <button class="dir-btn" id="btn-short" onclick="setDir('short')">
+              <span class="btn-icon">▼</span>
+              <span class="btn-label">Short</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Цена входа (USDT)</label>
+          <input type="number" id="entry" value="100" step="0.01" oninput="calc()">
+        </div>
+
+        <div class="field">
+          <label>Текущая / целевая цена</label>
+          <input type="number" id="current" value="110" step="0.01" oninput="calc()">
+        </div>
+
+        <div class="field">
+          <label>Плечо (leverage)</label>
+          <div class="range-wrap">
+            <input type="range" id="lev" min="1" max="125" value="10" step="1" oninput="calc()">
+            <span class="range-val" id="lev-out">10×</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Размер позиции (USDT)</label>
+          <input type="number" id="size" value="1000" step="1" oninput="calc()">
+        </div>
+      </div>
+
+      <!-- Right: Margin & fees -->
+      <div class="card">
+        <div class="card-title">Маржа и комиссии</div>
+
+        <div class="field">
+          <label>Тип маржи</label>
+          <select id="margin-type" onchange="calc()">
+            <option value="isolated">Isolated (изолированная)</option>
+            <option value="cross">Cross (кросс-маржа)</option>
+          </select>
+        </div>
+
+        <div class="field hidden" id="cross-bal-wrap">
+          <label>Баланс счёта (для Cross)</label>
+          <input type="number" id="cross-bal" value="5000" step="1" oninput="calc()">
+        </div>
+
+        <div class="field">
+          <label>Общий депозит (USDT)</label>
+          <input type="number" id="deposit" value="5000" step="1" oninput="calc()">
+        </div>
+
+        <div class="field">
+          <label>Тип ордера</label>
+          <select id="order-type" onchange="calc()">
+            <option value="taker">Taker (Market) — по рынку</option>
+            <option value="maker">Maker (Limit) — лимитный</option>
+          </select>
+        </div>
+
+        <div class="grid2" style="gap:10px;">
+          <div class="field">
+            <label>Комиссия Maker %</label>
+            <input type="number" id="fee-maker" value="0.02" step="0.001" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>Комиссия Taker %</label>
+            <input type="number" id="fee-taker" value="0.06" step="0.001" oninput="calc()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics row -->
+    <div class="card section-gap" style="margin-bottom:14px;">
+      <div class="card-title">Результат</div>
+      <div class="grid4">
+        <div class="metric">
+          <div class="metric-label">PnL (с комиссией)</div>
+          <div class="metric-value pos" id="r-pnl">+$100.00</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">PnL %</div>
+          <div class="metric-value pos" id="r-pnl-pct">+10.00%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">ROE % (на маржу)</div>
+          <div class="metric-value pos" id="r-roe">+100.00%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Начальная маржа</div>
+          <div class="metric-value blue" id="r-margin">$100.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom two -->
+    <div class="grid2" style="gap:14px;">
+
+      <!-- Liquidation -->
+      <div class="card">
+        <div class="card-title">Цена ликвидации</div>
+        <div id="liq-block">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+            <span class="tag tag-long" id="liq-side-tag">LONG</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);" id="liq-meta">ISOLATED · 10×</span>
+          </div>
+          <div class="liq-price-big" id="liq-price">$90.50</div>
+          <div class="liq-dist" id="liq-dist-text">Дистанция от входа: 9.50%</div>
+          <div class="liq-bar-track">
+            <div class="liq-bar-fill" id="liq-bar" style="width:80%;background:var(--green);"></div>
+          </div>
+          <div class="liq-labels">
+            <span id="liq-label-left">Ликвидация</span>
+            <span id="liq-label-right">Вход</span>
+          </div>
+          <div class="safety-badge" id="safety-badge" style="background:var(--green-dim);border:1px solid rgba(0,214,143,0.2);color:var(--green);">
+            <span id="safety-dot" style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+            <span id="safety-text">Запас: 80.00%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail breakdown -->
+      <div class="card">
+        <div class="card-title">Детализация</div>
+        <div id="detail-rows"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 2: Breakeven -->
+  <div id="tab-breakeven" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title">Точка безубытка</div>
+      <div class="grid2" style="gap:12px;margin-bottom:16px;">
+        <div class="field">
+          <label>Цена входа</label>
+          <input type="number" id="be-entry" value="100" step="0.01" oninput="calcBE()">
+        </div>
+        <div class="field">
+          <label>Плечо</label>
+          <input type="number" id="be-lev" value="10" step="1" oninput="calcBE()">
+        </div>
+        <div class="field">
+          <label>Комиссия входа %</label>
+          <input type="number" id="be-fee-open" value="0.06" step="0.001" oninput="calcBE()">
+        </div>
+        <div class="field">
+          <label>Комиссия выхода %</label>
+          <input type="number" id="be-fee-close" value="0.06" step="0.001" oninput="calcBE()">
+        </div>
+      </div>
+      <div class="grid2" style="gap:12px;margin-bottom:16px;">
+        <div class="metric">
+          <div class="metric-label">Безубыток Long ▲</div>
+          <div class="metric-value pos" id="be-long">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Безубыток Short ▼</div>
+          <div class="metric-value neg" id="be-short">—</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="be-rows"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Funding -->
+  <div id="tab-funding" class="tab-content hidden">
+    <div class="card">
+      <div class="card-title">Расчёт фандинга</div>
+      <div class="grid2" style="gap:12px;margin-bottom:16px;">
+        <div class="field">
+          <label>Размер позиции (USDT)</label>
+          <input type="number" id="f-size" value="10000" step="1" oninput="calcFunding()">
+        </div>
+        <div class="field">
+          <label>Ставка фандинга %</label>
+          <input type="number" id="f-rate" value="0.01" step="0.001" oninput="calcFunding()">
+        </div>
+        <div class="field">
+          <label>Направление</label>
+          <select id="f-side" onchange="calcFunding()">
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Интервал выплат</label>
+          <select id="f-interval" onchange="calcFunding()">
+            <option value="8">8ч — Binance / Bybit</option>
+            <option value="4">4ч</option>
+            <option value="1">1ч</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid3" style="gap:10px;margin-bottom:16px;">
+        <div class="metric">
+          <div class="metric-label">За 1 период</div>
+          <div class="metric-value" id="f-per">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">За 24 часа</div>
+          <div class="metric-value" id="f-day">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">За 30 дней</div>
+          <div class="metric-value" id="f-month">—</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="note" id="f-note"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentSide = 'long';
+
+function setDir(side) {
+  currentSide = side;
+  document.getElementById('btn-long').className = 'dir-btn' + (side==='long'?' active-long':'');
+  document.getElementById('btn-short').className = 'dir-btn' + (side==='short'?' active-short':'');
+  calc();
+}
+
+function setTab(t) {
+  ['calc','breakeven','funding'].forEach(id => {
+    const el = document.getElementById('tab-'+id);
+    el.classList.toggle('hidden', id !== t);
+  });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['calc','breakeven','funding'][i] === t);
+  });
+}
+
+function fmt(n, d=2) {
+  return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function calc() {
+  const side = currentSide;
+  const entry = parseFloat(document.getElementById('entry').value) || 0;
+  const current = parseFloat(document.getElementById('current').value) || 0;
+  const lev = parseFloat(document.getElementById('lev').value) || 1;
+  const size = parseFloat(document.getElementById('size').value) || 0;
+  const marginType = document.getElementById('margin-type').value;
+  const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+  const crossBal = deposit > 0 ? deposit : (parseFloat(document.getElementById('cross-bal').value) || 0);
+  const feeMaker = parseFloat(document.getElementById('fee-maker').value) || 0;
+  const feeTaker = parseFloat(document.getElementById('fee-taker').value) || 0;
+  const orderType = document.getElementById('order-type').value;
+  const feeRate = orderType === 'maker' ? feeMaker : feeTaker;
+
+  document.getElementById('lev-out').textContent = lev + '×';
+  document.getElementById('cross-bal-wrap').classList.add('hidden');
+
+  const margin = size / lev;
+  const contracts = entry > 0 ? size / entry : 0;
+  const feePaid = size * (feeRate / 100) * 2;
+
+  let pnl = 0;
+  if (side === 'long') pnl = contracts * (current - entry);
+  else pnl = contracts * (entry - current);
+  const pnlNet = pnl - feePaid;
+
+  const pnlPct = entry > 0 ? ((current - entry) / entry * 100 * (side === 'long' ? 1 : -1)) : 0;
+  const roe = margin > 0 ? (pnlNet / margin * 100) : 0;
+  const pnlOfDeposit = deposit > 0 ? (pnlNet / deposit * 100) : null;
+
+  // Liquidation price (simplified, ~Binance/Bybit formula)
+  const mmRate = 0.005;
+  let liqPrice;
+  if (marginType === 'isolated') {
+    if (side === 'long') liqPrice = entry * (1 - 1/lev + mmRate);
+    else liqPrice = entry * (1 + 1/lev - mmRate);
+  } else {
+    const totalMargin = crossBal > 0 ? crossBal : margin;
+    if (side === 'long') liqPrice = entry - (totalMargin - entry * contracts * mmRate) / contracts;
+    else liqPrice = entry + (totalMargin - entry * contracts * mmRate) / contracts;
+  }
+  liqPrice = Math.max(0, liqPrice);
+
+  const liqDist = Math.abs(liqPrice - entry);
+  const liqDistPct = entry > 0 ? liqDist / entry * 100 : 0;
+  const currentDistToLiq = entry > 0 ? Math.abs(current - liqPrice) : 0;
+  const barPct = liqDist > 0 ? Math.min(100, currentDistToLiq / liqDist * 100) : 100;
+
+  // Colors based on bar
+  let barColor, safetyColor, safetyBg, safetyBorder;
+  if (barPct > 60) {
+    barColor = 'var(--green)'; safetyColor = 'var(--green)';
+    safetyBg = 'var(--green-dim)'; safetyBorder = 'rgba(0,214,143,0.2)';
+  } else if (barPct > 25) {
+    barColor = 'var(--amber)'; safetyColor = 'var(--amber)';
+    safetyBg = 'var(--amber-dim)'; safetyBorder = 'rgba(255,184,77,0.2)';
+  } else {
+    barColor = 'var(--red)'; safetyColor = 'var(--red)';
+    safetyBg = 'var(--red-dim)'; safetyBorder = 'rgba(255,79,106,0.2)';
+  }
+
+  // Update metrics
+  const pnlEl = document.getElementById('r-pnl');
+  pnlEl.textContent = (pnlNet >= 0 ? '+' : '') + '$' + fmt(pnlNet);
+  pnlEl.className = 'metric-value ' + (pnlNet > 0 ? 'pos' : pnlNet < 0 ? 'neg' : '');
+
+  const pctEl = document.getElementById('r-pnl-pct');
+  pctEl.textContent = (pnlPct >= 0 ? '+' : '') + fmt(pnlPct) + '%';
+  pctEl.className = 'metric-value ' + (pnlPct > 0 ? 'pos' : pnlPct < 0 ? 'neg' : '');
+
+  const roeEl = document.getElementById('r-roe');
+  roeEl.textContent = (roe >= 0 ? '+' : '') + fmt(roe) + '%';
+  roeEl.className = 'metric-value ' + (roe > 0 ? 'pos' : roe < 0 ? 'neg' : '');
+
+  document.getElementById('r-margin').textContent = '$' + fmt(margin);
+
+  // Liquidation block
+  const sideTag = document.getElementById('liq-side-tag');
+  sideTag.textContent = side.toUpperCase();
+  sideTag.className = 'tag tag-' + side;
+
+  document.getElementById('liq-meta').textContent =
+    (marginType === 'isolated' ? 'ISOLATED' : 'CROSS') + ' · ' + lev + '×';
+
+  document.getElementById('liq-price').textContent = '$' + fmt(liqPrice);
+  document.getElementById('liq-dist-text').textContent =
+    'Дистанция от входа: ' + fmt(liqDistPct) + '%';
+
+  const bar = document.getElementById('liq-bar');
+  bar.style.width = barPct.toFixed(1) + '%';
+  bar.style.background = barColor;
+
+  document.getElementById('liq-label-left').textContent = '$' + fmt(liqPrice);
+  document.getElementById('liq-label-right').textContent = '$' + fmt(entry);
+
+  const badge = document.getElementById('safety-badge');
+  badge.style.background = safetyBg;
+  badge.style.borderColor = safetyBorder;
+  badge.style.color = safetyColor;
+  document.getElementById('safety-dot').style.background = safetyColor;
+  document.getElementById('safety-text').textContent = 'Запас: ' + fmt(barPct) + '%';
+
+  // Detail rows
+  const rows = [
+    ['Направление', side === 'long' ? '▲ LONG' : '▼ SHORT'],
+    ['Размер позиции', '$' + fmt(size)],
+    ['Количество контрактов', fmt(contracts, 4)],
+    ['Начальная маржа', '$' + fmt(margin)],
+    ['Комиссия (вход + выход)', '-$' + fmt(feePaid)],
+    ['PnL без комиссий', (pnl >= 0 ? '+' : '') + '$' + fmt(pnl)],
+    ['PnL с комиссиями', (pnlNet >= 0 ? '+' : '') + '$' + fmt(pnlNet)],
+    ...(pnlOfDeposit !== null ? [['PnL % от депозита', (pnlOfDeposit >= 0 ? '+' : '') + fmt(pnlOfDeposit) + '%']] : []),
+  ];
+
+  document.getElementById('detail-rows').innerHTML = rows.map(([l, v], i) => {
+    let vc = '';
+    if (i >= 5) vc = parseFloat(v) >= 0 ? 'color:var(--green)' : 'color:var(--red)';
+    if (i === 4) vc = 'color:var(--red)';
+    return `<div class="detail-row"><span class="detail-row-label">${l}</span><span class="detail-row-val" style="${vc}">${v}</span></div>`;
+  }).join('');
+}
+
+function calcBE() {
+  const entry = parseFloat(document.getElementById('be-entry').value) || 0;
+  const lev = parseFloat(document.getElementById('be-lev').value) || 1;
+  const feeOpen = parseFloat(document.getElementById('be-fee-open').value) || 0;
+  const feeClose = parseFloat(document.getElementById('be-fee-close').value) || 0;
+  const totalFee = (feeOpen + feeClose) / 100;
+
+  const beLong = entry * (1 + totalFee);
+  const beShort = entry * (1 - totalFee);
+  const feeUsd = entry * totalFee;
+
+  document.getElementById('be-long').textContent = '$' + fmt(beLong);
+  document.getElementById('be-short').textContent = '$' + fmt(beShort);
+
+  const rows = [
+    ['Цена входа', '$' + fmt(entry)],
+    ['Суммарная комиссия', fmt((feeOpen + feeClose), 3) + '%'],
+    ['Стоимость комиссий (1 ед.)', '$' + fmt(feeUsd)],
+    ['Движение для безубытка', fmt(totalFee * 100, 3) + '%'],
+    ['% движения от маржи (×' + lev + ')', fmt(totalFee * lev * 100, 3) + '%'],
+  ];
+
+  document.getElementById('be-rows').innerHTML = rows.map(([l, v]) =>
+    `<div class="detail-row"><span class="detail-row-label">${l}</span><span class="detail-row-val">${v}</span></div>`
+  ).join('');
+}
+
+function calcFunding() {
+  const size = parseFloat(document.getElementById('f-size').value) || 0;
+  const rate = parseFloat(document.getElementById('f-rate').value) || 0;
+  const side = document.getElementById('f-side').value;
+  const interval = parseInt(document.getElementById('f-interval').value) || 8;
+
+  const periodsPerDay = 24 / interval;
+  const sign = side === 'long' ? -1 : 1;
+  const perPeriod = size * (rate / 100) * sign;
+  const perDay = perPeriod * periodsPerDay;
+  const perMonth = perDay * 30;
+
+  function fmtF(n) {
+    const s = n >= 0 ? '+' : '-';
+    return s + '$' + fmt(Math.abs(n));
+  }
+
+  const pEl = document.getElementById('f-per');
+  pEl.textContent = fmtF(perPeriod);
+  pEl.className = 'metric-value ' + (perPeriod >= 0 ? 'pos' : 'neg');
+
+  const dEl = document.getElementById('f-day');
+  dEl.textContent = fmtF(perDay);
+  dEl.className = 'metric-value ' + (perDay >= 0 ? 'pos' : 'neg');
+
+  const mEl = document.getElementById('f-month');
+  mEl.textContent = fmtF(perMonth);
+  mEl.className = 'metric-value ' + (perMonth >= 0 ? 'pos' : 'neg');
+
+  const note = rate > 0
+    ? (side === 'long' ? '↓ Ставка положительная — лонги платят шортам. Вы теряете фандинг.' : '↑ Ставка положительная — шорты получают фандинг.')
+    : (side === 'long' ? '↑ Ставка отрицательная — лонги получают фандинг.' : '↓ Ставка отрицательная — шорты платят лонгам.');
+
+  document.getElementById('f-note').textContent =
+    note + ' Выплаты каждые ' + interval + 'ч (' + periodsPerDay + '/день, ~' + (periodsPerDay * 30) + '/месяц).';
+}
+
+calc();
+calcBE();
+calcFunding();
+</script>
+</body>
+</html>

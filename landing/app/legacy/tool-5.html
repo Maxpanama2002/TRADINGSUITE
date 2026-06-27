@@ -1,0 +1,224 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Риск-менеджер</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f0efe9; --surface:#ffffff; --surf2:#f5f4f0; --surf3:#eae9e3;
+  --text:#1a1a18; --text2:#6b6b67; --text3:#9a9a96;
+  --border:rgba(0,0,0,0.09); --border2:rgba(0,0,0,0.17);
+  --radius:10px; --radius-lg:14px;
+  --font:'Times New Roman',Times,Georgia,serif;
+  --mono:'Courier New',Courier,monospace;
+  --green-bg:#C0DD97; --green-bd:#639922; --green-tx:#27500A;
+  --red-bg:#F7C1C1;   --red-bd:#E24B4A;   --red-tx:#791F1F;
+  --amber-bg:#FAC775; --amber-bd:#EF9F27; --amber-tx:#633806;
+  --blue-bg:#B5D4F4;  --blue-bd:#378ADD;  --blue-tx:#0C447C;
+  --purple-bg:#CECBF6;--purple-bd:#7F77DD;--purple-tx:#26215C;
+  --pos:#27500A; --neg:#791F1F;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:28px 16px;}
+.page{max-width:860px;margin:0 auto;}
+.page-wide{max-width:1060px;margin:0 auto;}
+h1{font-size:28px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px;}
+.section-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;}
+.card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:18px 20px;}
+.card+.card{margin-top:12px;}
+.card-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid var(--border);}
+.metric-grid{display:grid;gap:8px;margin-bottom:18px;}
+.mg-4{grid-template-columns:repeat(4,1fr);} .mg-3{grid-template-columns:repeat(3,1fr);} .mg-2{grid-template-columns:repeat(2,1fr);}
+.metric{background:var(--surf2);border-radius:var(--radius);padding:12px 14px;}
+.metric-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.metric-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.pos{color:var(--pos);} .neg{color:var(--neg);} .blue{color:var(--blue-tx);} .amber{color:var(--amber-tx);}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:18px;}
+.tab-btn{flex:1;padding:9px;font-size:14px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s;}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field.full{grid-column:span 2;} .field.full3{grid-column:span 3;}
+.field label{font-size:12px;color:var(--text2);}
+input[type=text],input[type=number],input[type=datetime-local],input[type=date],select,textarea{width:100%;padding:9px 11px;background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--text3);background:var(--surface);}
+textarea{resize:vertical;min-height:56px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--surf3);border-radius:2px;outline:none;border:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--surface);}
+.btn-primary{width:100%;padding:11px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .15s;}
+.btn-primary:hover{opacity:.82;}
+.btn-secondary{padding:8px 16px;background:none;border:0.5px solid var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text2);transition:all .15s;}
+.btn-secondary:hover{border-color:var(--text);color:var(--text);}
+.toggle-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.toggle-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.tbtn{padding:10px;font-size:13px;font-weight:600;border:1.5px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--surf2);color:var(--text2);text-align:center;font-family:var(--font);transition:all .15s;}
+.tbtn:hover{border-color:var(--text3);color:var(--text);}
+.tbtn.a-green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-tx);font-weight:700;}
+.tbtn.a-red{background:var(--red-bg);border-color:var(--red-bd);color:var(--red-tx);font-weight:700;}
+.tbtn.a-amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-tx);font-weight:700;}
+.tbtn.a-blue{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue-tx);font-weight:700;}
+.tbtn.a-dark{background:var(--text);color:var(--surface);border-color:var(--text);font-weight:700;}
+.badge{display:inline-block;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.b-green{background:var(--green-bg);color:var(--green-tx);}
+.b-red{background:var(--red-bg);color:var(--red-tx);}
+.b-amber{background:var(--amber-bg);color:var(--amber-tx);}
+.b-blue{background:var(--blue-bg);color:var(--blue-tx);}
+.b-purple{background:var(--purple-bg);color:var(--purple-tx);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border2);}
+tbody td{padding:9px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surf2);}
+.divider{height:0.5px;background:var(--border2);margin:16px 0;}
+.mono{font-family:var(--mono);}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:15px;}
+.chart-wrap{position:relative;width:100%;height:240px;margin:10px 0;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--text2);}
+.detail-val{font-family:var(--mono);font-weight:700;}
+.verdict{padding:12px 16px;font-size:14px;margin-bottom:18px;border-left:3px solid;line-height:1.6;border-radius:0 var(--radius) var(--radius) 0;}
+.v-profit{border-color:var(--green-bd);background:var(--green-bg);color:var(--green-tx);}
+.v-loss{border-color:var(--red-bd);background:var(--red-bg);color:var(--red-tx);}
+.v-neutral{border-color:var(--text3);background:var(--surf2);color:var(--text2);}
+.v-partial{border-color:var(--amber-bd);background:var(--amber-bg);color:var(--amber-tx);}
+.insight-box{background:var(--surf2);border:0.5px solid var(--border);border-radius:var(--radius);padding:2px 14px;margin-top:6px;}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.insight-row:last-child{border-bottom:none;}
+@media(max-width:560px){.mg-4,.mg-3{grid-template-columns:1fr 1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}.field.full,.field.full3{grid-column:span 1;}}
+
+.risk-result-box{border-radius:var(--radius-lg);padding:16px 20px;margin-top:14px;}
+.big-num{font-size:36px;font-weight:700;font-family:var(--mono);line-height:1;}
+.risk-ok{background:var(--green-bg);border:0.5px solid var(--green-bd);}
+.risk-warn{background:var(--amber-bg);border:0.5px solid var(--amber-bd);}
+.risk-bad{background:var(--red-bg);border:0.5px solid var(--red-bd);}
+.rr-bar{height:8px;border-radius:4px;background:var(--surf3);overflow:hidden;margin:10px 0 4px;}
+.rr-fill{height:100%;border-radius:4px;transition:width .4s;}
+.daily-list{margin-top:8px;}
+.daily-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.daily-item:last-child{border-bottom:none;}
+.del-daily-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:4px;transition:all .15s;}
+.del-daily-btn:hover{background:var(--red-bg);color:var(--red-tx);}
+</style></head><body>
+<div class="page">
+  <h1>Риск-менеджер</h1>
+  <p class="subtitle">Расчёт размера позиции и контроль дневного риска</p>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="showTab('calc')">Калькулятор</button>
+    <button class="tab-btn" onclick="showTab('daily')">Дневной риск</button>
+  </div>
+
+  <!-- CALC TAB -->
+  <div id="tab-calc">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Параметры сделки</div>
+      <div class="form-grid">
+        <div class="field"><label>Депозит ($)</label><input type="number" id="c-deposit" placeholder="10000" step="any" oninput="calc()"></div>
+        <div class="field"><label>Риск на сделку (%)</label><input type="number" id="c-risk-pct" value="1" step="0.1" oninput="calc()"></div>
+        <div class="field"><label>Цена входа ($)</label><input type="number" id="c-entry" placeholder="0.00" step="any" oninput="calc()"></div>
+        <div class="field"><label>Стоп-лосс ($)</label><input type="number" id="c-sl" placeholder="0.00" step="any" oninput="calc()"></div>
+        <div class="field"><label>Тейк-профит ($) — необязательно</label><input type="number" id="c-tp" placeholder="0.00" step="any" oninput="calc()"></div>
+        <div class="field"><label>Комиссия % (вход + выход)</label><input type="number" id="c-fee" value="0.1" step="0.01" oninput="calc()"></div>
+      </div>
+    </div>
+    <div id="calc-result"></div>
+  </div>
+
+  <!-- DAILY TAB -->
+  <div id="tab-daily" style="display:none">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Настройки дневного лимита</div>
+      <div class="form-grid">
+        <div class="field"><label>Депозит ($)</label><input type="number" id="d-deposit" placeholder="10000" step="any" oninput="saveSettings()"></div>
+        <div class="field"><label>Дневной лимит риска (%)</label><input type="number" id="d-limit" value="3" step="0.1" oninput="saveSettings()"></div>
+      </div>
+    </div>
+    <div class="metric-grid mg-3" id="daily-metrics"></div>
+    <div class="card">
+      <div class="card-title">Добавить сделку дня</div>
+      <div class="form-grid">
+        <div class="field"><label>Инструмент</label><input type="text" id="d-asset" placeholder="BTC/USD"></div>
+        <div class="field"><label>P&L ($)</label><input type="number" id="d-pnl" placeholder="0.00" step="any"></div>
+      </div>
+      <button class="btn-primary" style="margin-top:12px" onclick="addDailyTrade()">Добавить</button>
+      <div class="daily-list" id="daily-list"></div>
+    </div>
+  </div>
+</div>
+<script>
+let dailyTrades=[];
+function showTab(t){['calc','daily'].forEach((tab,i)=>{document.getElementById('tab-'+tab).style.display=tab===t?'':'none';document.querySelectorAll('.tab-btn')[i].classList.toggle('active',tab===t);});if(t==='daily')renderDaily();}
+function fmt(n,d=2){return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function calc(){
+  const deposit=parseFloat(document.getElementById('c-deposit').value)||0;
+  const riskPct=parseFloat(document.getElementById('c-risk-pct').value)||1;
+  const entry=parseFloat(document.getElementById('c-entry').value)||0;
+  const sl=parseFloat(document.getElementById('c-sl').value)||0;
+  const tp=parseFloat(document.getElementById('c-tp').value)||0;
+  const fee=parseFloat(document.getElementById('c-fee').value)||0;
+  const el=document.getElementById('calc-result');
+  if(!deposit||!entry||!sl){el.innerHTML='<div class="empty-state" style="padding:1.5rem 0">Заполни депозит, цену входа и стоп-лосс</div>';return;}
+  const riskAmt=deposit*riskPct/100;
+  const slDist=Math.abs(entry-sl);
+  if(!slDist){el.innerHTML='<div class="empty-state">Стоп-лосс равен цене входа</div>';return;}
+  const units=riskAmt/slDist;
+  const posSize=units*entry;
+  const feeCost=posSize*(fee/100);
+  const netRisk=riskAmt+feeCost;
+  const netRiskPct=netRisk/deposit*100;
+  let rrHtml='';let rr=0;
+  if(tp&&tp!==entry){const tpDist=Math.abs(tp-entry);rr=tpDist/slDist;const rrCol=rr>=2?'var(--green-bd)':rr>=1.5?'var(--amber-bd)':'var(--red-bd)';const rrW=Math.min(100,rr/4*100);const tpProfit=units*tpDist-feeCost;rrHtml=`<div class="divider"></div><p class="section-label">Соотношение риск/прибыль</p><div class="metric-grid mg-3"><div class="metric"><div class="metric-label">R:R</div><div class="metric-value" style="color:${rrCol}">1 : ${fmt(rr)}</div></div><div class="metric"><div class="metric-label">Потенциальная прибыль</div><div class="metric-value pos">+$${fmt(tpProfit)}</div></div><div class="metric"><div class="metric-label">Прибыль % от депозита</div><div class="metric-value pos">+${fmt(tpProfit/deposit*100)}%</div></div></div><div class="rr-bar"><div class="rr-fill" style="width:${rrW}%;background:${rrCol}"></div></div><p style="font-size:11px;color:var(--text2)">1:${fmt(rr)} &nbsp;·&nbsp; ${rr>=2?'Хороший R:R ✓':rr>=1.5?'Приемлемый R:R':'Низкий R:R — пересмотри сделку'}</p>`;}
+  const riskClass=netRiskPct<=1?'risk-ok':netRiskPct<=2?'risk-warn':'risk-bad';
+  const riskTxColor=netRiskPct<=1?'var(--green-tx)':netRiskPct<=2?'var(--amber-tx)':'var(--red-tx)';
+  el.innerHTML=`<div class="metric-grid mg-4" style="margin-bottom:14px">
+    <div class="metric"><div class="metric-label">Объём позиции</div><div class="metric-value blue">$${fmt(posSize)}</div></div>
+    <div class="metric"><div class="metric-label">Количество единиц</div><div class="metric-value">${fmt(units,4)}</div></div>
+    <div class="metric"><div class="metric-label">Риск ($)</div><div class="metric-value neg">-$${fmt(riskAmt)}</div></div>
+    <div class="metric"><div class="metric-label">Комиссия</div><div class="metric-value amber">-$${fmt(feeCost)}</div></div>
+  </div>
+  <div class="risk-result-box ${riskClass}">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${riskTxColor};margin-bottom:8px">Итоговый риск с комиссией</div>
+    <div class="big-num" style="color:${riskTxColor}">-$${fmt(netRisk)}</div>
+    <div style="font-size:13px;margin-top:6px;color:${riskTxColor}">${fmt(netRiskPct)}% от депозита</div>
+  </div>${rrHtml}
+  <div class="divider"></div>
+  <p class="section-label">Детализация</p>
+  <div class="card">
+    ${[['Депозит','$'+fmt(deposit)],['Риск %',riskPct+'%'],['Дистанция до стопа','$'+fmt(slDist)+' ('+fmt(slDist/entry*100)+'%)'],['Единиц позиции',fmt(units,6)],['Объём позиции','$'+fmt(posSize)],['Комиссия (вход+выход)','-$'+fmt(feeCost)],['Чистый риск','-$'+fmt(netRisk)]].map(([l,v])=>`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>`).join('')}
+  </div>`;
+}
+function saveSettings(){localStorage.setItem('rm_settings',JSON.stringify({deposit:document.getElementById('d-deposit').value,limit:document.getElementById('d-limit').value}));renderDaily();}
+function loadSettings(){try{const s=JSON.parse(localStorage.getItem('rm_settings')||'{}');if(s.deposit)document.getElementById('d-deposit').value=s.deposit;if(s.limit)document.getElementById('d-limit').value=s.limit;}catch(e){}}
+function loadDaily(){try{const k='rm_daily_'+new Date().toISOString().slice(0,10);const s=localStorage.getItem(k);if(s)dailyTrades=JSON.parse(s);else dailyTrades=[];}catch(e){dailyTrades=[];}}
+function saveDaily(){localStorage.setItem('rm_daily_'+new Date().toISOString().slice(0,10),JSON.stringify(dailyTrades));}
+function addDailyTrade(){
+  const asset=(document.getElementById('d-asset').value||'').trim();const pnl=parseFloat(document.getElementById('d-pnl').value);
+  if(!asset||isNaN(pnl)){alert('Укажи инструмент и P&L');return;}
+  dailyTrades.push({id:Date.now(),asset,pnl,time:new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});
+  saveDaily();document.getElementById('d-asset').value='';document.getElementById('d-pnl').value='';renderDaily();
+}
+function deleteDailyTrade(id){dailyTrades=dailyTrades.filter(t=>t.id!==id);saveDaily();renderDaily();}
+function renderDaily(){
+  const deposit=parseFloat(document.getElementById('d-deposit').value)||0;
+  const limitPct=parseFloat(document.getElementById('d-limit').value)||3;
+  const limitAmt=deposit*limitPct/100;
+  const totalPnl=dailyTrades.reduce((s,t)=>s+t.pnl,0);
+  const used=Math.max(0,-totalPnl);
+  const remaining=Math.max(0,limitAmt-used);
+  const usedPct=limitAmt>0?Math.min(100,used/limitAmt*100):0;
+  const mEl=document.getElementById('daily-metrics');
+  mEl.innerHTML=`<div class="metric"><div class="metric-label">Лимит дня</div><div class="metric-value amber">-$${fmt(limitAmt)}</div></div>
+    <div class="metric"><div class="metric-label">Использовано</div><div class="metric-value ${used>0?'neg':''}">${used>0?'-':''}$${fmt(used)}</div></div>
+    <div class="metric"><div class="metric-label">Остаток</div><div class="metric-value ${remaining<limitAmt*0.3?'neg':'pos'}">$${fmt(remaining)}</div></div>`;
+  const listEl=document.getElementById('daily-list');
+  if(!dailyTrades.length){listEl.innerHTML='<p style="font-size:13px;color:var(--text2);padding:12px 0">Сделок сегодня ещё нет</p>';return;}
+  listEl.innerHTML=`<div style="height:6px;border-radius:3px;background:var(--surf3);overflow:hidden;margin:14px 0 10px"><div style="height:100%;border-radius:3px;width:${usedPct}%;background:${usedPct>80?'var(--red-bd)':usedPct>50?'var(--amber-bd)':'var(--green-bd)'};transition:width .4s"></div></div>`+
+    dailyTrades.map(t=>`<div class="daily-item"><span>${t.time} &nbsp;·&nbsp; <strong>${t.asset}</strong></span><span style="display:flex;align-items:center;gap:8px"><span class="mono" style="color:${t.pnl>=0?'var(--pos)':'var(--neg)'};font-weight:700">${t.pnl>=0?'+':''}${fmt(t.pnl)}</span><button class="del-daily-btn" onclick="deleteDailyTrade(${t.id})">&#215;</button></span></div>`).join('')+
+    `<div class="daily-item" style="font-weight:700"><span>Итого за день</span><span class="mono" style="color:${totalPnl>=0?'var(--pos)':'var(--neg)'}">${totalPnl>=0?'+':''}${fmt(totalPnl)}</span></div>`;
+}
+loadSettings();loadDaily();calc();
+document.getElementById('tab-daily').style.display='none';
+</script></body></html>

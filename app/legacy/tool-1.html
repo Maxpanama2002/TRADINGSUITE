@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Торговая стратегия</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  .page { max-width: 900px; margin: 0 auto; }
+
+  /* Header */
+  .doc-header { margin-bottom: 32px; }
+  .doc-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #888; margin-bottom: 8px;
+  }
+  .doc-title { font-size: 30px; font-weight: 600; color: #111; line-height: 1.15; }
+  .doc-date { font-size: 13px; color: #999; margin-top: 6px; }
+  .doc-divider { height: 1px; background: #e0ddd6; margin-top: 22px; }
+
+  /* Tabs */
+  .tabs-wrap { margin: 28px 0 28px; }
+  .tabs-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #999; margin-bottom: 12px;
+  }
+  .tabs {
+    display: inline-flex;
+    background: #fff;
+    border: 1px solid #e0ddd6;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    padding: 11px 26px;
+    font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer;
+    font-family: inherit;
+    background: transparent;
+    color: #888;
+    border-right: 1px solid #e0ddd6;
+    transition: background 0.18s, color 0.18s;
+    position: relative;
+    outline: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn:hover:not([class*="active"]) { background: #f5f4f0; color: #444; }
+
+  .tab-btn.active-bull  { background: #fdf5e6; color: #412402; }
+  .tab-btn.active-bear  { background: #e8f2fc; color: #082a50; }
+  .tab-btn.active-range { background: #edf6e0; color: #1a3d06; }
+  .tab-btn.active-opt   { background: #f3f1fc; color: #26215c; }
+  .tab-btn.active-fund  { background: #f1efe8; color: #444441; }
+
+  .tab-btn::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 3px;
+    border-radius: 3px 3px 0 0;
+    opacity: 0; transition: opacity 0.18s;
+  }
+  .tab-btn.active-bull::after  { background: #ef9f27; opacity: 1; }
+  .tab-btn.active-bear::after  { background: #378add; opacity: 1; }
+  .tab-btn.active-range::after { background: #639922; opacity: 1; }
+  .tab-btn.active-opt::after   { background: #7f77dd; opacity: 1; }
+  .tab-btn.active-fund::after  { background: #888780; opacity: 1; }
+
+  .tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Content fade */
+  .market-section { animation: fadeIn 0.22s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Hero */
+  .market-hero {
+    display: flex; align-items: center; gap: 18px;
+    padding: 22px 26px; border-radius: 16px;
+    margin-bottom: 18px; border: 1px solid transparent;
+  }
+  .market-hero.bull  { background: #fdf5e6; border-color: #f5d99a; }
+  .market-hero.bear  { background: #e8f2fc; border-color: #aacff0; }
+  .market-hero.range { background: #edf6e0; border-color: #b5d98a; }
+  .market-hero.opt   { background: #f3f1fc; border-color: #c4befc; }
+  .market-hero.fund  { background: #f1efe8; border-color: #c8c5b9; }
+
+  .hero-icon {
+    width: 54px; height: 54px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .bull  .hero-icon { background: #fac775; }
+  .bear  .hero-icon { background: #82bef0; }
+  .range .hero-icon { background: #96d15a; }
+  .opt   .hero-icon { background: #b6aff0; }
+  .fund  .hero-icon { background: #b3b1a8; }
+  .hero-icon svg { display: block; }
+
+  .hero-info { flex: 1; }
+  .hero-title { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .bull  .hero-title { color: #3d2500; }
+  .bear  .hero-title { color: #082a50; }
+  .range .hero-title { color: #1a3d06; }
+  .opt   .hero-title { color: #26215c; }
+  .fund  .hero-title { color: #444441; }
+
+  .hero-sub { font-size: 13px; margin-top: 3px; }
+  .bull  .hero-sub { color: #7a5020; }
+  .bear  .hero-sub { color: #1a4d7a; }
+  .range .hero-sub { color: #2e6010; }
+  .opt   .hero-sub { color: #4a4392; }
+  .fund  .hero-sub { color: #5f5e5a; }
+
+  .hero-tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; margin-top: 9px;
+    letter-spacing: 0.04em; color: #fff;
+  }
+  .bull  .hero-tag { background: #ef9f27; }
+  .bear  .hero-tag { background: #378add; }
+  .range .hero-tag { background: #639922; }
+  .opt   .hero-tag { background: #7f77dd; }
+  .fund  .hero-tag { background: #888780; }
+
+  /* Funding scales */
+  .fund-scales { display: flex; flex-direction: column; gap: 18px; margin-bottom: 18px; }
+  .fund-scale { padding: 16px 18px; background: #fff; border-radius: 14px; border: 1px solid #e8e6e0; }
+  .fund-scale-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #444441; }
+  .fund-zones { display: flex; gap: 6px; }
+  .fund-zone { flex: 1; padding: 10px 6px; border-radius: 6px; text-align: center; border: 0.5px solid; }
+  .fund-zone.z-mid { flex: 2; }
+  .fund-zone-name { font-size: 13px; font-weight: 500; line-height: 1.2; }
+  .fund-zone-sub  { font-size: 11px; margin-top: 3px; opacity: 0.9; }
+  .fund-zone.z-green { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .fund-zone.z-blue  { background: #E6F1FB; border-color: #378ADD; color: #0C447C; }
+  .fund-zone.z-mid   { background: #F1EFE8; border-color: #888780; color: #444441; }
+  .fund-zone.z-amber { background: #FAEEDA; border-color: #BA7517; color: #633806; }
+  .fund-zone.z-red   { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; }
+  .fund-marks { display: flex; gap: 6px; margin-top: 8px; font-size: 11px; color: #888; }
+  .fund-mark { flex: 1; }
+  .fund-mark.z-mid { flex: 2; }
+  .fund-mark.right { text-align: right; }
+  .fund-legend { padding: 14px 18px; background: #f5f4f0; border-radius: 12px; border: 1px solid #e0ddd6; margin-bottom: 14px; }
+  .fund-legend-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #444; }
+  .fund-legend-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; color: #5f5e5a; }
+  .fund-legend-dot { width: 14px; height: 14px; border-radius: 3px; border: 0.5px solid; flex-shrink: 0; }
+  .fund-legend-dot.z-green { background: #EAF3DE; border-color: #639922; }
+  .fund-legend-dot.z-blue  { background: #E6F1FB; border-color: #378ADD; }
+  .fund-legend-dot.z-mid   { background: #F1EFE8; border-color: #888780; }
+  .fund-legend-dot.z-amber { background: #FAEEDA; border-color: #BA7517; }
+  .fund-legend-dot.z-red   { background: #FCEBEB; border-color: #E24B4A; }
+  .fund-formula { font-size: 11px; font-style: italic; color: #888; margin-top: 6px; }
+
+  /* Ratio bar */
+  .ratio-wrap { margin-bottom: 18px; }
+  .ratio-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #999; margin-bottom: 8px;
+  }
+  .ratio-track {
+    height: 10px; border-radius: 999px;
+    background: #e8e6e0; overflow: hidden; display: flex;
+  }
+  .ratio-long  { height: 100%; border-radius: 999px 0 0 999px; }
+  .ratio-short { height: 100%; border-radius: 0 999px 999px 0; }
+  .ratio-legend { display: flex; gap: 20px; margin-top: 8px; }
+  .ratio-leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; }
+  .ratio-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Range zones */
+  .range-zones {
+    display: grid; grid-template-columns: 1fr 0.7fr 1fr;
+    gap: 8px; margin-bottom: 18px;
+  }
+  .rz { border-radius: 12px; padding: 13px 14px; text-align: center; border: 1px solid transparent; }
+  .rz-long  { background: #fdf5e6; border-color: #f5d99a; }
+  .rz-mid   { background: #f0ede8; border-color: #e0ddd6; }
+  .rz-short { background: #e8f2fc; border-color: #aacff0; }
+  .rz-head  { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .rz-long  .rz-head { color: #3d2500; }
+  .rz-mid   .rz-head { color: #999; }
+  .rz-short .rz-head { color: #082a50; }
+  .rz-body  { font-size: 11px; line-height: 1.5; }
+  .rz-long  .rz-body { color: #7a5020; }
+  .rz-mid   .rz-body { color: #aaa; }
+  .rz-short .rz-body { color: #1a4d7a; }
+
+  /* Cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px; margin-bottom: 12px;
+  }
+  .card {
+    background: #fff; border-radius: 14px;
+    border: 1px solid #e8e6e0; border-top-width: 3px; padding: 16px;
+  }
+  .bull  .card { border-top-color: #ef9f27; }
+  .bear  .card { border-top-color: #378add; }
+  .range .card { border-top-color: #639922; }
+  .opt   .card { border-top-color: #7f77dd; }
+
+  /* Edit toolbar */
+  .edit-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 18px; align-items: center; }
+  .edit-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px;
+    border: 1px solid #d8d6cf; background: #fff;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; color: #444; transition: all 0.15s;
+  }
+  .edit-btn:hover { background: #f5f4f0; border-color: #b9b6ad; }
+  .edit-btn.primary { background: #c0dd97; border-color: #639922; color: #27500a; }
+  .edit-btn.primary:hover { background: #b4d588; }
+  .edit-btn.muted { background: transparent; color: #888; border-color: #e0ddd6; }
+  .edit-btn.muted:hover { background: #f5f4f0; color: #444; }
+  .edit-hint { font-size: 12px; color: #999; margin-left: auto; }
+
+  /* Editable elements */
+  .editing [contenteditable="true"] {
+    outline: 1px dashed #b6aff0; outline-offset: 2px;
+    border-radius: 3px; background: #faf9fc; cursor: text;
+  }
+  .editing [contenteditable="true"]:focus {
+    outline: 2px solid #7f77dd; outline-offset: 1px; background: #fff;
+  }
+
+  /* Delete X buttons */
+  .del-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    border: 1px solid #e24b4a; background: #fcebeb;
+    color: #791f1f; border-radius: 50%;
+    font-size: 12px; line-height: 1; cursor: pointer;
+    margin-left: 6px; padding: 0; flex-shrink: 0;
+    font-family: inherit; transition: background 0.15s;
+  }
+  .del-x:hover { background: #f7c1c1; }
+
+  .card-item.editable { display: flex; align-items: flex-start; gap: 0; }
+  .card-item.editable > span { flex: 1; }
+  .tag-wrap { display: inline-flex; align-items: center; }
+
+  /* Add buttons */
+  .add-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 11px; border-radius: 6px;
+    border: 1px dashed #b9b6ad; background: transparent;
+    color: #666; font-family: inherit; font-size: 12px;
+    cursor: pointer; margin-top: 8px; transition: all 0.15s;
+  }
+  .add-btn:hover { border-color: #7f77dd; color: #26215c; background: #f3f1fc; }
+  .add-card-btn { display: block; margin: 14px auto 0; padding: 9px 22px; font-size: 13px; }
+
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .card-ico {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+  }
+  .bull  .card-ico { background: #faeeda; color: #633806; }
+  .bear  .card-ico { background: #dbeeff; color: #0c447c; }
+  .range .card-ico { background: #dff0c8; color: #27500a; }
+
+  .card-title {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; color: #444;
+  }
+  .card-items { display: flex; flex-direction: column; gap: 7px; }
+  .card-item { display: flex; align-items: flex-start; gap: 7px; font-size: 13px; color: #555; line-height: 1.45; }
+  .card-line { width: 2px; min-height: 16px; border-radius: 2px; flex-shrink: 0; margin-top: 3px; opacity: 0.5; }
+  .bull  .card-line { background: #ef9f27; }
+  .bear  .card-line { background: #378add; }
+  .range .card-line { background: #639922; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .tag  { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.03em; }
+  .bull  .tag { background: #faeeda; color: #633806; }
+  .bear  .tag { background: #dbeeff; color: #0c447c; }
+  .range .tag { background: #dff0c8; color: #27500a; }
+
+  /* Rule */
+  .rule {
+    background: #fff; border-radius: 12px; border: 1px solid #e8e6e0;
+    padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px;
+  }
+  .rule-bar { width: 3px; border-radius: 3px; flex-shrink: 0; align-self: stretch; min-height: 20px; }
+  .bull  .rule-bar { background: #ef9f27; }
+  .bear  .rule-bar { background: #378add; }
+  .range .rule-bar { background: #639922; }
+  .rule-text { font-size: 13px; color: #666; line-height: 1.6; }
+
+  /* Footer */
+  .doc-footer {
+    margin-top: 40px; padding-top: 18px;
+    border-top: 1px solid #e0ddd6;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-note { font-size: 11px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <div class="doc-eyebrow">Персональный торговый план</div>
+    <div class="doc-title">Торговая стратегия</div>
+    <div class="doc-date" id="doc-date"></div>
+    <div class="doc-divider"></div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs-label">Фаза рынка</div>
+    <div class="tabs">
+      <button class="tab-btn" id="tb-bull" onclick="setMode('bull')">
+        <span class="tab-dot" style="background:#ef9f27;"></span>Бычий рынок
+      </button>
+      <button class="tab-btn" id="tb-bear" onclick="setMode('bear')">
+        <span class="tab-dot" style="background:#378add;"></span>Медвежий рынок
+      </button>
+      <button class="tab-btn" id="tb-range" onclick="setMode('range')">
+        <span class="tab-dot" style="background:#639922;"></span>Боковик
+      </button>
+      <button class="tab-btn" id="tb-opt" onclick="setMode('opt')">
+        <span class="tab-dot" style="background:#7f77dd;"></span>Опционы
+      </button>
+      <button class="tab-btn" id="tb-fund" onclick="setMode('fund')">
+        <span class="tab-dot" style="background:#888780;"></span>Фандинг
+      </button>
+      <button class="tab-btn" id="tb-rules" onclick="setMode('rules')">Правила</button>
+      <button class="tab-btn" id="tb-errors" onclick="setMode('errors')">Ошибки</button>
+    </div>
+  </div>
+
+  <div class="edit-toolbar">
+    <button class="edit-btn" id="btn-edit" onclick="enterEdit()">✎ Редактировать</button>
+    <button class="edit-btn primary" id="btn-save" onclick="saveEdit()" style="display:none">💾 Сохранить</button>
+    <button class="edit-btn muted" id="btn-cancel" onclick="cancelEdit()" style="display:none">✕ Отмена</button>
+    <button class="edit-btn muted" id="btn-reset" onclick="resetEdit()" style="display:none">↺ Сбросить к дефолту</button>
+    <span class="edit-hint" id="edit-hint" style="display:none">кликните на текст, чтобы изменить</span>
+  </div>
+
+  <div id="content"></div>
+  <div id="st-special-panel" style="display:none;padding:16px 0"></div>
+
+  <div class="doc-footer">
+    <span class="footer-note">Персональный торговый план</span>
+    <span class="footer-note" id="footer-date"></span>
+  </div>
+</div>
+
+<script>
+const cfg = {
+  bull: {
+    cls: 'bull', tag: 'Тренд ↑', title: 'Бычий рынок', sub: 'Восходящий тренд — доминируют лонги',
+    iconSvg: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 20L20 8M20 8H11M20 8V17" stroke="#412402" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    lPct: 70, sPct: 30, lColor: '#ef9f27', sColor: '#b5d4f4',
+    cards: [
+      { ico: '↑', title: 'Основная позиция', items: ['Крупный лонг до перекупленности на 1W ТФ', 'При перекупленности — набирать противоположную по ситуации'], tags: ['1W ТФ', 'Перекупленность'] },
+      { ico: '⚡', title: 'Интрадей', items: ['70% позиций — лонги', 'Шорты только короткие, как исключение'], tags: ['70% лонг', '30% шорт'] },
+      { ico: '◆', title: 'Спот-покупки', items: ['Покупка спот от линии Дно по ATR на 1D и 1W ТФ', 'Открытие лонга от линии Дно по ATR на 1D и 1W ТФ', 'Safety Trade как дополнительное подтверждение'], tags: ['1D', '1W', 'ATR дно', 'Спот + Лонг'] },
+      { ico: '⟳', title: 'Боты', items: ['По тренду в лонг', 'Повышенный объём'], tags: ['Тренд лонг', 'Объём ↑'] }
+    ],
+    rule: 'Доминирующее направление — лонг. Шорт только как исключение или при перекупленности на недельном ТФ.'
+  },
+  bear: {
+    cls: 'bear', tag: 'Тренд ↓', title: 'Медвежий рынок', sub: 'Нисходящий тренд — доминируют шорты',
+    iconSvg: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 8L20 20M20 20H11M20 20V11" stroke="#042c53" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    lPct: 30, sPct: 70, lColor: '#fac775', sColor: '#378add',
+    cards: [
+      { ico: '↓', title: 'Основная позиция', items: ['Крупный шорт до перепроданности на 1W ТФ', 'При перепроданности — набирать противоположную по ситуации'], tags: ['1W ТФ', 'Перепроданность'] },
+      { ico: '⚡', title: 'Интрадей', items: ['70% позиций — шорты', 'Лонги только короткие, как исключение'], tags: ['70% шорт', '30% лонг'] },
+      { ico: '◆', title: 'Спот-покупки', items: ['Вход при касании Дно по ATR', 'Только на 1M ТФ — не раньше'], tags: ['1M ТФ', 'ATR дно', 'Не раньше'] },
+      { ico: '⟳', title: 'Боты', items: ['По тренду в шорт', 'Пониженный объём'], tags: ['Тренд шорт', 'Объём ↓'] }
+    ],
+    rule: 'Доминирующее направление — шорт. Лонг только как исключение или при перепроданности на недельном ТФ.'
+  },
+  range: {
+    cls: 'range', tag: 'Канал ↔', title: 'Боковик (Рендж)', sub: 'Канальная торговля — лонг/шорт от границ',
+    iconSvg: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 9h18M5 19h18" stroke="#173404" stroke-width="2.2" stroke-linecap="round"/><path d="M9 14h10" stroke="#173404" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2.5 2.5"/></svg>',
+    lPct: 50, sPct: 50, lColor: '#ef9f27', sColor: '#378add',
+    rangeZones: true,
+    cards: [
+      { ico: '◈', title: 'Точки входа', items: ['FVG (Fair Value Gap) на старших ТФ', 'Order Block — зоны поглощения', 'Rejection блоки у границ канала'], tags: ['FVG', 'OB', 'Rejection'] },
+      { ico: '□', title: 'Старший ТФ', items: ['Большой боковик от 1D и выше', 'Дождаться чёткого формирования границ'], tags: ['1D', '1W'] },
+      { ico: '▪', title: 'Младший ТФ', items: ['Короткий боковик на 1H и 4H', 'Цели короче, стопы ближе'], tags: ['1H', '4H'] }
+    ],
+    rule: 'Входить строго от границ канала. В середине — без позиций. FVG / OB / Rejection как обязательное подтверждение.'
+  },
+  opt: {
+    cls: 'opt', tag: 'Деривативы', title: 'Опционы', sub: 'Стратегии работы с опционными конструкциями',
+    iconSvg: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="9" stroke="#26215c" stroke-width="2.2"/><path d="M14 5v18M5 14h18" stroke="#26215c" stroke-width="1.5"/></svg>',
+    hideRatio: true,
+    cards: [
+      { ico: '⏱', title: 'Короткие опционы (12ч–3Д)', items: ['Только если прям в самое ближайшее время ждём резкого импульса куда-либо'], tags: ['Импульс', 'Короткий срок', '12ч–3Д'] },
+      { ico: '⇄', title: 'Боковики', items: ['Делать конструкции Купить / Продать снизу и сверху диапазона', 'Ждать выхода цены за границу'], tags: ['Range', 'Breakout', 'Двусторонне'] },
+      { ico: '✦', title: 'Неопределённость', items: ['Покупать Call и Put на одинаковом расстоянии от текущей цены', 'В любом случае заработаешь'], tags: ['Стрэддл', 'Call + Put', 'Симметрично'] }
+    ],
+    rule: 'Опционы — для ожидаемых импульсов, диапазонных пробоев и неопределённых ситуаций. Без чёткого сценария не входить.'
+  },
+  fund: {
+    cls: 'fund', tag: 'Funding', title: 'Ставки финансирования', sub: 'Экстремальные значения и интерпретация зон',
+    iconSvg: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14h18M9 9l-4 5 4 5M19 9l4 5-4 5" stroke="#444441" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    customRender: 'funding'
+  }
+};
+
+var fundingScales = [
+  { title: 'Текущий фандинг (8 часов)', marks: ['-0.20%','-0.05%','0.005%','0.05%','0.10%','0.20%'] },
+  { title: 'Недельный фандинг (7 дней, ×21)', marks: ['-1.00%','-0.50%','0.10%','0.50%','1.00%','2.00%'] },
+  { title: 'Месячный фандинг (30 дней, ×90)', marks: ['-4.5%','-2.25%','0.45%','2.25%','4.5%','9.0%'] }
+];
+
+var fundingZones = [
+  { cls: 'z-green', name: 'Экстрим',          sub: 'Short squeeze' },
+  { cls: 'z-blue',  name: 'Умеренный',        sub: 'Шорты' },
+  { cls: 'z-mid',   name: 'Нейтральная зона', sub: 'Баланс' },
+  { cls: 'z-amber', name: 'Умеренный',        sub: 'Лонги' },
+  { cls: 'z-red',   name: 'Экстрим',          sub: 'Коррекция' }
+];
+
+var fundingLegend = [
+  { cls: 'z-green', text: 'Экстремально медвежий — риск short squeeze, возможен резкий отскок' },
+  { cls: 'z-blue',  text: 'Умеренный медвежий — преобладание шортов, но не критично' },
+  { cls: 'z-mid',   text: 'Нейтральный — здоровый баланс между лонгами и шортами' },
+  { cls: 'z-amber', text: 'Умеренный бычий — преобладание лонгов, позитивный настрой' },
+  { cls: 'z-red',   text: 'Экстремально бычий — перегрев рынка, вероятность коррекции >70%' }
+];
+
+function renderFundingHTML() {
+  var h = '<div class="fund-scales">';
+  fundingScales.forEach(function(sc) {
+    h += '<div class="fund-scale">' +
+      '<div class="fund-scale-title">' + sc.title + '</div>' +
+      '<div class="fund-zones">';
+    fundingZones.forEach(function(z) {
+      h += '<div class="fund-zone ' + z.cls + '">' +
+        '<div class="fund-zone-name">' + z.name + '</div>' +
+        '<div class="fund-zone-sub">' + z.sub + '</div>' +
+      '</div>';
+    });
+    h += '</div><div class="fund-marks">';
+    for (var i = 0; i < sc.marks.length; i++) {
+      var cls = (i === 2) ? 'z-mid' : '';
+      var rt = (i === sc.marks.length - 1) ? ' right' : '';
+      h += '<div class="fund-mark ' + cls + rt + '">' + sc.marks[i] + '</div>';
+    }
+    h += '</div></div>';
+  });
+  h += '</div>';
+
+  h += '<div class="fund-legend">' +
+    '<div class="fund-legend-title">Интерпретация зон</div>';
+  fundingLegend.forEach(function(l) {
+    h += '<div class="fund-legend-row">' +
+      '<span class="fund-legend-dot ' + l.cls + '"></span>' +
+      '<span>' + l.text + '</span>' +
+    '</div>';
+  });
+  h += '<div class="fund-formula">Формула: месячный = текущий × 90 | недельный = текущий × 21</div>' +
+  '</div>';
+  return h;
+}
+
+var STORAGE_KEY = 'strategy_cfg_v1';
+var editMode = false;
+var defaultsSnapshot = JSON.parse(JSON.stringify({bull:cfg.bull,bear:cfg.bear,range:cfg.range,opt:cfg.opt}));
+window.resetToRuDefaults=function(){['bull','bear','range','opt','fund'].forEach(function(m){if(!defaultsSnapshot[m])return;Object.keys(defaultsSnapshot[m]).forEach(function(k){cfg[m][k]=JSON.parse(JSON.stringify(defaultsSnapshot[m][k]));});});setMode(getCurrentMode());};
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadFromStorage() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    ['bull','bear','range','opt'].forEach(function(m) {
+      if (d[m]) {
+        ['title','sub','tag','rule','cards'].forEach(function(k) {
+          if (d[m][k] !== undefined) cfg[m][k] = d[m][k];
+        });
+      }
+    });
+  } catch(e) {}
+}
+
+function saveToStorage() {
+  var d = {};
+  ['bull','bear','range','opt'].forEach(function(m) {
+    d[m] = { title: cfg[m].title, sub: cfg[m].sub, tag: cfg[m].tag, rule: cfg[m].rule, cards: cfg[m].cards };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+}
+
+function getCurrentMode() {
+  var modes = ['bull','bear','range','opt','fund'];
+  for (var i=0; i<modes.length; i++) {
+    var b = document.getElementById('tb-'+modes[i]);
+    if (b && b.className.indexOf('active-')>-1) return modes[i];
+  }
+  return 'bull';
+}
+
+function readDOMIntoCfg() {
+  var mode = getCurrentMode();
+  if (mode === 'fund') return;
+  var d = cfg[mode];
+  var content = document.getElementById('content');
+  var t = content.querySelector('[data-edit="title"]');
+  var s = content.querySelector('[data-edit="sub"]');
+  var tg = content.querySelector('[data-edit="tag"]');
+  var r = content.querySelector('[data-edit="rule"]');
+  if (t) d.title = t.textContent.trim();
+  if (s) d.sub = s.textContent.trim();
+  if (tg) d.tag = tg.textContent.trim();
+  if (r) d.rule = r.textContent.trim();
+  var cardEls = content.querySelectorAll('.card');
+  d.cards = Array.from(cardEls).map(function(cardEl){
+    var icoE = cardEl.querySelector('[data-edit="ico"]');
+    var titleE = cardEl.querySelector('[data-edit="card-title"]');
+    var itemEls = cardEl.querySelectorAll('[data-edit="item"]');
+    var tagEls = cardEl.querySelectorAll('[data-edit="ctag"]');
+    return {
+      ico: icoE ? icoE.textContent.trim() : '•',
+      title: titleE ? titleE.textContent.trim() : '',
+      items: Array.from(itemEls).map(function(e){return e.textContent.trim();}),
+      tags: Array.from(tagEls).map(function(e){return e.textContent.trim();})
+    };
+  });
+}
+
+function _toggleEditUI(on) {
+  document.body.classList.toggle('editing', on);
+  document.getElementById('btn-edit').style.display = on ? 'none' : '';
+  document.getElementById('btn-save').style.display = on ? '' : 'none';
+  document.getElementById('btn-cancel').style.display = on ? '' : 'none';
+  document.getElementById('btn-reset').style.display = on ? '' : 'none';
+  document.getElementById('edit-hint').style.display = on ? '' : 'none';
+}
+
+function enterEdit() {
+  if (getCurrentMode() === 'fund') {
+    alert('Таб «Фандинг» не редактируется');
+    return;
+  }
+  editMode = true;
+  _toggleEditUI(true);
+  setMode(getCurrentMode());
+}
+
+function cancelEdit() {
+  editMode = false;
+  // Revert to last saved (or defaults if not saved)
+  ['bull','bear','range','opt'].forEach(function(m) {
+    cfg[m] = JSON.parse(JSON.stringify(defaultsSnapshot[m]));
+  });
+  loadFromStorage();
+  _toggleEditUI(false);
+  setMode(getCurrentMode());
+}
+
+function saveEdit() {
+  readDOMIntoCfg();
+  saveToStorage();
+  editMode = false;
+  _toggleEditUI(false);
+  setMode(getCurrentMode());
+}
+
+function resetEdit() {
+  if (!confirm('Сбросить все изменения к дефолтным карточкам?')) return;
+  ['bull','bear','range','opt'].forEach(function(m) {
+    cfg[m] = JSON.parse(JSON.stringify(defaultsSnapshot[m]));
+  });
+  localStorage.removeItem(STORAGE_KEY);
+  setMode(getCurrentMode());
+}
+
+function deleteCard(i) {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards.splice(i, 1);
+  setMode(getCurrentMode());
+}
+function addCard() {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards.push({ico:'•', title:'Новая карточка', items:['Описание'], tags:[]});
+  setMode(getCurrentMode());
+}
+function deleteItem(ci, ii) {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards[ci].items.splice(ii, 1);
+  setMode(getCurrentMode());
+}
+function addItem(ci) {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards[ci].items.push('Новый пункт');
+  setMode(getCurrentMode());
+}
+function deleteTag(ci, ti) {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards[ci].tags.splice(ti, 1);
+  setMode(getCurrentMode());
+}
+function addTag(ci) {
+  readDOMIntoCfg();
+  cfg[getCurrentMode()].cards[ci].tags.push('тег');
+  setMode(getCurrentMode());
+}
+
+function setMode(mode) {
+  if(mode==='rules'||mode==='errors'){
+    ['bull','bear','range','opt','fund','rules','errors'].forEach(function(m){var _b=document.getElementById('tb-'+m);if(_b)_b.className='tab-btn'+(m===mode?' active-'+mode:'');});
+    var _mc=document.getElementById('content');if(_mc)_mc.style.display='none';
+    var _sp=document.getElementById('st-special-panel');if(_sp){_sp.style.display='';_sp.innerHTML=mode==='rules'?renderRulesHTML():renderErrorsHTML();}
+    return;
+  }
+  var _mc2=document.getElementById('content');if(_mc2)_mc2.style.display='';
+  var _sp2=document.getElementById('st-special-panel');if(_sp2)_sp2.style.display='none';
+  ['bull','bear','range','opt','fund'].forEach(function(m) {
+    var btn = document.getElementById('tb-' + m);
+    btn.className = 'tab-btn' + (m === mode ? ' active-' + m : '');
+  });
+  // Disable edit-mode UI for funding tab
+  if (mode === 'fund' && editMode) {
+    editMode = false;
+    _toggleEditUI(false);
+  }
+  document.getElementById('btn-edit').style.display = (mode === 'fund') ? 'none' : (editMode ? 'none' : '');
+  var d = cfg[mode];
+  var ed = editMode && mode !== 'fund';
+  var ce = ed ? ' contenteditable="true"' : '';
+  var html = '<div class="market-section">' +
+    '<div class="market-hero ' + d.cls + '">' +
+      '<div class="hero-icon">' + d.iconSvg + '</div>' +
+      '<div class="hero-info">' +
+        '<div class="hero-title" data-edit="title"' + ce + '>' + escapeHtml(d.title) + '</div>' +
+        '<div class="hero-sub" data-edit="sub"' + ce + '>' + escapeHtml(d.sub) + '</div>' +
+        '<span class="hero-tag" data-edit="tag"' + ce + '>' + escapeHtml(d.tag) + '</span>' +
+      '</div>' +
+    '</div>';
+
+  if (d.customRender === 'funding') {
+    html += renderFundingHTML() + '</div>';
+    document.getElementById('content').innerHTML = html;
+    return;
+  }
+
+  if (!d.hideRatio) {
+    html += '<div class="ratio-wrap">' +
+      '<div class="ratio-label">Соотношение лонг / шорт</div>' +
+      '<div class="ratio-track">' +
+        '<div class="ratio-long" style="width:' + d.lPct + '%;background:' + d.lColor + ';"></div>' +
+        '<div class="ratio-short" style="width:' + d.sPct + '%;background:' + d.sColor + ';"></div>' +
+      '</div>' +
+      '<div class="ratio-legend">' +
+        '<div class="ratio-leg"><span class="ratio-dot" style="background:' + d.lColor + ';"></span>' + d.lPct + '% Лонг</div>' +
+        '<div class="ratio-leg"><span class="ratio-dot" style="background:' + d.sColor + ';"></span>' + d.sPct + '% Шорт</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  if (d.rangeZones) {
+    html += '<div class="range-zones">' +
+      '<div class="rz rz-long"><div class="rz-head">Лонг</div><div class="rz-body">От нижней границы<br>Покупка при отбое</div></div>' +
+      '<div class="rz rz-mid"><div class="rz-head">—</div><div class="rz-body">Середина<br>Без позиций</div></div>' +
+      '<div class="rz rz-short"><div class="rz-head">Шорт</div><div class="rz-body">От верхней границы<br>Продажа при отбое</div></div>' +
+    '</div>';
+  }
+
+  html += '<div class="cards ' + d.cls + '">';
+  d.cards.forEach(function(c, ci) {
+    html += '<div class="card" data-card-idx="' + ci + '">' +
+      '<div class="card-head">' +
+        '<div class="card-ico" data-edit="ico"' + ce + '>' + escapeHtml(c.ico) + '</div>' +
+        '<span class="card-title" data-edit="card-title"' + ce + '>' + escapeHtml(c.title) + '</span>' +
+        (ed ? '<button class="del-x" onclick="deleteCard(' + ci + ')" title="Удалить карточку" style="margin-left:auto">×</button>' : '') +
+      '</div>' +
+      '<div class="card-items">';
+    c.items.forEach(function(it, ii) {
+      html += '<div class="card-item' + (ed ? ' editable' : '') + '">' +
+        '<div class="card-line"></div>' +
+        '<span data-edit="item"' + ce + '>' + escapeHtml(it) + '</span>' +
+        (ed ? '<button class="del-x" onclick="deleteItem(' + ci + ',' + ii + ')" title="Удалить пункт">×</button>' : '') +
+      '</div>';
+    });
+    if (ed) html += '<button class="add-btn" onclick="addItem(' + ci + ')">+ Пункт</button>';
+    html += '</div><div class="tags">';
+    c.tags.forEach(function(t, ti) {
+      if (ed) {
+        html += '<span class="tag-wrap"><span class="tag" data-edit="ctag" contenteditable="true">' + escapeHtml(t) + '</span><button class="del-x" onclick="deleteTag(' + ci + ',' + ti + ')" title="Удалить тег">×</button></span>';
+      } else {
+        html += '<span class="tag">' + escapeHtml(t) + '</span>';
+      }
+    });
+    if (ed) html += '<button class="add-btn" onclick="addTag(' + ci + ')">+ Тег</button>';
+    html += '</div></div>';
+  });
+  if (ed) html += '<button class="add-btn add-card-btn" onclick="addCard()">+ Добавить карточку</button>';
+  html += '</div>' +
+    '<div class="rule ' + d.cls + '">' +
+      '<div class="rule-bar"></div>' +
+      '<div class="rule-text" data-edit="rule"' + ce + '>' + escapeHtml(d.rule) + '</div>' +
+    '</div></div>';
+
+  document.getElementById('content').innerHTML = html;
+}
+
+var now = new Date();
+var dateStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
+document.getElementById('doc-date').textContent = dateStr;
+document.getElementById('footer-date').textContent = dateStr;
+
+loadFromStorage();
+setMode('bull');
+function stLoadRules(){
+  try{var d=localStorage.getItem('rt_rules_v1');
+  return d?JSON.parse(d):[
+    'Не рисковать более 2% депозита',
+    'Торговать только по плану',
+    'Не отменять СТОП'];}
+  catch(e){return[];}}
+function stSaveRules(arr){localStorage.setItem('rt_rules_v1',JSON.stringify(arr));}
+function stLoadErrors(){
+  try{var d=localStorage.getItem('strategy_errors_v1');return d?JSON.parse(d):[];}
+  catch(e){return[];}}
+function stSaveErrors(arr){localStorage.setItem('strategy_errors_v1',JSON.stringify(arr));}
+function stDelRule(i){var rl=stLoadRules();rl.splice(i,1);stSaveRules(rl);setMode('rules');}
+function stDelError(i){var er=stLoadErrors();er.splice(i,1);stSaveErrors(er);setMode('errors');}
+function stAddRule(){
+  var inp=document.getElementById('st-new-rule');
+  if(!inp||!inp.value.trim())return;
+  var rl=stLoadRules();rl.push(inp.value.trim());stSaveRules(rl);setMode('rules');}
+function stAddError(){
+  var inp=document.getElementById('st-new-err');
+  if(!inp||!inp.value.trim())return;
+  var er=stLoadErrors();er.push(inp.value.trim());stSaveErrors(er);setMode('errors');}
+function renderRulesHTML(){
+  var rl=stLoadRules();
+  var h='<div style="max-width:620px">'
+    +'<p style="font-size:15px;font-weight:700;margin-bottom:14px">Правила торговли</p>';
+  if(rl.length){
+    rl.forEach(function(r,i){
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.07)">'
+        +'<input type="checkbox" style="width:15px;height:15px;cursor:pointer;flex-shrink:0">'
+        +'<span style="flex:1;font-size:13px">'+escapeHtml(r)+'</span>'
+        +'<button onclick="stDelRule('+i+')" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:18px;padding:0 2px;line-height:1">×</button>'
+        +'</div>';
+    });
+  }else{
+    h+='<p style="color:#999;font-size:13px;padding:10px 0">Нет правил. Добавьте первое.</p>';
+  }
+  h+='<div style="display:flex;gap:8px;margin-top:14px">'
+    +'<input id="st-new-rule" type="text" placeholder="Новое правило…" style="flex:1;padding:8px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:13px;font-family:inherit">'
+    +'<button onclick="stAddRule()" style="padding:8px 14px;background:#111;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Добавить</button>'
+    +'</div></div>';
+  return h;}
+function renderErrorsHTML(){
+  var er=stLoadErrors();
+  var h='<div style="max-width:620px">'
+    +'<p style="font-size:15px;font-weight:700;margin-bottom:14px">Типичные ошибки</p>';
+  if(er.length){
+    er.forEach(function(e,i){
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.07)">'
+        +'<span style="flex:1;font-size:13px">'+escapeHtml(e)+'</span>'
+        +'<button onclick="stDelError('+i+')" style="border:none;background:none;color:#c0392b;cursor:pointer;font-size:18px;padding:0 2px;line-height:1">×</button>'
+        +'</div>';
+    });
+  }else{
+    h+='<p style="color:#999;font-size:13px;padding:10px 0">Нет записей. Добавьте типичную ошибку.</p>';
+  }
+  h+='<div style="display:flex;gap:8px;margin-top:14px">'
+    +'<input id="st-new-err" type="text" placeholder="Описание ошибки…" style="flex:1;padding:8px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:13px;font-family:inherit">'
+    +'<button onclick="stAddError()" style="padding:8px 14px;background:#111;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Добавить</button>'
+    +'</div></div>';
+  return h;}
+
+</script>
+</body>
+</html>

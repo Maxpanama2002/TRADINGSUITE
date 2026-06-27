@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор опциона</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; padding: 2rem 1rem; }
+  .container { max-width: 640px; margin: 0 auto; background: #fff; border-radius: 16px; border: 1px solid #e0e0d8; padding: 2rem; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 1.5rem; color: #1a1a1a; }
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .toggle-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: transparent; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .toggle-btn.active-call { background: #378ADD; color: #fff; border-color: #378ADD; }
+  .toggle-btn.active-put { background: #E24B4A; color: #fff; border-color: #E24B4A; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+  .field { display: flex; flex-direction: column; }
+  .field label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+  .field input[type=number] { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; font-weight: 500; color: #1a1a1a; background: #fafaf8; transition: border-color 0.15s; }
+  .field input[type=number]:focus { outline: none; border-color: #378ADD; background: #fff; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 1.5rem 0; }
+  .metric { background: #f5f5f0; border-radius: 8px; padding: 12px 14px; }
+  .metric-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .metric-value { font-size: 18px; font-weight: 500; color: #1a1a1a; }
+  .verdict { padding: 10px 14px; font-size: 14px; margin-bottom: 1.5rem; border-left: 3px solid; line-height: 1.5; }
+  .verdict.profit { border-color: #1D9E75; background: #e1f5ee; color: #085041; }
+  .verdict.loss { border-color: #E24B4A; background: #fcebeb; color: #791F1F; }
+  .verdict.neutral { border-color: #aaa; background: #f5f5f0; color: #555; }
+  .verdict.partial { border-color: #BA7517; background: #faeeda; color: #633806; }
+  .chart-wrap { position: relative; width: 100%; height: 280px; }
+  .footer { margin-top: 1.5rem; font-size: 12px; color: #aaa; text-align: center; }
+  @media (max-width: 520px) {
+    .row { grid-template-columns: 1fr 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 360px) {
+    .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Калькулятор опциона</h1>
+
+  <div class="toggle-row">
+    <button class="toggle-btn active-put" id="btn-put" onclick="setType('put')">Put — ставка на падение</button>
+    <button class="toggle-btn" id="btn-call" onclick="setType('call')">Call — ставка на рост</button>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Страйк ($)</label>
+      <input type="number" id="strike" min="1" step="100" value="75000" placeholder="75000">
+    </div>
+    <div class="field">
+      <label>Премия ($)</label>
+      <input type="number" id="premium" min="1" step="1" value="800" placeholder="800">
+    </div>
+    <div class="field">
+      <label>Объём</label>
+      <input type="number" id="size" min="0.01" step="0.01" value="1" placeholder="1">
+    </div>
+  </div>
+
+  <div class="row" style="grid-template-columns: 1fr;">
+    <div class="field">
+      <label>Реальная цена на экспирацию ($)</label>
+      <input type="number" id="expiry" min="1" step="100" value="65000" placeholder="65000">
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Уплачено премии</div>
+      <div class="metric-value" id="total-cost">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Внутр. стоимость</div>
+      <div class="metric-value" id="intrinsic">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Твой результат</div>
+      <div class="metric-value" id="pnl">—</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Точка безубытка</div>
+      <div class="metric-value" id="breakeven">—</div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict" style="display:none;"></div>
+
+  <div class="chart-wrap">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="footer" id="footer">Put опцион · максимальный убыток = премия · прибыль растёт с падением цены</div>
+</div>
+
+<script src="../vendor/chart.umd.js"></script>
+<script>
+let myChart = null;
+let optionType = 'put';
+
+function setType(type) {
+  optionType = type;
+  document.getElementById('btn-put').className = 'toggle-btn' + (type === 'put' ? ' active-put' : '');
+  document.getElementById('btn-call').className = 'toggle-btn' + (type === 'call' ? ' active-call' : '');
+  document.getElementById('footer').textContent = type === 'put'
+    ? 'Put опцион · максимальный убыток = премия · прибыль растёт с падением цены'
+    : 'Call опцион · максимальный убыток = премия · прибыль растёт с ростом цены';
+  calc();
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function calc() {
+  const strike = parseFloat(document.getElementById('strike').value);
+  const premium = parseFloat(document.getElementById('premium').value);
+  const expiry = parseFloat(document.getElementById('expiry').value);
+  const size = parseFloat(document.getElementById('size').value) || 1;
+
+  if (!strike || !premium || !expiry) return;
+
+  const totalCost = premium * size;
+
+  let intrinsic, pnl, breakeven;
+  if (optionType === 'put') {
+    intrinsic = Math.max(0, strike - expiry) * size;
+    pnl = intrinsic - totalCost;
+    breakeven = strike - premium;
+  } else {
+    intrinsic = Math.max(0, expiry - strike) * size;
+    pnl = intrinsic - totalCost;
+    breakeven = strike + premium;
+  }
+
+  document.getElementById('total-cost').textContent = fmt(totalCost);
+  document.getElementById('intrinsic').textContent = fmt(intrinsic);
+  document.getElementById('breakeven').textContent = fmt(breakeven);
+
+  const pnlEl = document.getElementById('pnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + fmt(pnl);
+  pnlEl.style.color = pnl > 0 ? '#1D9E75' : pnl < 0 ? '#E24B4A' : '#1a1a1a';
+
+  const verdict = document.getElementById('verdict');
+  verdict.style.display = 'block';
+  verdict.className = 'verdict';
+  if (pnl > 0) {
+    verdict.textContent = (optionType === 'put'
+      ? 'Опцион в прибыли. Цена упала ниже точки безубытка ' + fmt(breakeven) + '.'
+      : 'Опцион в прибыли. Цена выросла выше точки безубытка ' + fmt(breakeven) + '.') +
+      ' Объём: ' + size.toFixed(2) + ' · уплачено ' + fmt(totalCost) + '.';
+    verdict.classList.add('profit');
+  } else if (pnl === 0) {
+    verdict.textContent = 'Ноль — цена ровно на точке безубытка ' + fmt(breakeven) + '.';
+    verdict.classList.add('neutral');
+  } else if ((optionType === 'put' && expiry >= strike) || (optionType === 'call' && expiry <= strike)) {
+    verdict.textContent = optionType === 'put'
+      ? 'Опцион истёк без ценности. Цена не упала ниже страйка. Потерял премию ' + fmt(totalCost) + ' (' + size.toFixed(2) + ' × ' + fmt(premium) + ').'
+      : 'Опцион истёк без ценности. Цена не выросла выше страйка. Потерял премию ' + fmt(totalCost) + ' (' + size.toFixed(2) + ' × ' + fmt(premium) + ').';
+    verdict.classList.add('loss');
+  } else {
+    verdict.textContent = 'Опцион исполнен, но прибыль не покрыла премию. Убыток ' + fmt(Math.abs(pnl)) + '.';
+    verdict.classList.add('partial');
+  }
+
+  updateChart(strike, premium, expiry, size);
+}
+
+function updateChart(strike, premium, expiry, size) {
+  size = size || 1;
+  const range = Math.max(strike * 0.5, 30000);
+  const min = Math.max(1000, Math.round((strike - range) / 1000) * 1000);
+  const max = Math.round((strike + range) / 1000) * 1000;
+  const step = Math.round((max - min) / 18 / 1000) * 1000 || 1000;
+  const prices = [];
+  for (let p = min; p <= max; p += step) prices.push(p);
+
+  const colorLoss = optionType === 'put' ? '#E24B4A' : '#378ADD';
+  const colorProfit = '#1D9E75';
+
+  const pnls = prices.map(p => {
+    const intr = optionType === 'put' ? Math.max(0, strike - p) : Math.max(0, p - strike);
+    return (intr - premium) * size;
+  });
+  const colors = pnls.map(v => v > 0 ? colorProfit : colorLoss);
+  const labels = prices.map(p => '$' + Math.round(p / 1000) + 'k');
+
+  const closestIdx = prices.reduce((best, p, i) => Math.abs(p - expiry) < Math.abs(prices[best] - expiry) ? i : best, 0);
+  const expiryIntr = optionType === 'put' ? Math.max(0, strike - expiry) : Math.max(0, expiry - strike);
+  const expiryPnl = (expiryIntr - premium) * size;
+
+  if (myChart) myChart.destroy();
+
+  myChart = new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { data: pnls, backgroundColor: colors, borderRadius: 3 },
+        {
+          type: 'scatter',
+          data: [{ x: closestIdx, y: expiryPnl }],
+          pointRadius: 9,
+          pointBackgroundColor: '#7F77DD',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 1) return 'Реальная цена: ' + (expiryPnl >= 0 ? '+' : '') + '$' + Math.round(expiryPnl).toLocaleString();
+              return (ctx.raw >= 0 ? '+' : '') + '$' + Math.round(ctx.raw).toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 11 }, autoSkip: true, maxRotation: 45 }, grid: { display: false } },
+        y: {
+          ticks: { callback: v => (v >= 0 ? '+' : '') + '$' + Math.round(Math.abs(v) / 1000) + 'k', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,0.08)' }
+        }
+      }
+    }
+  });
+}
+
+document.getElementById('strike').oninput = calc;
+document.getElementById('premium').oninput = calc;
+document.getElementById('size').oninput = calc;
+document.getElementById('expiry').oninput = calc;
+
+calc();
+</script>
+</body>
+</html>

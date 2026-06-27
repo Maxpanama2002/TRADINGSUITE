@@ -1,0 +1,136 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Психологический журнал</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f0efe9;--surface:#fff;--surf2:#f5f4f0;--surf3:#eae9e3;--text:#1a1a18;--text2:#6b6b67;--text3:#9a9a96;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);--radius:10px;--radius-lg:14px;--font:'Times New Roman',Times,Georgia,serif;--mono:'Courier New',Courier,monospace;--green-bg:#C0DD97;--green-bd:#639922;--green-tx:#27500A;--red-bg:#F7C1C1;--red-bd:#E24B4A;--red-tx:#791F1F;--pos:#27500A;--neg:#791F1F}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a18;--surface:#252522;--surf2:#2e2e2b;--surf3:#3a3a36;--text:#f0efe9;--text2:#9a9a96;--text3:#6b6b67;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14)}}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;min-height:100vh;padding:24px 16px}
+.page{max-width:680px;margin:0 auto}
+h1{font-size:26px;font-weight:700;margin-bottom:4px}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:20px}
+.tabs-bar{display:flex;gap:2px;background:var(--surf2);border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.tab-btn{flex:1;padding:8px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:none;border:none;color:var(--text2);border-radius:8px;font-family:var(--font);transition:all .15s}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.btn-primary{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:14px}
+.empty{text-align:center;color:var(--text2);padding:40px 0;font-size:14px}
+textarea,input[type=text],input[type=number]{background:var(--surf2);border:0.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);font-family:var(--font);outline:none;padding:10px 12px}
+.mood-row{display:flex;gap:8px;margin-bottom:16px}
+.mood-btn{width:52px;height:52px;border-radius:50%;border:2px solid var(--border2);background:var(--surf2);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mood-btn.sel{border-color:var(--text);box-shadow:0 0 0 3px rgba(0,0,0,.12);transform:scale(1.12)}
+.slider-row{margin-bottom:14px}
+.slider-lbl{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:5px;display:flex;justify-content:space-between}
+input[type=range]{width:100%;accent-color:var(--text)}
+.hist-entry{padding:12px 14px;background:var(--surf2);border-radius:var(--radius);margin-bottom:8px}
+.hist-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.hist-date{font-size:12px;color:var(--text2)}
+.hist-mood{font-size:22px}
+.hist-meta{font-size:12px;color:var(--text2)}
+.hist-note{font-size:13px;margin-top:6px;border-top:1px solid var(--border);padding-top:6px;color:var(--text2)}
+.stat-card{background:var(--surf2);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.stat-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.stat-val{font-size:28px;font-weight:700;font-family:var(--mono)}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+</style></head>
+<body><div class="page">
+<h1>Психо-журнал</h1>
+<p class="subtitle">Настрой, энергия, концентрация</p>
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="showTab(0)">Сегодня</button>
+  <button class="tab-btn" onclick="showTab(1)">История</button>
+  <button class="tab-btn" onclick="showTab(2)">Статистика</button>
+</div>
+<div id="t0"></div>
+<div id="t1" style="display:none"></div>
+<div id="t2" style="display:none"></div>
+</div>
+<script>
+var STORE='psych_v1';
+var MOODS=['😰','😟','😐','🙂','😊'];
+function upE(v){document.getElementById('ev').textContent=v;}
+function upF(v){document.getElementById('fv').textContent=v;}
+var entries=[],selMood=2;
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function load(){try{var d=localStorage.getItem(STORE);entries=d?JSON.parse(d):[];}catch(e){entries=[];}
+  var td=todayKey();for(var x=0;x<entries.length;x++){if(entries[x].date===td){selMood=entries[x].mood;return;}}
+}
+function save(){localStorage.setItem(STORE,JSON.stringify(entries));}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showTab(n){
+  for(var j=0;j<3;j++){
+    document.getElementById('t'+j).style.display=j===n?'':'none';
+    document.querySelectorAll('.tab-btn')[j].classList[j===n?'add':'remove']('active');
+  }
+  if(n===0)renderToday();else if(n===1)renderHist();else renderStats();
+}
+function renderToday(){
+  var td=todayKey(),ex=null;
+  for(var x=0;x<entries.length;x++){if(entries[x].date===td){ex=entries[x];break;}}
+  var el=document.getElementById('t0');
+  var h='<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Настроение</div>'
+    +'<div class="mood-row">';
+  for(var m=0;m<MOODS.length;m++){
+    h+='<button class="mood-btn'+(selMood===m?' sel':'')+'" onclick="selMood='+m+';renderToday()">'+MOODS[m]+'</button>';
+  }
+  h+='</div></div>';
+  var energy=ex?ex.energy:3,focus=ex?ex.focus:3;
+  h+='<div class="slider-row"><div class="slider-lbl"><span>Энергия</span><span id="ev">'+energy+'</span></div>'
+    +'<input type="range" min="1" max="5" value="'+energy+'" id="sl-e" oninput="upE(this.value)"></div>';
+  h+='<div class="slider-row"><div class="slider-lbl"><span>Концентрация</span><span id="fv">'+focus+'</span></div>'
+    +'<input type="range" min="1" max="5" value="'+focus+'" id="sl-f" oninput="upF(this.value)"></div>';
+  h+='<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Заметки</div>'
+    +'<textarea id="pj-note" style="width:100%;min-height:80px;resize:vertical" placeholder="Что влияет на твой настрой сегодня…">'+escH(ex?ex.note:'')+'</textarea>';
+  h+='<button class="btn-primary" onclick="saveEntry()">Сохранить</button>';
+  el.innerHTML=h;
+}
+function saveEntry(){
+  var td=todayKey();
+  var energy=parseInt(document.getElementById('sl-e').value)||3;
+  var focus=parseInt(document.getElementById('sl-f').value)||3;
+  var note=document.getElementById('pj-note').value||'';
+  var ne=[];for(var x=0;x<entries.length;x++){if(entries[x].date!==td)ne.push(entries[x]);}
+  ne.unshift({date:td,mood:selMood,energy:energy,focus:focus,note:note});
+  if(ne.length>180)ne=ne.slice(0,180);
+  entries=ne;save();alert('Сохранено!');
+}
+function renderHist(){
+  var el=document.getElementById('t1');
+  if(!entries.length){el.innerHTML='<div class="empty">Записей нет &mdash; заполни раздел Сегодня</div>';return;}
+  var h='';
+  for(var j=0;j<Math.min(entries.length,60);j++){
+    var e=entries[j];
+    h+='<div class="hist-entry"><div class="hist-head">'
+      +'<span class="hist-mood">'+MOODS[e.mood]+'</span>'
+      +'<div><div class="hist-date">'+e.date+'</div>'
+      +'<div class="hist-meta">Энергия '+e.energy+'/5 &middot; Фокус '+e.focus+'/5</div></div></div>';
+    if(e.note) h+='<div class="hist-note">'+escH(e.note)+'</div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function renderStats(){
+  var el=document.getElementById('t2');
+  if(entries.length<2){el.innerHTML='<div class="empty">Нужно хотя бы 2 записи для статистики</div>';return;}
+  var sm=0,se=0,sf=0,n=entries.length;
+  for(var j=0;j<n;j++){sm+=entries[j].mood;se+=entries[j].energy;sf+=entries[j].focus;}
+  var am=Math.round(sm/n*10)/10,ae=Math.round(se/n*10)/10,af=Math.round(sf/n*10)/10;
+  var best=entries[0],worst=entries[0];
+  for(var j=1;j<n;j++){if(entries[j].mood>best.mood)best=entries[j];if(entries[j].mood<worst.mood)worst=entries[j];}
+  var h='<div class="stats-grid">'
+    +'<div class="stat-card"><div class="stat-title">Настроение</div><div class="stat-val">'+MOODS[Math.round(am)]+'</div><div class="stat-sub">avg '+am+'</div></div>'
+    +'<div class="stat-card"><div class="stat-title">Энергия</div><div class="stat-val">'+ae+'</div><div class="stat-sub">из 5</div></div>'
+    +'<div class="stat-card"><div class="stat-title">Фокус</div><div class="stat-val">'+af+'</div><div class="stat-sub">из 5</div></div>'
+    +'</div>';
+  h+='<div class="stat-card" style="margin-top:10px"><div class="stat-title">Лучший день</div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:28px">'+MOODS[best.mood]+'</span>'
+    +'<div><div style="font-size:14px;font-weight:600">'+best.date+'</div>'
+    +'<div style="font-size:12px;color:var(--text2)">Энергия '+best.energy+' &middot; Фокус '+best.focus+'</div></div></div></div>';
+  h+='<div class="stat-card"><div class="stat-title">Сложный день</div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:28px">'+MOODS[worst.mood]+'</span>'
+    +'<div><div style="font-size:14px;font-weight:600">'+worst.date+'</div>'
+    +'<div style="font-size:12px;color:var(--text2)">Энергия '+worst.energy+' &middot; Фокус '+worst.focus+'</div></div></div></div>';
+  el.innerHTML=h;
+}
+load();renderToday();
+</script></body></html>
