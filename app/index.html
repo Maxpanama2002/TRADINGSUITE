@@ -1054,18 +1054,28 @@ input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:var(-
 .ca-card-title{font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:.06em;}
 .ca-card-sub{font-size:11px;color:var(--text3);}
 .ca-donut-row{display:flex;align-items:center;gap:18px;}
-.ca-donut-wrap{position:relative;width:150px;height:150px;flex-shrink:0;}
-.ca-donut-svg{width:150px;height:150px;transform:rotate(-90deg);}
+.ca-donut-wrap{position:relative;width:168px;height:168px;flex-shrink:0;}
+.ca-donut-svg{width:168px;height:168px;transform:rotate(-90deg);}
 .ca-donut-track{stroke:var(--card-bg2);}
 .ca-donut-seg{transition:stroke-dasharray .4s ease;}
-.ca-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.ca-donut-total{font-size:18px;font-weight:850;color:var(--text);font-variant-numeric:tabular-nums;}
-.ca-donut-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.ca-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 22px;}
+.ca-donut-total{font-size:16px;font-weight:850;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.01em;}
+.ca-donut-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;white-space:nowrap;}
 .ca-legend{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
 .ca-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;min-width:0;}
 .ca-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .ca-legend-name{font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ca-legend-pct{margin-left:auto;color:var(--text3);font-variant-numeric:tabular-nums;}
+.ca-split-wrap{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.ca-split-bar{display:flex;width:100%;height:10px;border-radius:999px;overflow:hidden;background:var(--card-bg2);}
+.ca-split-seg{height:100%;transition:width .28s;}
+.ca-split-seg.asset{background:#22c55e;}
+.ca-split-seg.liability{background:#ef4444;}
+.ca-split-legend{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap;}
+.ca-split-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;}
+.ca-split-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ca-split-dot.asset{background:#22c55e;}
+.ca-split-dot.liability{background:#ef4444;}
 .ca-bar-list{display:flex;flex-direction:column;gap:13px;}
 .ca-bar-row{display:grid;grid-template-columns:88px 1fr 92px;gap:10px;align-items:center;}
 .ca-bar-label{font-size:12px;font-weight:800;color:var(--text);}
@@ -4433,6 +4443,10 @@ html[data-auth-state="authed"] #sb-guest-bar{display:none !important;}
               </div>
               <div class="ca-legend" id="cap-legend"></div>
             </div>
+            <div class="ca-split-wrap">
+              <div class="ca-split-bar" id="cap-split-bar"></div>
+              <div class="ca-split-legend" id="cap-split-legend"></div>
+            </div>
           </div>
           <div class="ca-card">
             <div class="ca-card-head">
@@ -6276,7 +6290,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.23';
+window._APP_VERSION = '2.5.24';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -10747,11 +10761,11 @@ function _capGroupAssets(list){
   });
   return Object.keys(groups).map(function(k){return groups[k];}).sort(function(a,b){return b.value-a.value;});
 }
-function _capRenderDonut(groups,totalAssets){
+function _capRenderDonut(groups,totalAssets,totalCapital,totalLiabilities){
   var svg=document.getElementById('cap-donut-svg'), legend=document.getElementById('cap-legend');
   var tot=document.getElementById('cap-donut-total'), sub=document.getElementById('cap-donut-sub');
   if(!svg) return;
-  var R=40,C=2*Math.PI*R,SW=12;
+  var R=40,C=2*Math.PI*R,SW=10;
   var html='<circle class="ca-donut-track" cx="50" cy="50" r="'+R+'" fill="none" stroke-width="'+SW+'"/>';
   if(totalAssets>0){
     var offset=0;
@@ -10764,8 +10778,20 @@ function _capRenderDonut(groups,totalAssets){
     });
   }
   svg.innerHTML=html;
-  if(tot) tot.textContent=_capFmt(totalAssets);
+  if(tot){
+    var totStr=_capFmt(totalCapital);
+    tot.textContent=totStr;
+    tot.style.fontSize=totStr.length>13?'12px':(totStr.length>10?'14px':'16px');
+  }
   if(sub) sub.textContent=groups.length+' '+_t('классов','classes');
+  var splitBar=document.getElementById('cap-split-bar'), splitLegend=document.getElementById('cap-split-legend');
+  if(splitBar && splitLegend){
+    var capBase=Math.max(parseFloat(totalCapital)||0,1);
+    var aPct=Math.max(0,(totalAssets/capBase*100)), lPct=Math.max(0,(totalLiabilities/capBase*100));
+    splitBar.innerHTML='<div class="ca-split-seg asset" style="width:'+aPct+'%"></div><div class="ca-split-seg liability" style="width:'+lPct+'%"></div>';
+    splitLegend.innerHTML='<span class="ca-split-item"><span class="ca-split-dot asset"></span>'+_t('Активы','Assets')+' '+aPct.toFixed(1)+'%</span>'
+      +'<span class="ca-split-item"><span class="ca-split-dot liability"></span>'+_t('Пассивы','Liabilities')+' '+lPct.toFixed(1)+'%</span>';
+  }
   if(legend){
     if(!groups.length){
       legend.innerHTML='<div style="font-size:12px;color:var(--text3)">'+_t('Добавь первый актив, чтобы увидеть структуру','Add your first asset to see the structure')+'</div>';
@@ -10812,7 +10838,7 @@ function renderCapital(){
   var sub=document.getElementById('cap-subtitle');
   if(sub) sub.textContent=_t('Все классы имущества: ','All wealth classes: ')+_capCountWord(list.length)+_t(' · общий капитал ',' · total capital ')+_capFmt(total);
   var groups=_capGroupAssets(list);
-  _capRenderDonut(groups,totalAssets);
+  _capRenderDonut(groups,totalAssets,total,totalLiabilities);
   _capRenderBars(totalAssets,totalLiabilities,total);
   var allocSub=document.getElementById('cap-alloc-sub');
   if(allocSub) allocSub.textContent=assets.length+' '+_t('активов','assets')+' · '+_capFmt(totalAssets);

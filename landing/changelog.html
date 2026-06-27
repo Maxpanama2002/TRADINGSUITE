@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.23">
-<script src="./assets/site.js?v=2.5.23"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.24">
+<script src="./assets/site.js?v=2.5.24"></script>
 </head>
 <body>
 
@@ -36,6 +36,22 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.24</span>
+        <span class="cl-date">2026-06-27</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Капитал — donut «Структура активов» показывал не тот итог и наезжал на кольцо.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Число в центре donut исправлено</b> — раньше там показывалась сумма только активов, теперь показывается общий капитал (активы + пассивы), как и заявлено в подписи карточки.</li>
+          <li><b>Наезжающий текст исправлен</b> — сумма в центре больше не вылезает за пределы кольца на больших значениях.</li>
+          <li><b>Добавлена градация активы/пассивы</b> — под donut появилась цветная шкала с процентным соотношением активов и пассивов в общем капитале.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">
