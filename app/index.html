@@ -6278,7 +6278,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.35';
+window._APP_VERSION = '2.5.36';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -6572,7 +6572,16 @@ function navigateTo(page, toolIdx){
     if(tbTitle) tbTitle.textContent=toolLabel;
     if(_currentTool!==toolIdx){
       var fr=document.getElementById('tool-frame');
-      if(fr){ fr.src=externalSrcs[toolIdx]?externalSrcs[toolIdx]:getUrl(toolIdx); _currentTool=toolIdx; }
+      if(fr){
+        var toolUrl = externalSrcs[toolIdx]?externalSrcs[toolIdx]:getUrl(toolIdx);
+        // Cache-bust with the app version so a browser that aggressively cached
+        // an older build of this legacy tool page (seen in production — content
+        // updates shipped server-side didn't show up for returning visitors)
+        // is forced to fetch the current one instead of serving a stale copy.
+        toolUrl += (toolUrl.indexOf('?')===-1?'?':'&') + 'v=' + encodeURIComponent(window._APP_VERSION||'');
+        fr.src = toolUrl;
+        _currentTool=toolIdx;
+      }
     }
   }
 }
