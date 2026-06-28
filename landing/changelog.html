@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.36">
-<script src="./assets/site.js?v=2.5.36"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.37">
+<script src="./assets/site.js?v=2.5.37"></script>
 </head>
 <body>
 
@@ -36,6 +36,21 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.37</span>
+        <span class="cl-date">2026-06-28</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Калькулятор металлов — по бокам страницы были большие пустые поля шире, чем на остальных страницах.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Найдена причина</b> — у страницы было два вложенных ограничения ширины: внешний контейнер на 1200px (как у «Капитала» и других разделов) и ещё один внутренний на 980px, из-за которого контент сжимался уже самой рамки страницы, оставляя лишние пустые поля по краям.</li>
+          <li><b>Исправлено</b> — внутреннее ограничение убрано, контент теперь занимает всю ширину той же 1200px-рамки, с одинаковыми отступами, как на «Капитале» и других страницах.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">
