@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.37">
-<script src="./assets/site.js?v=2.5.37"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.38">
+<script src="./assets/site.js?v=2.5.38"></script>
 </head>
 <body>
 
@@ -36,6 +36,21 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.38</span>
+        <span class="cl-date">2026-06-28</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Веб-демо — кнопка «↓ Скачать» в баннере «Веб-демо» внутри приложения вела на несуществующую страницу.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Найдена причина</b> — ссылка указывала на /landing/download.html, но на самом деле сайт раздаётся без префикса /landing (это просто корневая папка проекта при сборке), поэтому такой адрес отдавал 404.</li>
+          <li><b>Исправлено</b> — ссылка теперь ведёт на правильный относительный адрес страницы загрузки, кнопка корректно открывает страницу выбора версии для скачивания.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">

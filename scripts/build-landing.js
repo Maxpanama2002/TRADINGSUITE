@@ -118,7 +118,7 @@ if (fs.existsSync(idxPath)) {
           ? '🌐 <b>Web demo</b> — 90% works in browser. Install desktop for full (iCloud, push, forex).'
           : '🌐 <b>Веб-демо</b> — 90% работает в браузере. Для полного функционала (iCloud, push, forex) скачай десктоп.')
       + '</span>'
-      + '<a href="/landing/download.html" style="background:rgba(255,255,255,0.24);color:#fff;text-decoration:none;padding:6px 12px;border-radius:9px;font-weight:600;font-size:12px;white-space:nowrap;flex-shrink:0;">'
+      + '<a href="../download.html" style="background:rgba(255,255,255,0.24);color:#fff;text-decoration:none;padding:6px 12px;border-radius:9px;font-weight:600;font-size:12px;white-space:nowrap;flex-shrink:0;">'
       + (en ? '↓ Get' : '↓ Скачать')
       + '</a>'
       + '<button style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;padding:0 2px 0 4px;opacity:0.85;flex-shrink:0;" title="' + (en ? 'Dismiss' : 'Скрыть') + '">×</button>';
