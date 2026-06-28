@@ -6278,7 +6278,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.30';
+window._APP_VERSION = '2.5.31';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -14044,11 +14044,21 @@ function _goldShowErr(msg){
   e.style.display = msg ? 'block' : 'none';
 }
 async function _goldFetchJson(url,timeoutMs){
+  timeoutMs = timeoutMs || 7000;
   var opts={};
-  try{
-    if(window.AbortSignal && AbortSignal.timeout) opts.signal = AbortSignal.timeout(timeoutMs || 7000);
-  }catch(e){}
-  var r = await fetch(url, opts);
+  var controller = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  if(controller) opts.signal = controller.signal;
+  // Belt-and-suspenders timeout: don't rely solely on AbortSignal.timeout/AbortController
+  // actually firing — some browsers/proxies leave fetch() hanging forever without ever
+  // resolving or rejecting, which would freeze the "Обновление..." status permanently.
+  // A plain setTimeout race guarantees this promise always settles.
+  var timeoutPromise = new Promise(function(_, reject){
+    setTimeout(function(){
+      if(controller) try{ controller.abort(); }catch(e){}
+      reject(new Error('timeout'));
+    }, timeoutMs);
+  });
+  var r = await Promise.race([fetch(url, opts), timeoutPromise]);
   if(!r.ok) throw new Error('HTTP ' + r.status);
   return await r.json();
 }
@@ -14061,6 +14071,23 @@ async function _goldLoadPrice(force){
   if(btn) btn.disabled = true;
   if(spin) spin.classList.add('go');
   _goldStatus('orange', _t('Обновление...','Updating...'));
+  // Watchdog: _goldFetchJson already races each request against its own timeout,
+  // but if anything upstream still manages to hang (browser quirk, blocked request
+  // that never settles), this guarantees the "Обновление..." status can never get
+  // stuck forever — it forces the no-live-data fallback after a hard ceiling.
+  var watchdogId = setTimeout(function(){
+    if(!_goldState.fetching) return;
+    if(spin) spin.classList.remove('go');
+    if(btn) btn.disabled = false;
+    _goldState.fetching = false;
+    if(!_goldState.prices[metal]) _goldState.prices[metal] = cfg.fallbackSpot;
+    if(_goldState.metal === metal) _goldState.spot = _goldState.prices[metal];
+    _goldState.loaded[metal] = true;
+    _goldState.source = 'fallback';
+    _goldStatus('red', _t('Нет live-данных','No live data'));
+    _goldShowErr(_t('⚠️ Не удалось загрузить актуальную цену. Нажми «Обновить» для повтора.','⚠️ Could not load the live price. Press Refresh to try again.'));
+    _goldRenderAll();
+  }, 22000);
 
   var newSpot=null, newEur=null, source='';
   try{
@@ -14090,6 +14117,8 @@ async function _goldLoadPrice(force){
     }catch(e3){}
   }
 
+  clearTimeout(watchdogId);
+  if(!_goldState.fetching) return; // watchdog already forced the fallback state — don't double-apply
   if(spin) spin.classList.remove('go');
   if(btn) btn.disabled = false;
   _goldState.fetching = false;
@@ -14102,7 +14131,8 @@ async function _goldLoadPrice(force){
     _goldState.source = source || 'live';
     _goldShowErr('');
     var now = new Date();
-    _goldStatus('green', _t('Обновлено ','Updated ') + now.toLocaleTimeString(getLang()==='en'?'en-US':'ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+    var isEnLoc = (typeof getLang==='function'&&getLang()==='en');
+    _goldStatus('green', _t('Обновлено ','Updated ') + now.toLocaleTimeString(isEnLoc?'en-US':'ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
   }else{
     if(!_goldState.prices[metal]) _goldState.prices[metal] = cfg.fallbackSpot;
     if(_goldState.metal === metal) _goldState.spot = _goldState.prices[metal];

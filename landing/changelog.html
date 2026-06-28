@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.30">
-<script src="./assets/site.js?v=2.5.30"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.31">
+<script src="./assets/site.js?v=2.5.31"></script>
 </head>
 <body>
 
@@ -36,6 +36,21 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.31</span>
+        <span class="cl-date">2026-06-27</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Калькулятор металлов — статус «Обновление...» зависал навсегда и никогда не показывал свежую цену.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Найдена и устранена причина зависания</b> — при успешной загрузке цены код обращался к удалённой функции языковых настроек (та же причина, что ломала главную страницу при запуске в v2.5.25). Ошибка тихо обрывала выполнение прямо перед тем, как статус должен был переключиться на «Обновлено», поэтому индикатор навечно оставался на «Обновление...», даже если цена на самом деле успешно загрузилась.</li>
+          <li><b>Добавлена защита от зависаний на будущее</b> — запрос цены теперь гарантированно завершается максимум через ~20 секунд (раньше таймаут запроса не везде надёжно срабатывал), а отдельный сторож принудительно восстанавливает интерфейс, даже если что-то совершенно неожиданное застрянет в цепочке запросов.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">
