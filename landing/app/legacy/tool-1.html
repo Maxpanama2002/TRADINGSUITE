@@ -720,8 +720,103 @@ var dateStr = now.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', 
 document.getElementById('doc-date').textContent = dateStr;
 document.getElementById('footer-date').textContent = dateStr;
 
-loadFromStorage();
-setMode('bull');
+// Guests browse the rest of the app, but this page holds the owner's personal
+// trading strategy (saved in localStorage, no concept of per-account scoping
+// here). Guests must never see it — show an empty state + mini tutorial
+// instead, and only load/render the real content for a signed-in account.
+function _stIsGuest(){
+  try{
+    var p = window.parent;
+    if(!p || !p.CloudSync) return true;
+    return !p.CloudSync._user;
+  }catch(e){ return true; }
+}
+
+function _stGoToAuth(){
+  try{ window.parent._authGateShow(); }catch(e){}
+}
+
+function _stRenderGuestView(){
+  var tabsWrap = document.querySelector('.tabs-wrap');
+  var editToolbar = document.querySelector('.edit-toolbar');
+  var content = document.getElementById('content');
+  var specialPanel = document.getElementById('st-special-panel');
+  if(tabsWrap) tabsWrap.style.display = 'none';
+  if(editToolbar) editToolbar.style.display = 'none';
+  if(content) content.style.display = 'none';
+  if(specialPanel) specialPanel.style.display = 'none';
+
+  var gv = document.getElementById('st-guest-view');
+  if(!gv){
+    gv = document.createElement('div');
+    gv.id = 'st-guest-view';
+    content.parentNode.insertBefore(gv, content);
+  }
+  gv.innerHTML =
+    '<div style="text-align:center;padding:18px 20px 8px;">' +
+      '<div style="font-size:40px;margin-bottom:10px;">🎯</div>' +
+      '<div style="font-size:20px;font-weight:650;color:var(--text,#111);margin-bottom:8px;">Здесь пока пусто</div>' +
+      '<div style="font-size:13.5px;color:var(--text2,#777);line-height:1.6;max-width:520px;margin:0 auto;">' +
+        'Эта страница — твой личный торговый план: правила входа для бычьего, медвежьего рынка, боковика и опционов. ' +
+        'В гостевом режиме посмотреть и сохранить свою стратегию нельзя — нужен аккаунт.' +
+      '</div>' +
+    '</div>' +
+    '<div style="background:var(--card-bg,#fff);border:1px solid var(--border,#e8e6e0);border-radius:14px;padding:22px 26px;margin:22px auto 0;max-width:560px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">' +
+      '<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3,#999);margin-bottom:14px;">Как записать свою стратегию</div>' +
+      '<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">' +
+        '<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--bg2,#f5f4f0);color:var(--text2,#666);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div>' +
+        '<div style="font-size:13.5px;color:var(--text,#333);line-height:1.5;padding-top:2px;">Зарегистрируйся или войди в аккаунт — это бесплатно и быстро.</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start;">' +
+        '<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--bg2,#f5f4f0);color:var(--text2,#666);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</div>' +
+        '<div style="font-size:13.5px;color:var(--text,#333);line-height:1.5;padding-top:2px;">Открой вкладку нужной фазы рынка (Бычий рынок, Медвежий рынок, Боковик или Опционы) и нажми «✎ Редактировать».</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:12px;margin-bottom:18px;align-items:flex-start;">' +
+        '<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--bg2,#f5f4f0);color:var(--text2,#666);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</div>' +
+        '<div style="font-size:13.5px;color:var(--text,#333);line-height:1.5;padding-top:2px;">Заполни свои правила и карточки, нажми «💾 Сохранить» — стратегия останется в твоём аккаунте.</div>' +
+      '</div>' +
+      '<button onclick="_stGoToAuth()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent,#7c3aed);color:#fff;font-size:13.5px;font-weight:650;font-family:inherit;cursor:pointer;">Войти / Зарегистрироваться</button>' +
+    '</div>';
+  gv.style.display = '';
+}
+
+function _stInit(){
+  if(_stIsGuest()){
+    _stRenderGuestView();
+    return;
+  }
+  var gv = document.getElementById('st-guest-view');
+  if(gv) gv.style.display = 'none';
+  var tabsWrap = document.querySelector('.tabs-wrap');
+  var editToolbar = document.querySelector('.edit-toolbar');
+  var content = document.getElementById('content');
+  if(tabsWrap) tabsWrap.style.display = '';
+  if(editToolbar) editToolbar.style.display = '';
+  if(content) content.style.display = '';
+  loadFromStorage();
+  setMode('bull');
+}
+
+// CloudSync's session restore is async — give a returning, already-logged-in
+// user up to ~1.6s to finish restoring before deciding they're a guest
+// (same class of startup race fixed elsewhere in this app).
+(function(){
+  try{
+    var p = window.parent;
+    if(p && p.CloudSync && !p.CloudSync._ready){
+      var tries = 0;
+      var iv = setInterval(function(){
+        tries++;
+        if((p.CloudSync && p.CloudSync._ready) || tries >= 8){
+          clearInterval(iv);
+          _stInit();
+        }
+      }, 200);
+      return;
+    }
+  }catch(e){}
+  _stInit();
+})();
 function stLoadRules(){
   try{var d=localStorage.getItem('rt_rules_v1');
   return d?JSON.parse(d):[
