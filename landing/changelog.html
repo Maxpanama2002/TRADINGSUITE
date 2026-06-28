@@ -6,8 +6,8 @@
 <title>Changelog — Trading Suite</title>
 <meta name="description" content="История версий Trading Suite. Все фичи, фиксы, security-апдейты.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<link rel="stylesheet" href="./assets/site.css?v=2.5.31">
-<script src="./assets/site.js?v=2.5.31"></script>
+<link rel="stylesheet" href="./assets/site.css?v=2.5.32">
+<script src="./assets/site.js?v=2.5.32"></script>
 </head>
 <body>
 
@@ -36,6 +36,23 @@
 
 <section class="tight">
   <div class="section-inner narrow">
+
+    <div class="cl-entry">
+      <div class="cl-head">
+        <span class="cl-ver">v2.5.32</span>
+        <span class="cl-date">2026-06-27</span>
+        <span class="cl-tag fix">fix</span>
+      </div>
+      <div class="cl-body">
+        <b>Paper Trading — маркет-ордер не всегда открывал позицию при быстрой смене символа.</b>
+        <ul style="margin:8px 0 0 18px;line-height:1.7">
+          <li><b>Найдена причина</b> — при смене символа в окне открытия позиции поле «Цена входа» не сбрасывалось и продолжало показывать цену ПРЕДЫДУЩЕГО символа, пока цена нового символа подгружалась с Binance. Если нажать «Открыть позицию» в этот момент, кнопка либо оставалась заблокированной без понятной причины, либо (в редких случаях) сделка могла открыться по устаревшей цене не того актива.</li>
+          <li><b>Поле теперь сбрасывается сразу при смене символа</b> — кнопка «Открыть позицию» блокируется и показывает «— загрузка цены…», пока не придёт актуальная цена именно введённого символа.</li>
+          <li><b>Понятное сообщение вместо тихого отказа</b> — если всё же нажать «Открыть» в момент загрузки, теперь явно написано «Цена ещё загружается — подожди секунду и нажми ещё раз» вместо общей фразы «заполни поля», и цена сразу подгружается повторно.</li>
+          <li><b>Защита от зависания запроса цены</b> — запрос с Binance теперь гарантированно завершается максимум через 6 секунд, даже если сеть подвисла.</li>
+        </ul>
+      </div>
+    </div>
 
     <div class="cl-entry">
       <div class="cl-head">

@@ -6278,7 +6278,7 @@ function _t(ru,en){return(typeof getLang==='function'&&getLang()==='en')?en:ru;}
 
 var _activePage = 'dashboard';
 // App version — kept in sync with package.json; surfaced on the profile page
-window._APP_VERSION = '2.5.31';
+window._APP_VERSION = '2.5.32';
 var _activeToolIdx = null;
 var _equityChart = null;
 
@@ -18775,9 +18775,20 @@ function _ppOpenNew(){
     if(symEl){
       // Live-price + state refresh + dropdown update on every keystroke
       symEl.addEventListener('input', function(){
+        // The entry field may still hold the PREVIOUS symbol's auto-filled price.
+        // Clear it (unless the user typed a custom entry themselves) so the
+        // "Open position" button disables until the new symbol's live price
+        // actually arrives — otherwise a fast market order could fire at the
+        // wrong (stale, previous-symbol) price, or silently do nothing while
+        // looking enabled.
+        if(_ppEntryIsLive){
+          var entryElNow = document.getElementById('ppm-entry');
+          if(entryElNow) entryElNow.value = '';
+        }
         _ppUpdateAssetState();
         _ppSymAutocomplete();
         _ppPullLivePrice();
+        try{ _ppPreview(); }catch(_){}
       });
       symEl.addEventListener('focus', _ppSymAutocomplete);
       symEl.addEventListener('keydown', _ppSymAutocompleteKeydown);
@@ -18826,6 +18837,7 @@ function _ppRenderPnlInline(elId, pnl, roi, lossLbl, profitLbl){
 // которое НЕ было последним отредактировано.
 var _ppSizeSource = 'qty';  // 'qty' | 'usdt' | 'entry'
 var _ppEntryIsLive = false; // true = entry was auto-filled from live price; false = user typed manually
+var _ppPriceLoading = false; // true while _ppPullLivePrice's fetch is in flight
 function _ppSizeSync(src){
   var entryEl = document.getElementById('ppm-entry');
   var qtyEl   = document.getElementById('ppm-size');
@@ -19241,7 +19253,14 @@ function _ppPullLivePrice(){
   var sym = symEl.value.trim().toUpperCase();
   if(!sym) return;
   var bSym = sym.endsWith('USDT') ? sym : sym+'USDT';
-  fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol='+bSym)
+  _ppPriceLoading = true;
+  var hint = document.getElementById('ppm-entry-hint');
+  var hintWasLive = (hint && _ppOrderType==='market');
+  if(hintWasLive){ hint.textContent = _t('— загрузка цены…','— loading price…'); hint.style.color='var(--accent2,#a855f7)'; }
+  // Manual timeout race — don't let a slow/blocked request leave the entry
+  // field empty forever (same class of fix as the Metals Calculator hang).
+  var timeoutP = new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, 6000); });
+  Promise.race([fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol='+bSym), timeoutP])
     .then(function(r){return r.json();})
     .then(function(j){
       if(j && j.price){
@@ -19256,7 +19275,11 @@ function _ppPullLivePrice(){
         _PP_PRICES[bSym] = parseFloat(j.price);
         _ppPreview();
       }
-    }).catch(function(){});
+    }).catch(function(){})
+    .finally(function(){
+      _ppPriceLoading = false;
+      if(hintWasLive && hint){ hint.textContent = _t('— текущая рыночная цена','— current market price'); hint.style.color='var(--text3)'; }
+    });
 }
 function _ppPreview(){
   var entry = parseFloat((document.getElementById('ppm-entry')||{}).value)||0;
@@ -19330,6 +19353,23 @@ function _ppExecute(){
   var isSpot = (_ppMarketType === 'spot');
   var leverage = isSpot ? 1 : (parseFloat((document.getElementById('ppm-lev')||{}).value)||1);
   var mmrPct = isSpot ? 0 : (parseFloat((document.getElementById('ppm-mmr')||{}).value)||0.5);
+  // Market order with no entry price yet — almost always means the live-price
+  // fetch for this symbol is still in flight (or failed). Don't fail with a
+  // generic "fill the fields" alert that doesn't explain why nothing happened —
+  // retry the fetch and tell the user to try again in a moment.
+  if(sym && entry<=0 && size>0 && _ppOrderType!=='limit'){
+    var bSymRetry = sym.endsWith('USDT') ? sym : sym+'USDT';
+    var cached = _PP_PRICES[bSymRetry];
+    if(cached>0){
+      var entryElRetry = document.getElementById('ppm-entry');
+      if(entryElRetry) entryElRetry.value = cached;
+      entry = cached;
+    } else {
+      try{ _ppPullLivePrice(); }catch(_){}
+      alert(_t('Цена ещё загружается — подожди секунду и нажми «Открыть позицию» ещё раз','Price is still loading — wait a second and press "Open position" again'));
+      return;
+    }
+  }
   if(!sym || entry<=0 || size<=0){ alert(_t('Заполни символ, цену входа и размер','Fill symbol, entry price and size')); return; }
   if(leverage<1) leverage=1;
   var dir = isSpot ? 'long' : _ppNewDir;
